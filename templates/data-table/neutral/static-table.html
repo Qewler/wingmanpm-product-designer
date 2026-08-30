@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WingmanPM semantic static table</title>
+  <link rel="stylesheet" href="../tokens/tokens.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; padding: clamp(1rem, 4vw, 3rem); color: var(--wpd-color-text); background: var(--wpd-color-canvas); }
+    main { width: min(100%, 80rem); margin-inline: auto; }
+    h1 { margin-block: 0 .4rem; font-size: clamp(1.7rem, 4vw, 2.5rem); letter-spacing: -.035em; }
+    .intro { margin-block: 0 2rem; color: var(--wpd-color-muted); }
+    .table-region { overflow: auto; border-block: 1px solid var(--wpd-color-border); }
+    .table-region:focus-visible { outline: 3px solid color-mix(in srgb, var(--wpd-color-brand) 65%, white); outline-offset: 2px; }
+    table { width: 100%; min-width: 42rem; table-layout: auto; border-collapse: collapse; }
+    th, td { padding: .75rem 1rem; border-bottom: 1px solid var(--wpd-color-border); text-align: start; vertical-align: top; overflow-wrap: anywhere; }
+    thead th { color: var(--wpd-color-muted); background: var(--wpd-color-surface); font-size: .75rem; }
+    thead small { display: block; margin-block-start: .2rem; font-weight: 500; line-height: 1.35; }
+    tbody tr:hover > * { background: color-mix(in srgb, var(--wpd-color-brand) 4%, var(--wpd-color-surface)); }
+    .numeric { text-align: end; font-variant-numeric: tabular-nums; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    @media (forced-colors: active) { table, th, td { border-color: CanvasText; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p>Framework-neutral static reference · Sample data</p>
+    <h1>Audit summary</h1>
+    <p class="intro">Keep reports and comparisons semantic. Do not add grid controls when the workflow is read-only.</p>
+    <div class="table-region" tabindex="0" role="region" aria-label="Scrollable sample audit summary">
+      <table data-wingman-table-id="{{TABLE_ID}}" data-wingman-table-profile="{{TABLE_PROFILE}}">
+        <caption class="visually-hidden">Sample audit summary</caption>
+        <thead><tr>
+          <th scope="col">Item<small>Complete reported identity</small></th>
+          <th scope="col">Status<small>Reported workflow state</small></th>
+          <th scope="col">Owner<small>Accountable person</small></th>
+          <th scope="col" class="numeric">Value<small>Locale-formatted amount</small></th>
+        </tr></thead>
+        <tbody>
+          <tr><th scope="row">Przykład (dane testowe): Zażółć gęślą jaźń</th><td>Ready</td><td>Beispieldaten: Łucja Weiß</td><td class="numeric">1 234,56 zł</td></tr>
+          <tr><th scope="row">Sample: Accessibility evidence</th><td>In progress</td><td>Sample: Alex Nowak</td><td class="numeric">942.10 USD</td></tr>
+          <tr><th scope="row">Sample: Responsive contract</th><td>Blocked</td><td>Sample: Sam Rivera</td><td class="numeric">72%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>

@@ -16,7 +16,9 @@ offline, responsive.
 - [x] Permissions, billing, paywalls, and team administration
 - [x] Notifications and audit logs
 - [x] File management
-- [x] Tables, charts, filters, selection, and bulk actions
+- [x] Tables with static, work, and editable profiles; dense and comfortable
+  modes; truthful pagination; saved views; expansion; selection; bulk actions;
+  and complete edit states. Per-table contracts live in `tables/`.
 - [x] Transparent AI workflow with progress, sources, uncertainty, cancel,
   errors, recovery, and human approval before consequential actions
 

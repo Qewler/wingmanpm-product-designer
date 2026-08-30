@@ -72,6 +72,174 @@
       "summary": "Repeated micro-motion stays short and restrained; strong choreography is reserved for rare explanatory moments.",
       "source": "wingmanpm://rules/motion/tiers",
       "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD001",
+      "domain": "contracts",
+      "title": "Required design contracts exist",
+      "summary": "Product truth, design decisions, component coverage, tokens, project configuration, exceptions, and review evidence must be present.",
+      "source": "wingmanpm://rules/contracts/required-files",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD002",
+      "domain": "design-system",
+      "title": "Design axes are explicit",
+      "summary": "Expression, density, motion, and warmth each use a justified integer from 1 to 10.",
+      "source": "wingmanpm://rules/design-system/axes",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD003",
+      "domain": "tokens",
+      "title": "Token source follows DTCG 2025.10",
+      "summary": "The token source declares DTCG 2025.10 and names independently composed light and dark color groups.",
+      "source": "https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/",
+      "sourceType": "W3C community report"
+    },
+    {
+      "id": "WPD004",
+      "domain": "tokens",
+      "title": "Implementation colors use tokens",
+      "summary": "Production UI does not bypass the project token source with raw color literals.",
+      "source": "wingmanpm://rules/tokens/no-bypass",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD005",
+      "domain": "motion",
+      "title": "Transitions are scoped and responsive",
+      "summary": "Interactive transitions name their properties and avoid routine ease-in arrivals or transition-all behavior.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/CSS/transition",
+      "sourceType": "MDN platform reference"
+    },
+    {
+      "id": "WPD006",
+      "domain": "motion",
+      "title": "Motion has a reduced path",
+      "summary": "Interfaces with motion include reduced-motion behavior, and infinite motion has a same-system stop.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion",
+      "sourceType": "MDN platform reference"
+    },
+    {
+      "id": "WPD007",
+      "domain": "accessibility",
+      "title": "Controls preserve focus and button behavior",
+      "summary": "Buttons declare their type and focus outlines are removed only when a visible focus replacement exists.",
+      "source": "https://www.w3.org/TR/WCAG22/",
+      "sourceType": "W3C recommendation"
+    },
+    {
+      "id": "WPD008",
+      "domain": "states",
+      "title": "Component contracts cover complete states",
+      "summary": "The component contract records loading, empty, partial, error, success, disabled, permission, offline, and responsive behavior.",
+      "source": "wingmanpm://rules/states/complete-contract",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD009",
+      "domain": "composition",
+      "title": "Card repetition has purpose",
+      "summary": "Large equal-card grids must represent real containment or comparison instead of replacing page hierarchy.",
+      "source": "wingmanpm://rules/composition/card-wall",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD010",
+      "domain": "icons",
+      "title": "One icon vocabulary",
+      "summary": "A product surface uses one coherent icon library unless a scoped exception documents a migration.",
+      "source": "wingmanpm://rules/icons/one-vocabulary",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD011",
+      "domain": "verification",
+      "title": "Visual review evidence is complete and current",
+      "summary": "Explicit viewport, input, accessibility, theme, content, and source-hash review evidence must be reviewed and fresh.",
+      "source": "https://playwright.dev/docs/test-snapshots",
+      "sourceType": "official documentation"
+    },
+    {
+      "id": "WPD012",
+      "domain": "themes",
+      "title": "New systems compile dark theme output",
+      "summary": "Projects that require a dark theme compile an explicit dark selector rather than assuming token names are sufficient.",
+      "source": "wingmanpm://rules/themes/compiled-dark",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD013",
+      "domain": "verification",
+      "title": "Golden-stack stories cover critical variants",
+      "summary": "Storybook evidence includes themes, core states, long content, permissions, and reduced motion.",
+      "source": "https://storybook.js.org/docs/writing-tests/accessibility-testing",
+      "sourceType": "official documentation"
+    },
+    {
+      "id": "WPD014",
+      "domain": "performance",
+      "title": "High-cost visual behavior is measured",
+      "summary": "Persistent will-change, large blur, and JavaScript scroll listeners produce performance review warnings.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/CSS/will-change",
+      "sourceType": "MDN platform reference"
+    },
+    {
+      "id": "WPD015",
+      "domain": "responsive",
+      "title": "App shells use resilient viewport height",
+      "summary": "Application shells avoid fixed 100vh behavior that breaks with dynamic browser chrome and content growth.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/CSS/length#relative_length_units_based_on_viewport",
+      "sourceType": "MDN platform reference"
+    },
+    {
+      "id": "WPD016",
+      "domain": "contracts",
+      "title": "Project contracts are valid JSON with current schemas",
+      "summary": "Malformed or invalid configuration cannot silently fall back to unchecked defaults. Version 1 config remains readable only as a migration warning.",
+      "source": "wingmanpm://rules/contracts/schema-validity",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD017",
+      "domain": "ai",
+      "title": "AI surfaces remain transparent and controlled",
+      "summary": "AI contracts expose progress, sources, uncertainty, cancellation, and approval before consequential actions.",
+      "source": "wingmanpm://rules/ai/human-approval",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD018",
+      "domain": "data-tables",
+      "title": "Operational tables have complete contracts",
+      "summary": "Each declared work or editable table has a stable ID and a matching valid contract for its columns, capabilities, states, preferences, and profile.",
+      "source": "wingmanpm://rules/data-tables/contract",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD019",
+      "domain": "data-tables",
+      "title": "Table evidence is present and current",
+      "summary": "Table contracts point to existing component stories, browser tests, and visual review evidence whose source hash is current.",
+      "source": "wingmanpm://rules/data-tables/evidence",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD020",
+      "domain": "data-tables",
+      "title": "Precision interactions have accessible alternatives",
+      "summary": "Column reorder and resize are never drag-only or pointer-only, full values stay reachable, and grid semantics require complete keyboard focus behavior.",
+      "source": "https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements",
+      "sourceType": "W3C WCAG understanding document"
+    },
+    {
+      "id": "WPD-EXCEPTION",
+      "domain": "governance",
+      "title": "Exceptions are scoped, approved, and dated",
+      "summary": "A rule bypass names its rule, target, reason, approver, and a valid future review date.",
+      "source": "wingmanpm://rules/governance/scoped-exceptions",
+      "sourceType": "original WingmanPM rule"
     }
   ]
 }

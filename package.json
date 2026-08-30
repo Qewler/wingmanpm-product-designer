@@ -1,6 +1,6 @@
 {
   "name": "wingmanpm-product-designer-private",
-  "version": "0.1.0-private.1",
+  "version": "0.2.0-private.1",
   "private": true,
   "description": "Private development build of the WingmanPM Product Designer Agent Skill.",
   "author": {
@@ -38,6 +38,8 @@
     "doctor": "node ./bin/wingman-design.mjs --help",
     "test": "node --test tests/*.test.mjs",
     "test:all": "npm run test && npm run validate:skill && npm run eval:fixtures",
+    "test:fixture:storybook": "npm --prefix fixtures/neutral-saas run build-storybook",
+    "test:fixture:browser": "npm --prefix fixtures/neutral-saas run design:test:visual",
     "validate:skill": "node ./scripts/validate-skill.mjs .",
     "eval:fixtures": "node ./evals/run-fixture-evals.mjs",
     "eval:codex": "node ./evals/validate-agent-result.mjs ./evals/results/codex.json",

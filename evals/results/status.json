@@ -4,17 +4,22 @@
   "agents": {
     "codex": {
       "status": "passed",
-      "scenarios": 8,
-      "result": "evals/results/codex.json"
+      "scenarios": 14,
+      "result": "evals/results/codex.json",
+      "note": "The read-only command decision benchmark passes 14/14. This result alone does not open the cross-agent, browser, or npm release gates."
     },
     "claude-code": {
-      "status": "not-run",
-      "reason": "No shareable benchmark result is recorded yet."
+      "status": "blocked-auth",
+      "version": "2.1.241",
+      "scenarios": 0,
+      "reason": "Authentication was unavailable, so the benchmark was not run."
     },
     "cursor": {
-      "status": "not-run",
-      "reason": "No shareable benchmark result is recorded yet."
+      "status": "blocked-auth",
+      "version": "3.17.12",
+      "scenarios": 0,
+      "reason": "Authentication was unavailable, so the benchmark was not run."
     }
   },
-  "nextGate": "Run the same read-only benchmark in Claude Code and Cursor, validate both result files, then review the cross-agent differences."
+  "nextGate": "Authenticate Claude Code and Cursor, run and validate the 14-scenario benchmark in both, complete the all-profile Chromium gate, then review cross-agent differences. npm publication remains blocked."
 }

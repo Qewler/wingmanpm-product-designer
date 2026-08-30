@@ -5,8 +5,8 @@
   "properties": {
     "results": {
       "type": "array",
-      "minItems": 8,
-      "maxItems": 8,
+      "minItems": 14,
+      "maxItems": 14,
       "items": {
         "type": "object",
         "required": ["id", "classification", "decision", "proof", "risk"],

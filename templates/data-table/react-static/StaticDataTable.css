@@ -1,0 +1,168 @@
+.wpd-static-table {
+  min-width: 0;
+  color: var(--wpd-color-text);
+}
+
+.wpd-static-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  max-block-size: min(70dvh, 50rem);
+  overflow: auto;
+  border-block: 1px solid var(--wpd-color-border);
+  overscroll-behavior-inline: contain;
+  scrollbar-gutter: stable;
+}
+
+.wpd-static-table-scroll:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--wpd-color-brand) 62%, white);
+  outline-offset: 2px;
+}
+
+.wpd-static-table table {
+  width: 100%;
+  min-width: 42rem;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: .875rem;
+}
+
+.wpd-static-table th,
+.wpd-static-table td {
+  min-width: 8rem;
+  padding: .75rem 1rem;
+  border-bottom: 1px solid var(--wpd-color-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.wpd-static-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: var(--wpd-color-muted);
+  background: var(--wpd-color-canvas);
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+.wpd-static-table th[data-align='center'],
+.wpd-static-table td[data-align='center'] { text-align: center; }
+.wpd-static-table th[data-align='end'],
+.wpd-static-table td[data-align='end'] { text-align: end; }
+
+.wpd-static-table-heading {
+  display: grid;
+  gap: .2rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.wpd-static-table-heading small {
+  color: var(--wpd-color-muted);
+  font-size: .6875rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.wpd-static-table-value {
+  display: block;
+  max-width: 48rem;
+  line-height: 1.45;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.wpd-static-table tbody tr:last-child td { border-bottom: 0; }
+.wpd-static-table tbody tr:hover td { background: color-mix(in srgb, var(--wpd-color-brand) 4%, transparent); }
+
+.wpd-static-table-banner {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block-end: .75rem;
+  padding: .625rem .75rem;
+  border-inline-start: 3px solid var(--wpd-color-status-warning);
+  background: color-mix(in srgb, var(--wpd-color-status-warning) 8%, var(--wpd-color-surface));
+}
+
+.wpd-static-table-banner.is-success { border-color: var(--wpd-color-status-success); }
+.wpd-static-table-banner > span { display: grid; gap: .125rem; }
+.wpd-static-table-banner small { color: var(--wpd-color-muted); }
+.wpd-static-table-banner button,
+.wpd-static-table-empty button {
+  min-height: 32px;
+  padding-inline: .75rem;
+  border: 1px solid var(--wpd-color-border);
+  border-radius: var(--wpd-radius-control, .5rem);
+  color: var(--wpd-color-text);
+  background: var(--wpd-color-surface);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.wpd-static-table-empty {
+  display: grid;
+  justify-items: center;
+  gap: .35rem;
+  min-height: 12rem;
+  align-content: center;
+  color: var(--wpd-color-muted);
+  text-align: center;
+}
+.wpd-static-table-empty strong { color: var(--wpd-color-text); }
+
+.wpd-static-table-config-error {
+  display: grid;
+  gap: .25rem;
+  padding: 1rem;
+  border: 1px solid var(--wpd-color-status-danger);
+  border-inline-start-width: 3px;
+  background: color-mix(in srgb, var(--wpd-color-status-danger) 7%, var(--wpd-color-surface));
+}
+.wpd-static-table-config-error span { color: var(--wpd-color-muted); }
+
+.wpd-static-table-skeleton {
+  display: block;
+  width: min(12rem, 80%);
+  height: .75rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--wpd-color-border), color-mix(in srgb, var(--wpd-color-border) 34%, transparent), var(--wpd-color-border));
+  background-size: 220% 100%;
+  animation: wpd-static-table-shimmer 1.15s linear infinite;
+}
+
+.wpd-static-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+@keyframes wpd-static-table-shimmer { to { background-position-x: -220%; } }
+
+@media (max-width: 48rem) {
+  .wpd-static-table table { min-width: 36rem; }
+  .wpd-static-table th,
+  .wpd-static-table td { padding-inline: .75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wpd-static-table-skeleton { animation: none; }
+}
+
+@media (forced-colors: active) {
+  .wpd-static-table-scroll,
+  .wpd-static-table th,
+  .wpd-static-table td,
+  .wpd-static-table-banner { border-color: CanvasText; }
+}

@@ -33,6 +33,44 @@ test('help lists the five lifecycle commands', () => {
   for (const command of ['install', 'init', 'check', 'doctor', 'uninstall']) assert.match(result.stdout, new RegExp(command));
 });
 
+test('commands exposes the 18 intent families as text and JSON', () => {
+  const textResult = run(['commands'], root);
+  assert.equal(textResult.status, 0, textResult.stderr);
+  assert.match(textResult.stdout, /polish \/ beautiful/);
+  assert.match(textResult.stdout, /review \/ audit[\s\S]*read-only unless --fix/);
+  assert.match(textResult.stdout, /data-table \/ table/);
+
+  const jsonResult = run(['commands', '--json'], root);
+  assert.equal(jsonResult.status, 0, jsonResult.stderr);
+  const commands = JSON.parse(jsonResult.stdout);
+  assert.equal(commands.length, 18);
+  assert.equal(commands.find(({ id }) => id === 'standout').aliases[0], 'stunning');
+});
+
+test('explain distinguishes vague pickers, explicit commands, and read-only reviews', () => {
+  const vague = run(['explain', 'make it stunning', '--json'], root);
+  assert.equal(vague.status, 0, vague.stderr);
+  const picker = JSON.parse(vague.stdout);
+  assert.equal(picker.kind, 'picker');
+  assert.equal(picker.intent, 'standout');
+  assert.equal(picker.recommendedLevel, 'elevate');
+  assert.deepEqual(picker.options.map(({ id }) => id), ['refine', 'elevate', 'reimagine']);
+
+  const explicit = run(['explain', 'stunning', '--explicit', '--level', 'reimagine', '--json'], root);
+  assert.equal(explicit.status, 0, explicit.stderr);
+  const direct = JSON.parse(explicit.stdout);
+  assert.equal(direct.kind, 'direct');
+  assert.equal(direct.intent, 'standout');
+  assert.equal(direct.level, 'reimagine');
+
+  const audit = run(['explain', 'audit', '--explicit', '--json'], root);
+  assert.equal(audit.status, 0, audit.stderr);
+  assert.equal(JSON.parse(audit.stdout).readOnly, true);
+  const fixedAudit = run(['explain', 'audit', '--explicit', '--fix', '--json'], root);
+  assert.equal(fixedAudit.status, 0, fixedAudit.stderr);
+  assert.equal(JSON.parse(fixedAudit.stdout).readOnly, false);
+});
+
 test('init creates a complete golden-stack contract and is idempotent', async () => {
   const directory = await project({ git: true });
   await writeFile(path.join(directory, 'AGENTS.md'), 'Existing instructions stay.\n');
@@ -161,6 +199,8 @@ test('project-scoped skill install and uninstall preserve changed installed file
   const install = run(['install', '--agent', 'codex', '--scope', 'project', '--project', directory], root);
   assert.equal(install.status, 0, install.stderr);
   const skill = path.join(directory, '.agents', 'skills', 'wingmanpm-product-designer', 'SKILL.md');
+  const commandSchema = path.join(directory, '.agents', 'skills', 'wingmanpm-product-designer', 'schemas', 'commands.schema.json');
+  assert.equal(JSON.parse(await readFile(commandSchema, 'utf8')).title, 'WingmanPM Product Designer command registry');
   await appendFile(skill, '\nLocal change.\n');
   const uninstall = run(['uninstall', '--agent', 'codex', '--scope', 'project', '--project', directory], root);
   assert.equal(uninstall.status, 0, uninstall.stderr);

@@ -3,16 +3,28 @@
   "$id": "https://wingmanpm.local/schemas/config.schema.json",
   "title": "WingmanPM Product Designer project configuration",
   "type": "object",
-  "required": ["schemaVersion", "systemMode", "stack", "requiresDarkTheme", "viewports"],
+  "required": ["schemaVersion", "systemMode", "stack", "requiresDarkTheme", "scanRoots", "viewports"],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "systemMode": { "enum": ["new-system", "preserve"] },
     "stack": { "type": "string", "minLength": 1 },
     "goldenStack": { "type": "boolean" },
     "requiresDarkTheme": { "type": "boolean" },
     "aiSurfaces": { "type": "boolean" },
+    "legacyBaseline": { "type": "boolean" },
+    "scanRoots": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^(?!/)(?!\\.\\.(?:/|$))(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+      }
+    },
     "viewports": {
       "type": "array",
+      "uniqueItems": true,
       "items": { "type": "integer", "minimum": 320 },
       "allOf": [
         { "contains": { "const": 390 } },

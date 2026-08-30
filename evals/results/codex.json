@@ -1,1 +1,102 @@
-{"results":[{"id":"greenfield","classification":"New system or major redesign","decision":"Load references/system.md. Inspect product truth, set the four axes, and create three directions as responsive coded concepts. Define light and dark separately. Required user gate: user choice of one direction before full implementation.","proof":"Blocking proof: approved direction, completed design contract, wingman-design check, passing Storybook interactions, browser review, accessibility checks, and reviewed visual baselines.","risk":"A generic system may replace product truth or make dark an inversion of light."},{"id":"preserve","classification":"Product work: established-system extension","decision":"Load references/product-ui.md. Inspect existing instructions, tokens, components, screens, routes, and behavior. Preserve the existing visual authority and extend its vocabulary. No user gate unless the work requires redesign or a visual-baseline change.","proof":"Blocking proof: exact code and Storybook evidence showing reuse of existing patterns, plus clean design, responsive, browser, keyboard, zoom, and WCAG 2.2 AA checks.","risk":"Visual drift from introducing a parallel component or styling language."},{"id":"card-wall","classification":"Major redesign","decision":"Load references/system.md and references/product-ui.md. Inspect product authority, then replace the equal card wall with clear hierarchy, alignment, spacing, and dividers. Keep cards only where containment, elevation, comparison, or self-contained action is real. Required user gate: choose one of three directions before full implementation.","proof":"Blocking proof: responsive coded concepts at 390 and 1280 pixels, approved direction, task hierarchy evidence, Storybook coverage, browser review, and clean accessibility checks.","risk":"Removing cards without preserving genuine containment can make related actions harder to understand."},{"id":"dense-data","classification":"Product work: authenticated data UI","decision":"Load references/product-ui.md. Build the table, filters, selection, and bulk actions around the user task. Preserve existing product rules. Make responsive behavior explicit with priority columns, overflow, row detail, or a compact representation. No user gate unless product behavior must change.","proof":"Blocking proof: loading, empty, partial, error, disabled, permission, offline, selection, and bulk states; keyboard and 200% zoom tests; responsive browser evidence at 390, 768, 1280, and 1440 pixels; no serious accessibility issues.","risk":"A crushed desktop table can hide key data or make bulk actions unsafe on small screens."},{"id":"transparent-ai","classification":"Product work: consequential AI workflow","decision":"Load references/product-ui.md. Show scoped inputs and sources, progress, uncertainty, failures, and a cancel control. Provide a reversible preview and require human approval before consequential changes. No separate design gate unless behavior or authority changes.","proof":"Blocking proof: tested progress, cancel, recovery, missing-context, source provenance, uncertainty, draft, and approval paths, including keyboard, responsive, loading, error, and permission behavior.","risk":"False confidence or an unclear approval boundary can cause unauthorized changes."},{"id":"review-only","classification":"Review","decision":"Load references/qa.md. Work read-only and report findings in a Before | After | Why table, ordered by impact. Do not edit files. No user gate is required for the review; later fixes require a separate request.","proof":"Blocking proof: screenshots, DOM evidence, exact files, or test results for every confirmed finding, with defects separated from design preferences.","risk":"Unsupported opinions can be mistaken for confirmed defects."},{"id":"motion","classification":"Animation and interaction polish","decision":"Load references/motion.md. Make repeated micro-interactions short and interruptible. Reserve rare motion for explanatory moments. Add a reduced motion path that keeps information, focus, progress, and feedback intact. No user gate unless a new expressive direction or baseline is introduced.","proof":"Blocking proof: review each motion for cause, frequency, orientation, interruption, and reduced motion; test input availability and reject blocking patterns such as transition: all, delayed input, or infinite decoration near repeated work.","risk":"Non-interruptible motion can slow frequent work and cause accessibility failures."},{"id":"marketing","classification":"Secondary SaaS marketing surface","decision":"Load references/marketing.md and references/motion.md. Start from product truth, use real proof, keep the primary action clear, and preserve claims, prices, legal text, and measurement hooks. Provide a stable reduced motion composition. No user gate unless this becomes a major new visual system.","proof":"Blocking proof: responsive evidence for the promise, proof sequence, and primary action; tests for long headings, keyboard, zoom, reduced motion, slow media, and complete pending, failure, and success states for conversion actions.","risk":"Template-led visuals or invented proof can weaken trust and misrepresent the product."}]}
+{
+  "results": [
+    {
+      "id": "greenfield",
+      "classification": "New system or major redesign",
+      "decision": "Load references/system.md. Inspect product truth, record the four axes, and produce three directions as responsive coded first views. Compose light and dark independently. Required gate: a user choice of one direction before full implementation.",
+      "proof": "Block completion until the chosen direction, product and design contracts, Storybook states, responsive browser review, WCAG 2.2 AA checks, and reviewed visual evidence are present.",
+      "risk": "A polished generic system can erase product truth or turn dark mode into an untested inversion of light mode."
+    },
+    {
+      "id": "preserve",
+      "classification": "Established product extension",
+      "decision": "Load references/product-ui.md. Inspect existing instructions, tokens, components, routes, representative screens, and working behavior. Preserve the existing visual authority and extend its vocabulary; do not create a parallel design language.",
+      "proof": "Require exact code and Storybook evidence that established patterns remain intact, plus clean responsive, keyboard, zoom, browser, and accessibility checks. The isolated v1 upgrade evaluation preserved a user-owned marker and was hash-stable on its second run.",
+      "risk": "A local improvement can still cause visual drift when it introduces a second component or styling system."
+    },
+    {
+      "id": "card-wall",
+      "classification": "Major dashboard redesign",
+      "decision": "Load references/system.md and references/product-ui.md. Replace the equal card wall with clear hierarchy, alignment, spacing, and dividers. Keep a card only where containment, elevation, comparison, or a self-contained action is real. Require a user direction choice before the full redesign.",
+      "proof": "Show three responsive first-view directions using the same honest content, then verify the approved hierarchy at 390 and 1280 pixels with Storybook, browser, and accessibility evidence.",
+      "risk": "Removing every container is as harmful as a card wall when it destroys genuine containment and action grouping."
+    },
+    {
+      "id": "dense-data",
+      "classification": "Operational work table",
+      "decision": "Load references/data-tables.md. Use the work profile with dense and comfortable modes, column visibility, reorder and resize alternatives, truthful pagination, expansion, selection, bulk actions, and responsive priority behavior. Add inline editing only when changing cell values is part of the task.",
+      "proof": "Require a valid table contract, generated TypeScript, Storybook build, and current browser proof for both densities, mouse and keyboard column controls, pagination boundaries, expansion, bulk scope, long content, light and dark themes, reduced motion, and all responsive viewports.",
+      "risk": "A deterministic contract check or successful compile does not replace the all-profile Chromium gate."
+    },
+    {
+      "id": "transparent-ai",
+      "classification": "Consequential AI product workflow",
+      "decision": "Load references/ai-ui.md. Show scoped inputs and sources, progress, uncertainty, failures, and a cancel control. Keep output reversible and require human approval before sending, publishing, deleting, purchasing, or changing records.",
+      "proof": "Exercise progress, cancel, partial success, recovery, missing and conflicting context, source provenance, uncertainty, draft review, and approval boundaries with keyboard and responsive evidence.",
+      "risk": "Hidden source scope or a vague approval boundary can turn uncertain output into an unauthorized consequential action."
+    },
+    {
+      "id": "review-only",
+      "classification": "Read-only design review",
+      "decision": "Load references/qa.md. Stay read-only and report each finding in a Before | After | Why table. Do not edit files or replace baselines unless the user later requests a fix or explicitly uses --fix.",
+      "proof": "Back confirmed findings with screenshots, DOM evidence, exact files, or test output, and separate defects from design preference. The command evaluation confirmed audit is read-only by default and changes mode only with --fix.",
+      "risk": "Unsupported taste claims can be presented as defects, or a review can silently mutate the surface it is meant to assess."
+    },
+    {
+      "id": "motion",
+      "classification": "Interaction and animation polish",
+      "decision": "Load references/motion.md. Keep repeated micro-interactions short and interruptible, reserve stronger motion for a rare explanatory moment, and provide reduced motion behavior that preserves state, focus, progress, and feedback.",
+      "proof": "For every motion, verify cause, frequency, orientation, interruption, input availability, and the reduced-motion result. Block transition-all, delayed input, and infinite decoration near repeated work.",
+      "risk": "Uninterruptible or frequent decorative motion can slow expert work and create accessibility failures."
+    },
+    {
+      "id": "marketing",
+      "classification": "Secondary SaaS marketing surface",
+      "decision": "Load references/marketing.md and references/motion.md. Start from product truth, use real proof, keep the primary action clear, preserve claims and prices, and provide a stable reduced motion composition.",
+      "proof": "Require responsive evidence for the promise, proof sequence, product scene, and primary action, plus long-heading, keyboard, zoom, reduced-motion, slow-media, pending, error, and success checks.",
+      "risk": "Template-led effects or invented proof can weaken trust and misrepresent the actual product."
+    },
+    {
+      "id": "ambiguous-polish",
+      "classification": "Ambiguous transformation request",
+      "decision": "For make it beautiful, make it stunning, or pimp it up, inspect the target and show one three-level picker before editing: Refine, Elevate, or Reimagine. Recommend Refine for beautiful and Elevate for stunning or pimp.",
+      "proof": "The CLI evaluation resolved all three phrases to a picker with refine, elevate, and reimagine options; beautiful recommended refine, while stunning and pimp it up recommended elevate.",
+      "risk": "Acting before the level choice can turn a small polish request into an unwanted redesign."
+    },
+    {
+      "id": "explicit-intent",
+      "classification": "Explicit skill command",
+      "decision": "An explicit command or supplied level must act directly without an unnecessary picker. Load only the reference owned by that intent and keep the selected level as the intervention ceiling.",
+      "proof": "The evaluation confirmed explicit stunning resolves directly to elevate, while beautiful with --level reimagine resolves directly to reimagine. Exact matching rejected the unrelated substring unaudited.",
+      "risk": "Reopening a choice the user already made adds friction; substring matching can route unrelated text to the wrong command."
+    },
+    {
+      "id": "static-table",
+      "classification": "Static report or comparison table",
+      "decision": "Load references/data-tables.md. Use a native table with a static profile for read-only reporting. Keep labels and values complete and omit visibility, reorder, resize, selection, expansion, bulk, and editing controls.",
+      "proof": "Require a generated static contract with every operational capability disabled, deterministic validation, generated TypeScript, a Storybook build, and current Chromium evidence for light, dark, responsive, long-content, and no-controls cases.",
+      "risk": "A static profile can become needlessly complex if it inherits controls or dependencies that its read-only task does not need."
+    },
+    {
+      "id": "work-table",
+      "classification": "Work profile data table",
+      "decision": "Load references/data-tables.md. Implement stable column identities, density, visibility, reorder and resize alternatives, filtering, truthful pagination, expansion, page versus all-filtered selection, and safe bulk actions. Preserve an account or workspace preference adapter with versioned local fallback.",
+      "proof": "Require contract validation, generated TypeScript, a Storybook build, and current Chromium evidence for both densities, all viewport-theme combinations, column controls, pagination, expansion, selection scope, and bulk-action outcomes.",
+      "risk": "A work table can appear complete while missing or ambiguous browser evidence makes its interaction proof impossible to repeat in CI."
+    },
+    {
+      "id": "editable-table",
+      "classification": "Editable work table",
+      "decision": "Load references/data-tables.md. Keep original and draft values separate. Enter or an explicit affordance begins editing, commit saves, Escape cancels, validation remains attached to the cell, and rejected, conflict, permission, and offline states preserve recoverable input.",
+      "proof": "Require a contract that declares inline editing, generated TypeScript, a Storybook build, and current Chromium evidence for commit, cancel, validation, rejection, conflict, permission, offline, and recovery behavior.",
+      "risk": "Without repeatable browser proof, duplicate labels or status output can hide whether the editor, result announcement, and rejected-save recovery are independently correct."
+    },
+    {
+      "id": "preserve-grid",
+      "classification": "Existing capable grid extension",
+      "decision": "Inspect dependencies and shared table components, preserve the existing grid, and do not add a parallel table stack. Map the Wingman contract and interaction alternatives onto the established engine.",
+      "proof": "Require evidence that the existing grid dependency and shared components remain in place, no parallel table engine is installed, and every story, browser test, and review path declared by the integration contract exists and is current.",
+      "risk": "Dependency-name-only detection can miss capable project-owned grids, and a preservation decision is incomplete without valid evidence paths."
+    }
+  ]
+}

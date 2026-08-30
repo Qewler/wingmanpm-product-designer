@@ -49,3 +49,48 @@ jobs:
       - name: Verify the package archive
         if: matrix.node == 24
         run: npm pack --dry-run --ignore-scripts
+
+  fixture-browser:
+    name: Node 24 fixture browser
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            fixtures/neutral-saas/package-lock.json
+
+      - name: Install CLI package metadata
+        run: npm ci --ignore-scripts
+
+      - name: Upgrade the checked-out v1 fixture
+        run: node ./bin/wingman-design.mjs upgrade --project fixtures/neutral-saas
+
+      - name: Scaffold all table profiles
+        run: |
+          node ./bin/wingman-design.mjs add data-table --project fixtures/neutral-saas --profile static --id ci-static-report
+          node ./bin/wingman-design.mjs add data-table --project fixtures/neutral-saas --profile work --id ci-work-items
+          node ./bin/wingman-design.mjs add data-table --project fixtures/neutral-saas --profile editable --id ci-editable-items
+
+      - name: Install fixture dependencies
+        working-directory: fixtures/neutral-saas
+        run: npm install --ignore-scripts
+
+      - name: Install Chromium
+        working-directory: fixtures/neutral-saas
+        run: npx playwright install --with-deps chromium
+
+      - name: Build fixture Storybook
+        working-directory: fixtures/neutral-saas
+        run: npm run build-storybook
+
+      - name: Run one Chromium suite for all profiles
+        working-directory: fixtures/neutral-saas
+        run: npm run design:test:visual

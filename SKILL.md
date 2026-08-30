@@ -4,7 +4,7 @@ description: Design, build, redesign, review, polish, and verify responsive SaaS
 license: Apache-2.0
 metadata:
   author: Julius (@Qewler), creator of WingmanPM
-  version: 0.1.0-private.1
+  version: 0.2.0-private.1
 ---
 
 # WingmanPM Product Designer
@@ -12,76 +12,84 @@ metadata:
 Create SaaS interfaces that feel precise, fast, coherent, and specific to the
 product. The brief and existing product truth outrank this skill's defaults.
 
-## Start with authority and scope
+## Inspect before design
 
-1. Inspect the repository before asking questions. Read existing instructions,
-   design documents, tokens, components, representative screens, and assets.
-2. Classify the request:
-   - **Review:** report evidence; do not edit unless the user asks for a fix.
-   - **Narrow repair:** preserve the current system and record temporary
-     assumptions if no design contract exists.
-   - **Product work:** build or improve task-focused authenticated UI.
-   - **New system or major redesign:** follow the direction workflow below.
-   - **Marketing:** use the separate marketing playbook.
-3. Preserve business rules, legal text, factual claims, routes, analytics
-   contracts, and product behavior unless the user explicitly changes scope.
+Read repository instructions, product and design documents, tokens, shared
+components, representative screens, assets, and working behavior before asking
+questions or editing. Preserve business rules, legal text, factual claims,
+routes, permissions, data relationships, analytics contracts, and established
+product behavior unless the user explicitly changes their scope.
+
+## Resolve the request
+
+Use the exact intents and aliases in
+[registry/commands.json](registry/commands.json). Invocation is portable:
+
+```text
+$wingmanpm-product-designer <intent> [target] [--level refine|elevate|reimagine]
+/wingmanpm-product-designer <intent> [target] [--level refine|elevate|reimagine]
+```
+
+- An explicit skill invocation or supplied `--level` will **act directly**.
+- A free-form request using `make it beautiful`, `make it stunning`, or
+  `pimp it up` first
+  inspects the target, then offers one choice: **Refine**, **Elevate**, or
+  **Reimagine**. Recommend Refine, Elevate, and Elevate respectively. Do not
+  edit before the choice.
+- Reimagine is a major redesign. Produce three responsive coded first-view
+  directions and require a user choice before full implementation.
+- `review` and `audit` are read-only. Edit only when the user explicitly asks
+  for changes or supplies `--fix`.
+- Match aliases exactly after case, punctuation, and whitespace normalization.
+  Never infer an intent from a substring.
 
 ## Load only the owning reference
 
-- New system, new screen, or major redesign: [references/system.md](references/system.md)
-- Authenticated app UI and component decisions: [references/product-ui.md](references/product-ui.md)
-- Animation or interaction polish: [references/motion.md](references/motion.md)
-- Review, audit, hardening, or final QA: [references/qa.md](references/qa.md)
-- Landing, pricing, launch, or docs marketing: [references/marketing.md](references/marketing.md)
-- Rule lookup or validator behavior: [references/registry.md](references/registry.md)
+- `polish`, `standout`, `amplify`, `calm`, `simplify`:
+  [references/transforms.md](references/transforms.md)
+- `layout`, `typography`, `color`, `responsive`:
+  [references/product-craft.md](references/product-craft.md)
+- `motion`: [references/motion.md](references/motion.md)
+- `harden`, `review`: [references/qa.md](references/qa.md)
+- `data-table`: [references/data-tables.md](references/data-tables.md)
+- `forms`, `onboarding`: [references/forms.md](references/forms.md)
+- `ai-flow`: [references/ai-ui.md](references/ai-ui.md)
+- `navigation`: [references/navigation.md](references/navigation.md)
+- `design-system`, a new screen, or major redesign:
+  [references/system.md](references/system.md)
+- Landing, pricing, launch, or docs marketing:
+  [references/marketing.md](references/marketing.md)
+- Validator behavior: [references/registry.md](references/registry.md)
 
-## Product character
+Use [references/product-ui.md](references/product-ui.md) as the shared product
+foundation only when an owning reference points to it or the request spans
+several product patterns.
 
-- Adapt to the product and preserve coherent existing systems.
-- When no visual authority exists, start precise and warm: compact density,
-  controlled softness, calm neutrals, one brand accent, semantic state colors,
-  one strong sans family, and mono or tabular figures for data.
-- Familiar controls are a feature. Expression belongs in composition,
-  component detail, and earned moments, never ornamental friction.
-- Do not turn every group into the same rounded card. Use cards for genuine
-  containment or elevation; otherwise use hierarchy, alignment, and spacing.
-- Generated systems record justified 1-10 values for expression, density,
-  motion, and warmth. Values must change concrete design decisions.
+## Product contract
 
-## New system or major redesign
+- Adapt to coherent existing systems. When no authority exists, start precise
+  and warm: compact density, controlled softness, calm neutrals, one brand
+  accent, semantic colors, strong sans type, and tabular figures for data.
+- Record justified 1-10 values for Expression, Density, Motion, and Warmth
+  before and after a transformation. Every changed value must alter concrete
+  layout, type, color, shape, or motion decisions.
+- Use cards only for real containment or elevation. Establish hierarchy with
+  composition, alignment, type, dividers, and spacing.
+- WCAG 2.2 AA, complete workflow states, keyboard use, zoom, long content,
+  locale-aware values, touch input, responsive behavior, and reduced motion
+  are completion requirements.
+- AI actions expose scope, progress, sources, uncertainty, cancellation,
+  recovery, and human approval before consequential changes.
+- Editable data tables use deliberate inline editing with validation, saving,
+  permission, conflict, offline, cancellation, and recovery states.
+- Invented data is realistic and visibly labeled `Sample` or `Mock`.
 
-1. Inspect product truth and visual authority.
-2. Ask only high-impact questions the repository cannot answer.
-3. Research a small set of real references with sanitized public queries. Never
-   send private project content to external search.
-4. Produce three distinct responsive coded first-view concepts using honest
-   content. State each concept's product fit and risk.
-5. Wait for the user's choice before implementing the full direction.
-6. Run `wingman-design init --project <root>` and replace scaffold assumptions
-   with the approved contract.
-7. Build with project-owned components and Storybook evidence.
+## Verify and hand off
 
-## Completion contract
+Run the project's `design:check`, relevant Storybook checks, browser review, and
+visual comparison. Fix blocking findings and repeat until clean. Never replace
+an unexpected visual baseline without explicit review.
 
-- New design systems define separately composed light and dark themes. A narrow
-  repair does not silently add dark mode to an existing light-only product.
-- WCAG 2.2 AA is blocking. Improve toward AAA where product constraints allow.
-- Cover every relevant loading, empty, partial, error, success, disabled,
-  permission, offline, and responsive state.
-- Long labels, locale-aware values, keyboard use, zoom, reduced motion, and
-  touch input must remain usable.
-- AI actions expose progress, sources, uncertainty, cancellation, recovery, and
-  human approval before consequential changes.
-- Sample people, companies, and metrics are realistic and visibly labeled as
-  sample or mock.
-- Run the project's `design:check`, Storybook checks, and browser review. Fix
-  blocking findings and repeat until clean. If the same external blocker
-  survives three honest attempts, stop and name it precisely.
-- Unexpected visual baselines require explicit review before replacement.
-
-## Reviews and handoff
-
-Use a `Before | After | Why` table for review findings, ordered by impact and
-backed by screenshots, DOM evidence, or exact code. Do not mutate on a review-
-only request. A completed task reports the outcome, proof, and genuine remaining
-limits without a design lecture.
+For reviews, use a `Before | After | Why` table backed by screenshots, DOM
+evidence, exact code, or test results. A completed implementation reports the
+outcome, proof, and genuine remaining limits.

@@ -1,13 +1,19 @@
 {
-  "version": 1,
+  "version": 2,
   "benchmarks": [
     { "id": "greenfield", "task": "Generate a greenfield SaaS design system", "mustMention": ["three directions", "light", "dark", "four axes", "user choice"] },
     { "id": "preserve", "task": "Extend an established UI without visual drift", "mustMention": ["inspect", "preserve", "existing"] },
     { "id": "card-wall", "task": "Redesign a generic shadcn dashboard", "mustMention": ["card", "hierarchy", "containment"] },
-    { "id": "dense-data", "task": "Build a dense table, filters, and bulk actions", "mustMention": ["table", "filters", "bulk", "responsive"] },
+    { "id": "dense-data", "task": "Build a dense table, filters, and bulk actions", "mustMention": ["dense", "comfortable", "visibility", "reorder", "resize", "pagination", "expansion", "bulk", "inline editing", "responsive"] },
     { "id": "transparent-ai", "task": "Build a transparent AI workflow", "mustMention": ["sources", "uncertainty", "cancel", "approval"] },
     { "id": "review-only", "task": "Review without changing code", "mustMention": ["read-only", "before", "after", "why"] },
     { "id": "motion", "task": "Polish motion and reduced-motion behavior", "mustMention": ["interruptible", "reduced motion", "repeated", "rare"] },
-    { "id": "marketing", "task": "Build a secondary SaaS marketing surface", "mustMention": ["product truth", "proof", "primary action", "reduced motion"] }
+    { "id": "marketing", "task": "Build a secondary SaaS marketing surface", "mustMention": ["product truth", "proof", "primary action", "reduced motion"] },
+    { "id": "ambiguous-polish", "task": "Handle make it beautiful, make it stunning, and pimp it up", "mustMention": ["make it beautiful", "make it stunning", "pimp it up", "refine", "elevate", "reimagine", "picker"] },
+    { "id": "explicit-intent", "task": "Run an explicit command without an unnecessary picker", "mustMention": ["explicit", "level", "act directly"] },
+    { "id": "static-table", "task": "Keep a semantic report table simple", "mustMention": ["static", "native table", "read-only"] },
+    { "id": "work-table", "task": "Build a complete operational SaaS table", "mustMention": ["work", "column", "selection", "bulk actions", "pagination"] },
+    { "id": "editable-table", "task": "Build a safe editable data table", "mustMention": ["editable", "draft", "commit", "escape", "validation", "offline"] },
+    { "id": "preserve-grid", "task": "Improve an existing capable grid without adding a parallel table stack", "mustMention": ["preserve", "existing grid", "parallel"] }
   ]
 }
