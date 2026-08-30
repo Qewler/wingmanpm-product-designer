@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -52,4 +52,29 @@ test('share safety accepts clean text and rejects forbidden long-dash output', a
   assert.equal(result.status, 1);
   assert.match(result.stderr, /forbidden long-dash output/);
   for (const file of ['named.html', 'named-no-semicolon.html', 'numeric.html', 'hex.html', 'numeric-no-semicolon.html', 'escaped.js', 'escaped.json', 'escaped.yaml', 'content.css', 'variable.css', 'style.html', 'code-point.js', 'char-code.js', 'code-point-add.js', 'char-code-add.js']) assert.match(result.stderr, new RegExp(file));
+});
+
+test('share safety handles Git history larger than the Node default buffer', async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'wingman-share-history-'));
+  await mkdir(path.join(directory, 'scripts'), { recursive: true });
+  await writeFile(path.join(directory, 'scripts', 'check-share-safety.mjs'), await readFile(path.join(root, 'scripts', 'check-share-safety.mjs')));
+  await writeFile(path.join(directory, 'package.json'), `${JSON.stringify({ name: 'share-history-test', private: true, files: [] }, null, 2)}\n`);
+  await writeFile(path.join(directory, 'README.md'), '# Safe history fixture\n');
+  assert.equal(run('git', ['init', '-b', 'main'], directory).status, 0);
+  await commit(directory, 'initial safe fixture');
+
+  const largeHistory = Array.from(
+    { length: 90000 },
+    (_, index) => `safe historical record ${String(index).padStart(6, '0')} contains only public fixture text\n`
+  ).join('');
+  assert.ok(Buffer.byteLength(largeHistory) > 1024 * 1024);
+  const historicalFile = path.join(directory, 'large-history.txt');
+  await writeFile(historicalFile, largeHistory);
+  await commit(directory, 'add large safe history');
+  await rm(historicalFile);
+  await commit(directory, 'remove large safe history');
+
+  const result = run(process.execPath, ['scripts/check-share-safety.mjs'], directory);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stdout, /Share-safety check passed/);
 });

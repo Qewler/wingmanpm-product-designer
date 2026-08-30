@@ -8,9 +8,14 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const failures = [];
 const forbiddenDash = String['from' + 'CodePoint'](0x2000 + 0x14);
+const DEFAULT_GIT_MAX_BUFFER = 64 * 1024 * 1024;
 
 function git(args, options = {}) {
-  return execFileSync('git', args, { cwd: root, encoding: options.encoding ?? 'utf8' });
+  return execFileSync('git', args, {
+    cwd: root,
+    encoding: options.encoding ?? 'utf8',
+    maxBuffer: options.maxBuffer ?? DEFAULT_GIT_MAX_BUFFER
+  });
 }
 
 function escapeRegex(value) {
