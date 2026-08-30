@@ -1,0 +1,10 @@
+node_modules/
+coverage/
+dist/
+playwright-report/
+test-results/
+storybook-static/
+**/.wingmanpm-design/test-results/
+.DS_Store
+*.log
+.tmp/

@@ -1,0 +1,7 @@
+---
+description: Apply the project design contract to SaaS product UI work
+globs: ["src/**/*.{ts,tsx,css}", "app/**/*.{ts,tsx,css}"]
+alwaysApply: false
+---
+
+Read design-system/PRODUCT.md and design-system/DESIGN.md. Preserve business meaning. Run node .wingmanpm-design/runtime/checker.mjs --project . before completion.

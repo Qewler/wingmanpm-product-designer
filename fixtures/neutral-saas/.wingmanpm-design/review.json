@@ -1,0 +1,23 @@
+{
+  "status": "reviewed",
+  "reviewer": "Codex browser QA for Julius",
+  "reviewedAt": "2026-08-30T15:54:45.467Z",
+  "sourceHash": "fdd38e0efbc7584dcb5f5579f1672ba83e75541ed462c20e8a43e9ee193b97e8",
+  "viewports": [
+    390,
+    768,
+    1280,
+    1440
+  ],
+  "checks": {
+    "keyboard": true,
+    "zoom200": true,
+    "reducedMotion": true,
+    "longContent": true,
+    "light": true,
+    "dark": true,
+    "axe": true,
+    "responsiveStates": true
+  },
+  "notes": "Refreshed after newline-only repository formatting; no UI semantics changed after the 19-test browser pass."
+}

@@ -1,0 +1,31 @@
+{
+  "name": "wingmanpm-neutral-saas-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "design:check": "node .wingmanpm-design/runtime/checker.mjs --project .",
+    "design:doctor": "wingman-design doctor --project .",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "design:test:visual": "playwright test --config playwright.wingman.config.ts"
+  },
+  "dependencies": {
+    "lucide-react": "^1.37.0",
+    "next": "^16.3.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "typescript": "^7.0.2",
+    "vite": "8.0.16",
+    "storybook": "^10.5.10",
+    "@storybook/react": "^10.5.10",
+    "@storybook/react-vite": "^10.5.10",
+    "@storybook/addon-a11y": "^10.5.10",
+    "@playwright/test": "^1.62.1",
+    "@axe-core/playwright": "^4.13.0"
+  }
+}

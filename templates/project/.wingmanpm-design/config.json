@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "systemMode": "{{SYSTEM_MODE}}",
+  "stack": "{{STACK}}",
+  "goldenStack": {{GOLDEN_STACK}},
+  "requiresDarkTheme": true,
+  "aiSurfaces": true,
+  "legacyBaseline": {{LEGACY_BASELINE}},
+  "scanRoots": ["src", "app", "pages", "components", "stories", "design-system/examples"],
+  "viewports": [390, 768, 1280, 1440],
+  "visualEvidenceMaxAgeDays": 30
+}

@@ -1,0 +1,14 @@
+/* Generated shadcn semantic mapping. */
+:root {
+  --background: var(--wpd-color-canvas);
+  --foreground: var(--wpd-color-text);
+  --card: var(--wpd-color-surface);
+  --card-foreground: var(--wpd-color-text);
+  --primary: var(--wpd-color-brand);
+  --primary-foreground: var(--wpd-color-brand-foreground);
+  --muted: var(--wpd-color-surface);
+  --muted-foreground: var(--wpd-color-muted);
+  --border: var(--wpd-color-border);
+  --destructive: var(--wpd-color-status-danger);
+  --radius: var(--wpd-radius-control);
+}

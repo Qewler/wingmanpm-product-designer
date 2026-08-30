@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["results"],
+  "properties": {
+    "results": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": ["id", "classification", "decision", "proof", "risk"],
+        "properties": {
+          "id": { "type": "string" },
+          "classification": { "type": "string" },
+          "decision": { "type": "string" },
+          "proof": { "type": "string" },
+          "risk": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

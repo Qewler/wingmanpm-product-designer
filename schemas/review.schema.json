@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wingmanpm.local/schemas/review.schema.json",
+  "title": "WingmanPM Product Designer visual review evidence",
+  "type": "object",
+  "required": ["status", "viewports", "checks"],
+  "properties": {
+    "status": { "enum": ["pending", "reviewed"] },
+    "reviewer": { "type": ["string", "null"] },
+    "reviewedAt": { "type": ["string", "null"], "format": "date-time" },
+    "sourceHash": { "type": ["string", "null"] },
+    "viewports": { "type": "array", "items": { "type": "integer" } },
+    "checks": {
+      "type": "object",
+      "required": ["keyboard", "zoom200", "reducedMotion", "longContent", "light", "dark", "axe", "responsiveStates"]
+    },
+    "notes": { "type": "string" }
+  }
+}

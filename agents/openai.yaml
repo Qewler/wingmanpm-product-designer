@@ -1,0 +1,7 @@
+interface:
+  display_name: "WingmanPM Product Designer"
+  short_description: "Design and verify polished SaaS product UI"
+  brand_color: "#3347B0"
+  default_prompt: "Use $wingmanpm-product-designer to design and verify this SaaS product interface."
+policy:
+  allow_implicit_invocation: true

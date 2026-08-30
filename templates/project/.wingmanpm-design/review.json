@@ -1,0 +1,18 @@
+{
+  "status": "pending",
+  "reviewer": null,
+  "reviewedAt": null,
+  "sourceHash": null,
+  "viewports": [390, 768, 1280, 1440],
+  "checks": {
+    "keyboard": false,
+    "zoom200": false,
+    "reducedMotion": false,
+    "longContent": false,
+    "light": false,
+    "dark": false,
+    "axe": false,
+    "responsiveStates": false
+  },
+  "notes": "Record only after direct visual and interaction review."
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wingmanpm.local/schemas/exceptions.schema.json",
+  "title": "WingmanPM Product Designer scoped exceptions",
+  "type": "object",
+  "required": ["exceptions"],
+  "properties": {
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ruleId", "target", "reason", "approver", "reviewDate"],
+        "properties": {
+          "ruleId": { "pattern": "^WPD[0-9-]+$" },
+          "target": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 12 },
+          "approver": { "type": "string", "minLength": 2 },
+          "reviewDate": { "type": "string", "format": "date" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

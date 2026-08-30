@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "skill": "wingmanpm-product-designer",
+  "version": "0.1.0-private.1",
+  "createdAt": "2026-08-30T10:09:41.440Z",
+  "project": ".",
+  "entries": [
+    {
+      "path": "design-system/COMPONENTS.md",
+      "ownership": "user",
+      "action": "created",
+      "hash": "dd8fab3634ca25bae3c6783a483dfdcc1e5cee2850b80c131255e6ee52300b11"
+    },
+    {
+      "path": "design-system/DESIGN.md",
+      "ownership": "user",
+      "action": "created",
+      "hash": "24e7bf7efffe7a384dd3520c5794055cf1f8f6a4cf64c85f98196f4381f43f52"
+    },
+    {
+      "path": "design-system/PRODUCT.md",
+      "ownership": "user",
+      "action": "created",
+      "hash": "5bcac978a9e881fbc5a275652cf1c4c521a3588836c340d1e13c1ffb9f67f872"
+    },
+    {
+      "path": "design-system/surfaces/index.md",
+      "ownership": "user",
+      "action": "created",
+      "hash": "453a51b16bc3176ada4cae8a1312723dbe21051210d4f82ffecca1c3d713a85b"
+    },
+    {
+      "path": "design-system/surfaces/marketing.md",
+      "ownership": "user",
+      "action": "created",
+      "hash": "56ac048929cf20d69bf749f16c653ea6d49fa7bcfdd261680ed922decb342f9f"
+    },
+    {
+      "path": "design-system/tokens/tokens.json",
+      "ownership": "user",
+      "action": "created",
+      "hash": "1ae0ab6e1735b0d8f975e340868ad1749875e29af695389eabd0a4578f4402af"
+    },
+    {
+      "path": ".wingmanpm-design/config.json",
+      "ownership": "managed",
+      "action": "created",
+      "hash": "0ebbd6c843a6e174dfb2195d61cd0781af21fe293429265137defc20a6d4bd7e"
+    },
+    {
+      "path": ".wingmanpm-design/exceptions.json",
+      "ownership": "managed",
+      "action": "created",
+      "hash": "584e697cce0eb005ea6f0037f5757f418c6cad912bcca8f486ed97c7cdfa7fe1"
+    },
+    {
+      "path": ".wingmanpm-design/review.json",
+      "ownership": "observed",
+      "action": "created",
+      "hash": "c46b77bda4232900d177e02395c62b694beccb974bdf5e01f396f387671fa714"
+    },
+    {
+      "path": "src/components/wingman-design/AccountPatterns.tsx",
+      "ownership": "seeded",
+      "action": "created",
+      "hash": "158ae856c2e96cc25e243c4f303fd235220be6daac9323a864ae4f8ce130f7ed"
+    },
+    {
+      "path": "src/components/wingman-design/AppShell.tsx",
+      "ownership": "seeded",
+      "action": "created",
+      "hash": "11fa07a5eaf0cab99261fae20a7c2b4410225b2bd8ab1924142d41f9a1072d53"
+    },
+    {
+      "path": "src/components/wingman-design/ProductWorkspace.tsx",
+      "ownership": "seeded",
+      "action": "created",
+      "hash": "33a6845d51a238621db4170266c5e850f7817e6bb8f39b8ab213cf480f6dac05"
+    },
+    {
+      "path": "src/components/wingman-design/StatePanel.tsx",
+      "ownership": "seeded",
+      "action": "created",
+      "hash": "1b56e92884004ad3a4b2749965b2503efc6c4799f858ad37be74ed1707905f5c"
+    },
+    {
+      "path": "src/components/wingman-design/TransparentAIReview.tsx",
+      "ownership": "seeded",
+      "action": "created",
+      "hash": "9ba9f88334653be195780fc103b52b410a07c95d8126e0c3a841bca22cd34b6a"
+    },
+    {
+      "path": "src/components/wingman-design/index.ts",
+      "ownership": "seeded",
+      "action": "created",
+      "hash": "298dbf4c0f81d3ee68950e573c5614ef06eb430bfd6bee624d0ecd76ac854d17"
+    },
+    {
+      "path": "src/components/wingman-design/system.css",
+      "ownership": "seeded",
+      "action": "created",
+      "hash": "a4e6dc257d73083ba59da02ccbe257eef634fd3a8f1c81b9549c468d1301f4cd"
+    },
+    {
+      "path": "src/stories/WingmanProduct.stories.tsx",
+      "ownership": "seeded",
+      "action": "created",
+      "hash": "272ae7bed1bf32ad9f31f6b0d6067dedde6f4d790874863d3c9537d7aba91907"
+    },
+    {
+      "path": ".storybook/main.ts",
+      "ownership": "seeded",
+      "action": "created",
+      "hash": "94d638173c75c30695abd95e84fba137943a60c6d576d4fc945f2b6dd480b2ed"
+    },
+    {
+      "path": ".storybook/preview.ts",
+      "ownership": "seeded",
+      "action": "created",
+      "hash": "0a753ea446d78226191f19f3e447c630a300044281f1bfc2c6022c837bb273f9"
+    },
+    {
+      "path": "tests/wingman-design/visual.spec.ts",
+      "ownership": "seeded",
+      "action": "created",
+      "hash": "6a95dcad088a532d002b0bb45f23e456a674d8bd6b52e02f6c51ee3e54db0097"
+    },
+    {
+      "path": "playwright.wingman.config.ts",
+      "ownership": "managed",
+      "action": "created",
+      "hash": "0571b57ad18b64aeccf09d7dc2327e014f850a4d4d294280863943e5ffc8117e"
+    },
+    {
+      "path": "design-system/tokens/tokens.css",
+      "ownership": "managed",
+      "action": "created",
+      "hash": "c27136af9af68f9e2be875ae0a7d3668326a6096486d4da7bf2e826a25c26f66"
+    },
+    {
+      "path": "design-system/tokens/tailwind.preset.mjs",
+      "ownership": "managed",
+      "action": "created",
+      "hash": "1cea04965e05a950f19a70dd30730c90fd4d2d0829c083c2a80b61d0d6324ecc"
+    },
+    {
+      "path": "design-system/tokens/shadcn.css",
+      "ownership": "managed",
+      "action": "created",
+      "hash": "93eab5ef00aac466b3e3cf6700269c15066958956f98f45c44ef7ecfd99ce050"
+    },
+    {
+      "path": ".wingmanpm-design/runtime/checker.mjs",
+      "ownership": "managed",
+      "action": "created",
+      "hash": "d2dd007349c81af46e0e7937dec4ede5ac3344942308c5e2ad1c8343bdb1831d"
+    },
+    {
+      "path": ".cursor/rules/wingmanpm-product-designer.mdc",
+      "ownership": "managed",
+      "action": "created",
+      "hash": "e848d9e9d6d9bace0dac3a54e8860b70d81fa5df199323dd8d42bb24515468b8"
+    }
+  ],
+  "adapters": [
+    {
+      "provider": "codex",
+      "path": "AGENTS.md",
+      "hash": "afe6f43ebedfe41233dbc523814564b6f85fad16487bf3c4b77b5af0a2df4525"
+    },
+    {
+      "provider": "claude",
+      "path": "CLAUDE.md",
+      "hash": "afe6f43ebedfe41233dbc523814564b6f85fad16487bf3c4b77b5af0a2df4525"
+    },
+    {
+      "provider": "cursor",
+      "path": ".cursor/rules/wingmanpm-product-designer.mdc",
+      "hash": "e848d9e9d6d9bace0dac3a54e8860b70d81fa5df199323dd8d42bb24515468b8"
+    }
+  ],
+  "packageScripts": [
+    {
+      "key": "design:check",
+      "value": "node .wingmanpm-design/runtime/checker.mjs --project .",
+      "previous": null
+    },
+    {
+      "key": "design:doctor",
+      "value": "wingman-design doctor --project .",
+      "previous": null
+    },
+    {
+      "key": "storybook",
+      "value": "storybook dev -p 6006",
+      "previous": null
+    },
+    {
+      "key": "build-storybook",
+      "value": "storybook build",
+      "previous": null
+    },
+    {
+      "key": "design:test:visual",
+      "value": "playwright test --config playwright.wingman.config.ts",
+      "previous": null
+    }
+  ],
+  "packageDependencies": [
+    {
+      "section": "devDependencies",
+      "key": "storybook",
+      "value": "^10.5.10"
+    },
+    {
+      "section": "devDependencies",
+      "key": "@storybook/react",
+      "value": "^10.5.10"
+    },
+    {
+      "section": "devDependencies",
+      "key": "@storybook/react-vite",
+      "value": "^10.5.10"
+    },
+    {
+      "section": "devDependencies",
+      "key": "vite",
+      "value": "8.0.16"
+    },
+    {
+      "section": "devDependencies",
+      "key": "@storybook/addon-a11y",
+      "value": "^10.5.10"
+    },
+    {
+      "section": "devDependencies",
+      "key": "@playwright/test",
+      "value": "^1.62.1"
+    },
+    {
+      "section": "devDependencies",
+      "key": "@axe-core/playwright",
+      "value": "^4.13.0"
+    }
+  ]
+}

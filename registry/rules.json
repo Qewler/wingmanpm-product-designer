@@ -1,0 +1,77 @@
+{
+  "version": "2026-08-30",
+  "entries": [
+    {
+      "id": "REF-AGENT-SKILL",
+      "domain": "portability",
+      "title": "Agent Skills specification",
+      "summary": "A skill uses a SKILL.md entry point with metadata and progressive references.",
+      "source": "https://agentskills.io/specification",
+      "sourceType": "official specification"
+    },
+    {
+      "id": "REF-DTCG",
+      "domain": "tokens",
+      "title": "DTCG stable format 2025.10",
+      "summary": "Design tokens use typed values and explicit references before platform compilation.",
+      "source": "https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/",
+      "sourceType": "W3C community report"
+    },
+    {
+      "id": "REF-WCAG22",
+      "domain": "accessibility",
+      "title": "Web Content Accessibility Guidelines 2.2",
+      "summary": "New and changed product interfaces must meet WCAG 2.2 AA, including focus, input, target, and status behavior.",
+      "source": "https://www.w3.org/TR/WCAG22/",
+      "sourceType": "W3C recommendation"
+    },
+    {
+      "id": "REF-REDUCED-MOTION",
+      "domain": "motion",
+      "title": "prefers-reduced-motion",
+      "summary": "Non-essential movement needs a reduced-motion alternative that preserves meaning and operation.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion",
+      "sourceType": "MDN platform reference"
+    },
+    {
+      "id": "REF-STORYBOOK-A11Y",
+      "domain": "verification",
+      "title": "Storybook accessibility testing",
+      "summary": "Component stories provide repeatable accessibility and state evidence during development and CI.",
+      "source": "https://storybook.js.org/docs/writing-tests/accessibility-testing",
+      "sourceType": "official documentation"
+    },
+    {
+      "id": "REF-PLAYWRIGHT-VISUAL",
+      "domain": "verification",
+      "title": "Playwright visual comparisons",
+      "summary": "Reviewed screenshots can detect visual drift across explicit browser and viewport conditions.",
+      "source": "https://playwright.dev/docs/test-snapshots",
+      "sourceType": "official documentation"
+    },
+    {
+      "id": "WPD-CARD-WALL",
+      "domain": "composition",
+      "title": "Use containment with intent",
+      "summary": "Repeated equal cards are a blocking heuristic when they replace page hierarchy rather than express contained objects or actions.",
+      "source": "wingmanpm://rules/composition/card-wall",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD-AI-APPROVAL",
+      "domain": "ai",
+      "title": "Transparent consequential AI",
+      "summary": "AI work exposes scope, progress, sources, uncertainty, errors, cancellation, and human approval before consequential actions.",
+      "source": "wingmanpm://rules/ai/human-approval",
+      "sourceType": "original WingmanPM rule"
+    },
+    {
+      "id": "WPD-MOTION-TIERS",
+      "domain": "motion",
+      "title": "Motion frequency determines strength",
+      "summary": "Repeated micro-motion stays short and restrained; strong choreography is reserved for rare explanatory moments.",
+      "source": "wingmanpm://rules/motion/tiers",
+      "sourceType": "original WingmanPM rule"
+    }
+  ]
+}

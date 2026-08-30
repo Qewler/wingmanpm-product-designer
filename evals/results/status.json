@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-08-30",
+  "releaseGate": "closed",
+  "agents": {
+    "codex": {
+      "status": "passed",
+      "scenarios": 8,
+      "result": "evals/results/codex.json"
+    },
+    "claude-code": {
+      "status": "not-run",
+      "reason": "No shareable benchmark result is recorded yet."
+    },
+    "cursor": {
+      "status": "not-run",
+      "reason": "No shareable benchmark result is recorded yet."
+    }
+  },
+  "nextGate": "Run the same read-only benchmark in Claude Code and Cursor, validate both result files, then review the cross-agent differences."
+}

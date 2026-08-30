@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "systemMode": "new-system",
+  "stack": "Next.js + React + Tailwind",
+  "goldenStack": true,
+  "requiresDarkTheme": true,
+  "aiSurfaces": true,
+  "legacyBaseline": false,
+  "scanRoots": ["src", "app", "pages", "components", "stories", "design-system/examples"],
+  "viewports": [390, 768, 1280, 1440],
+  "visualEvidenceMaxAgeDays": 30
+}

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "benchmarks": [
+    { "id": "greenfield", "task": "Generate a greenfield SaaS design system", "mustMention": ["three directions", "light", "dark", "four axes", "user choice"] },
+    { "id": "preserve", "task": "Extend an established UI without visual drift", "mustMention": ["inspect", "preserve", "existing"] },
+    { "id": "card-wall", "task": "Redesign a generic shadcn dashboard", "mustMention": ["card", "hierarchy", "containment"] },
+    { "id": "dense-data", "task": "Build a dense table, filters, and bulk actions", "mustMention": ["table", "filters", "bulk", "responsive"] },
+    { "id": "transparent-ai", "task": "Build a transparent AI workflow", "mustMention": ["sources", "uncertainty", "cancel", "approval"] },
+    { "id": "review-only", "task": "Review without changing code", "mustMention": ["read-only", "before", "after", "why"] },
+    { "id": "motion", "task": "Polish motion and reduced-motion behavior", "mustMention": ["interruptible", "reduced motion", "repeated", "rare"] },
+    { "id": "marketing", "task": "Build a secondary SaaS marketing surface", "mustMention": ["product truth", "proof", "primary action", "reduced motion"] }
+  ]
+}

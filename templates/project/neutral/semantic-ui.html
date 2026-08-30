@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Framework-neutral SaaS contract</title>
+  <link rel="stylesheet" href="../tokens/tokens.css">
+  <style>
+    body { margin: 0; color: var(--wpd-color-text); background: var(--wpd-color-canvas); font-family: system-ui, sans-serif; }
+    .shell { min-height: 100dvh; display: grid; grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr); }
+    nav { padding: var(--wpd-space-4); border-right: 1px solid var(--wpd-color-border); }
+    main { min-width: 0; padding: var(--wpd-space-6); }
+    button, a { min-height: 2.25rem; }
+    :focus-visible { outline: 3px solid var(--wpd-color-brand); outline-offset: 2px; }
+    @media (max-width: 47.9375rem) { .shell { grid-template-columns: 1fr; } nav { border-right: 0; border-bottom: 1px solid var(--wpd-color-border); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <nav aria-label="Primary"><strong>{{PRODUCT_NAME}}</strong><p><a href="#main" aria-current="page">Overview</a></p></nav>
+    <main id="main"><p>Framework-neutral reference</p><h1>Preserve the task across stacks</h1><p>Use semantic HTML, compiled tokens, complete states, and the detected framework's established patterns.</p><button type="button">Primary action</button></main>
+  </div>
+</body>
+</html>

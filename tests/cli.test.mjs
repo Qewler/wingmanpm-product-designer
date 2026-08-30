@@ -1,0 +1,178 @@
+import assert from 'node:assert/strict';
+import { appendFile, lstat, mkdir, mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { compileTokens } from '../src/tokens.mjs';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const cli = path.join(root, 'bin', 'wingman-design.mjs');
+
+function run(args, cwd) {
+  return spawnSync(process.execPath, [cli, ...args], { cwd, encoding: 'utf8' });
+}
+
+async function project(options = {}) {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'wingman-design-test-'));
+  const packageJson = options.neutral ? {
+    name: 'neutral-test', private: true, type: 'module', scripts: {}
+  } : {
+    name: 'golden-test', private: true, type: 'module', scripts: {},
+    dependencies: { next: '^16.3.3', react: '^19.2.8', tailwindcss: '^4.3.3', 'lucide-react': '^1.37.0' }
+  };
+  await writeFile(path.join(directory, 'package.json'), `${JSON.stringify(packageJson, null, 2)}\n`);
+  if (options.git) spawnSync('git', ['init', '-b', 'main'], { cwd: directory, encoding: 'utf8' });
+  return directory;
+}
+
+test('help lists the five lifecycle commands', () => {
+  const result = run(['--help'], root);
+  assert.equal(result.status, 0, result.stderr);
+  for (const command of ['install', 'init', 'check', 'doctor', 'uninstall']) assert.match(result.stdout, new RegExp(command));
+});
+
+test('init creates a complete golden-stack contract and is idempotent', async () => {
+  const directory = await project({ git: true });
+  await writeFile(path.join(directory, 'AGENTS.md'), 'Existing instructions stay.\n');
+  const first = run(['init', '--project', directory], root);
+  assert.equal(first.status, 0, first.stderr);
+  for (const relative of [
+    'design-system/PRODUCT.md', 'design-system/DESIGN.md', 'design-system/tokens/tokens.json',
+    'design-system/tokens/tokens.css', 'src/components/wingman-design/AppShell.tsx',
+    'src/stories/WingmanProduct.stories.tsx', '.storybook/main.ts',
+    '.wingmanpm-design/manifest.json', '.wingmanpm-design/runtime/checker.mjs',
+    '.cursor/rules/wingmanpm-product-designer.mdc', 'playwright.wingman.config.ts'
+  ]) assert.equal(await readFile(path.join(directory, relative), 'utf8').then(() => true), true, relative);
+  assert.match(await readFile(path.join(directory, 'AGENTS.md'), 'utf8'), /Existing instructions stay[\s\S]*wingmanpm-product-designer:start/);
+  await appendFile(path.join(directory, 'design-system', 'PRODUCT.md'), '\nUser-owned fact.\n');
+  const second = run(['init', '--project', directory], root);
+  assert.equal(second.status, 0, second.stderr);
+  assert.match(await readFile(path.join(directory, 'design-system', 'PRODUCT.md'), 'utf8'), /User-owned fact/);
+  const check = run(['check', '--project', directory, '--allow-pending-review'], root);
+  assert.equal(check.status, 0, check.stdout + check.stderr);
+  assert.match(check.stdout, /0 block/);
+});
+
+test('framework-neutral init creates semantic output without React files', async () => {
+  const directory = await project({ neutral: true });
+  const result = run(['init', '--project', directory], root);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(await readFile(path.join(directory, 'design-system', 'examples', 'semantic-ui.html'), 'utf8'), /Framework-neutral SaaS contract/);
+  const config = JSON.parse(await readFile(path.join(directory, '.wingmanpm-design', 'config.json'), 'utf8'));
+  assert.equal(config.goldenStack, false);
+});
+
+test('init preserves AGENTS symlinks and skips shared hooks in linked worktrees', async () => {
+  const directory = await project({ neutral: true });
+  await writeFile(path.join(directory, 'CLAUDE.md'), 'Shared project instructions.\n');
+  await symlink('CLAUDE.md', path.join(directory, 'AGENTS.md'));
+  await writeFile(path.join(directory, '.git'), `gitdir: ${path.join(os.tmpdir(), 'example-linked-worktree')}\n`);
+  const result = run(['init', '--project', directory, '--mode', 'preserve'], root);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal((await lstat(path.join(directory, 'AGENTS.md'))).isSymbolicLink(), true);
+  assert.match(await readFile(path.join(directory, 'CLAUDE.md'), 'utf8'), /Shared project instructions[\s\S]*wingmanpm-product-designer:start/);
+});
+
+test('preserve mode baselines old findings but blocks a new regression', async () => {
+  const directory = await project({ neutral: true });
+  await mkdir(path.join(directory, 'src'), { recursive: true });
+  const target = path.join(directory, 'src', 'legacy.tsx');
+  await writeFile(target, 'export const Legacy = () => <div className="transition-all">Legacy</div>;\n');
+  const initialized = run(['init', '--project', directory, '--mode', 'preserve'], root);
+  assert.equal(initialized.status, 0, initialized.stderr);
+  const clean = run(['check', '--project', directory, '--allow-pending-review'], root);
+  assert.equal(clean.status, 0, clean.stdout + clean.stderr);
+  assert.match(clean.stdout, /1 legacy/);
+  await appendFile(target, 'export const Regression = () => <div className="transition-all">New</div>;\n');
+  const blocked = run(['check', '--project', directory, '--allow-pending-review'], root);
+  assert.equal(blocked.status, 1);
+  assert.match(blocked.stdout, /WPD005/);
+});
+
+test('check blocks a deterministic violation and accepts a scoped dated exception', async () => {
+  const directory = await project();
+  assert.equal(run(['init', '--project', directory], root).status, 0);
+  const target = path.join(directory, 'src', 'components', 'wingman-design', 'Violation.tsx');
+  await writeFile(target, 'export const Bad = () => <div className="transition-all">Bad</div>;\n');
+  const blocked = run(['check', '--project', directory, '--allow-pending-review'], root);
+  assert.equal(blocked.status, 1);
+  assert.match(blocked.stdout, /WPD005/);
+  await writeFile(path.join(directory, '.wingmanpm-design', 'exceptions.json'), `${JSON.stringify({
+    exceptions: [{
+      ruleId: 'WPD005', target: 'src/components/wingman-design/Violation.tsx',
+      reason: 'Temporary migration of an established interaction.', approver: 'Julius', reviewDate: '2099-12-31'
+    }]
+  }, null, 2)}\n`);
+  const excepted = run(['check', '--project', directory, '--allow-pending-review'], root);
+  assert.equal(excepted.status, 0, excepted.stdout + excepted.stderr);
+  assert.match(excepted.stdout, /1 excepted/);
+});
+
+test('doctor detects generated token drift', async () => {
+  const directory = await project();
+  assert.equal(run(['init', '--project', directory], root).status, 0);
+  await appendFile(path.join(directory, 'design-system', 'tokens', 'tokens.css'), '\n/* drift */\n');
+  const result = run(['doctor', '--project', directory], root);
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /FAIL tokens:tokens.css/);
+});
+
+test('doctor detects a stale project checker runtime', async () => {
+  const directory = await project();
+  assert.equal(run(['init', '--project', directory], root).status, 0);
+  await appendFile(path.join(directory, '.wingmanpm-design', 'runtime', 'checker.mjs'), '\n// stale runtime\n');
+  const result = run(['doctor', '--project', directory], root);
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /FAIL runtime/);
+});
+
+test('init refreshes an unchanged stale checker runtime', async () => {
+  const directory = await project();
+  assert.equal(run(['init', '--project', directory], root).status, 0);
+  const manifestFile = path.join(directory, '.wingmanpm-design', 'manifest.json');
+  const manifest = JSON.parse(await readFile(manifestFile, 'utf8'));
+  const runtime = path.join(directory, '.wingmanpm-design', 'runtime', 'checker.mjs');
+  await writeFile(runtime, '// old managed runtime\n');
+  const entry = manifest.entries.find((item) => item.path === '.wingmanpm-design/runtime/checker.mjs');
+  entry.hash = (await import('node:crypto')).createHash('sha256').update('// old managed runtime\n').digest('hex');
+  await writeFile(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
+  const refreshed = run(['init', '--project', directory], root);
+  assert.equal(refreshed.status, 0, refreshed.stderr);
+  assert.match(refreshed.stdout, /runtime refreshed/);
+  assert.match(await readFile(runtime, 'utf8'), /export async function runChecks/);
+});
+
+test('project uninstall removes only managed files and preserves user and seeded work', async () => {
+  const directory = await project({ git: true });
+  await writeFile(path.join(directory, 'AGENTS.md'), 'Keep this instruction.\n');
+  assert.equal(run(['init', '--project', directory], root).status, 0);
+  const result = run(['uninstall', '--project', directory], root);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal((await readFile(path.join(directory, 'AGENTS.md'), 'utf8')).trim(), 'Keep this instruction.');
+  assert.match(await readFile(path.join(directory, 'design-system', 'PRODUCT.md'), 'utf8'), /Product Truth/);
+  assert.match(await readFile(path.join(directory, 'src', 'components', 'wingman-design', 'AppShell.tsx'), 'utf8'), /AppShell/);
+  await assert.rejects(readFile(path.join(directory, '.wingmanpm-design', 'runtime', 'checker.mjs'), 'utf8'));
+});
+
+test('project-scoped skill install and uninstall preserve changed installed files', async () => {
+  const directory = await project({ neutral: true });
+  const install = run(['install', '--agent', 'codex', '--scope', 'project', '--project', directory], root);
+  assert.equal(install.status, 0, install.stderr);
+  const skill = path.join(directory, '.agents', 'skills', 'wingmanpm-product-designer', 'SKILL.md');
+  await appendFile(skill, '\nLocal change.\n');
+  const uninstall = run(['uninstall', '--agent', 'codex', '--scope', 'project', '--project', directory], root);
+  assert.equal(uninstall.status, 0, uninstall.stderr);
+  assert.match(uninstall.stdout, /conflict/);
+  assert.match(await readFile(skill, 'utf8'), /Local change/);
+});
+
+test('DTCG token compiler creates theme, Tailwind, and shadcn outputs', async () => {
+  const tokens = JSON.parse(await readFile(path.join(root, 'templates', 'design-system', 'tokens', 'tokens.json'), 'utf8'));
+  const compiled = compileTokens(tokens);
+  assert.match(compiled.css, /--wpd-color-canvas/);
+  assert.match(compiled.css, /data-theme="dark"/);
+  assert.match(compiled.tailwind, /transitionDuration/);
+  assert.match(compiled.shadcn, /--background/);
+});
