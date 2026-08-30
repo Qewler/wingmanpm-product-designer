@@ -10,7 +10,7 @@ Created by [Julius (@Qewler)](https://github.com/Qewler), creator of
 
 - Private GitHub development build
 - GitHub owner: [@Qewler](https://github.com/Qewler)
-- Planned repository: `Qewler/wingmanpm-product-designer`
+- Repository: [Qewler/wingmanpm-product-designer](https://github.com/Qewler/wingmanpm-product-designer)
 - Private GitHub repository; no public release
 - No npm publication
 - Apache 2.0 license prepared for a later release
@@ -85,7 +85,8 @@ npm run check:share
 
 The check rejects absolute home and temporary paths, secret-shaped values,
 tracked environment or OS files, PNG metadata, generated build directories,
-Git remotes, a non-private package, and local data left in Git history.
+unexpected Git remotes, a non-private package, and local data left in Git
+history.
 
 ## Repository map
 

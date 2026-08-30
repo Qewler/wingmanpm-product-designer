@@ -82,7 +82,23 @@ if (packageJson.private !== true) failures.push('package.json must stay private 
 for (const excluded of ['evals', 'fixtures', 'tests']) {
   if ((packageJson.files ?? []).some((entry) => entry.replace(/\/$/, '') === excluded)) failures.push(`npm package allowlist includes ${excluded}`);
 }
-if (git(['remote']).trim()) failures.push('A Git remote exists during the private version-one stage');
+const approvedRemoteUrls = new Set([
+  'https://github.com/Qewler/wingmanpm-product-designer',
+  'https://github.com/Qewler/wingmanpm-product-designer.git',
+  'git@github.com:Qewler/wingmanpm-product-designer',
+  'git@github.com:Qewler/wingmanpm-product-designer.git'
+]);
+const remoteNames = git(['remote']).trim().split('\n').filter(Boolean);
+for (const remoteName of remoteNames) {
+  if (remoteName !== 'origin') failures.push(`Unexpected Git remote name: ${remoteName}`);
+  const remoteUrls = new Set([
+    ...git(['remote', 'get-url', '--all', remoteName]).trim().split('\n'),
+    ...git(['remote', 'get-url', '--push', '--all', remoteName]).trim().split('\n')
+  ].filter(Boolean));
+  for (const remoteUrl of remoteUrls) {
+    if (!approvedRemoteUrls.has(remoteUrl)) failures.push(`Unexpected Git remote URL for ${remoteName}: ${remoteUrl}`);
+  }
+}
 if (git(['status', '--porcelain']).trim()) failures.push('Git working tree is not clean');
 
 const xattr = spawnSync('xattr', ['-h'], { encoding: 'utf8' });
