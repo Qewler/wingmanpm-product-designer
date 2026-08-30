@@ -40,19 +40,40 @@ async function auditVisibleStructure(page: Page) {
       const rect = element.getBoundingClientRect();
       return rect.width > 0 && rect.height > 0;
     };
+    const visibleText = (element: Element) => {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      const parts: string[] = [];
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const parent = node.parentElement;
+        if (!parent || !visible(parent)) continue;
+        const style = getComputedStyle(parent);
+        if (style.clipPath === 'inset(50%)' || style.clip !== 'auto') continue;
+        parts.push(node.textContent ?? '');
+      }
+      return normalize(parts.join(' '));
+    };
     const explicit = Array.from(document.querySelectorAll('[data-wingman-surface-root]')).filter(visible);
     const fallback = document.querySelector('#storybook-root');
-    const candidates = explicit.length ? explicit : fallback && visible(fallback) ? [fallback] : [];
-    const roots = candidates.filter((candidate) => !candidates.some((other) => other !== candidate && other.contains(candidate)));
+    const roots = explicit.length ? explicit : fallback && visible(fallback) ? [fallback] : [];
+    const belongsToRoot = (element: Element, root: Element) => explicit.length
+      ? element.closest('[data-wingman-surface-root]') === root
+      : element.closest('#storybook-root') === root;
+    const portalFallbackRoot = roots[0] ?? null;
     const violations: string[] = [];
+    const headingSelector = 'h1,h2,h3,h4,h5,h6,[role="heading"][aria-level]';
 
     for (const root of roots) {
       const headings = new Set<string>();
-      for (const heading of Array.from(root.querySelectorAll('h1,h2,h3,h4,h5,h6')).filter(visible)) {
-        if (heading.closest('[data-wingman-surface-root],#storybook-root') !== root) continue;
-        const text = normalize(heading.textContent);
+      const rootHeadings = [
+        ...(root.matches(headingSelector) ? [root] : []),
+        ...Array.from(root.querySelectorAll(headingSelector))
+      ];
+      for (const heading of rootHeadings.filter(visible)) {
+        if (!belongsToRoot(heading, root)) continue;
+        const text = visibleText(heading);
         if (!text) continue;
-        const key = `${heading.tagName.toLowerCase()}:${text}`;
+        const level = heading.tagName.match(/^H([1-6])$/)?.[1] ?? heading.getAttribute('aria-level');
+        const key = `h${level}:${text}`;
         if (headings.has(key)) violations.push(`duplicate heading ${key}`);
         headings.add(key);
       }
@@ -60,15 +81,19 @@ async function auditVisibleStructure(page: Page) {
       const markedShells = [
         ...(root.matches('.wpd-shell,[data-wingman-shell]') ? [root] : []),
         ...Array.from(root.querySelectorAll('.wpd-shell,[data-wingman-shell]'))
-      ].filter(visible);
+      ].filter(visible).filter((shell) => belongsToRoot(shell, root));
       const shells = markedShells.length ? markedShells : [root];
       for (const shell of shells) {
         const marked = shell.matches('.wpd-shell,[data-wingman-shell]');
-        const landmarks = Array.from(shell.querySelectorAll('header,footer,[role="banner"],[role="contentinfo"]'))
+        const landmarks = [
+          ...(shell.matches('header,footer,[role="banner"],[role="contentinfo"]') ? [shell] : []),
+          ...Array.from(shell.querySelectorAll('header,footer,[role="banner"],[role="contentinfo"]'))
+        ]
           .filter(visible)
+          .filter((landmark) => belongsToRoot(landmark, root))
           .filter((landmark) => !marked || landmark.closest('.wpd-shell,[data-wingman-shell]') === shell)
           .filter((landmark) => {
-            const container = landmark.parentElement?.closest('main,article,section,aside,dialog,[role="dialog"]');
+            const container = landmark.parentElement?.closest('main,article,section,aside,dialog,[role="dialog"],[role="alertdialog"]');
             return !container || !shell.contains(container);
           });
         const banners = new Set(landmarks.filter((item) => item.tagName === 'HEADER' || item.getAttribute('role') === 'banner'));
@@ -77,28 +102,34 @@ async function auditVisibleStructure(page: Page) {
         if (footers.size > 1) violations.push(`shell has ${footers.size} top-level contentinfo landmarks`);
       }
 
-      for (const dialog of Array.from(root.querySelectorAll('dialog,[role="dialog"]')).filter(visible)) {
+      const dialogs = Array.from(document.querySelectorAll('dialog,[role="dialog"],[role="alertdialog"]'))
+        .filter(visible)
+        .filter((dialog) => {
+          const owner = dialog.closest('[data-wingman-surface-root]');
+          if (owner) return owner === root;
+          const ownerId = dialog.getAttribute('data-wingman-surface-owner');
+          if (ownerId) return ownerId === root.id || ownerId === root.getAttribute('data-wingman-surface-root');
+          return root === portalFallbackRoot;
+        });
+      for (const dialog of dialogs) {
         const controls = Array.from(dialog.querySelectorAll('button,[role="button"],[data-slot="dialog-close"],[data-dialog-close],[data-radix-dialog-close]'))
           .filter(visible)
-          .filter((control) => control.closest('dialog,[role="dialog"]') === dialog)
+          .filter((control) => control.closest('dialog,[role="dialog"],[role="alertdialog"]') === dialog)
           .filter((control) => {
-            const action = normalize(`${control.getAttribute('data-action')} ${control.getAttribute('aria-label')}`);
-            if (/filter|chip|clear|cancel|reject/.test(action)) return false;
-            if (control.matches('[data-slot="dialog-close"],[data-dialog-close],[data-radix-dialog-close]')) return true;
-            const name = normalize(control.getAttribute('aria-label') || control.getAttribute('title') || control.textContent);
-            if (!/^(close|dismiss)\b/.test(name)) return false;
-            const icon = control.querySelector('svg[data-lucide="x"],.lucide-x,[data-icon="x"],[data-testid*="close" i]');
-            const walker = document.createTreeWalker(control, NodeFilter.SHOW_TEXT);
-            const parts: string[] = [];
-            for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-              const parent = node.parentElement;
-              if (!parent || !visible(parent)) continue;
-              const style = getComputedStyle(parent);
-              if (style.clipPath === 'inset(50%)' || style.clip !== 'auto') continue;
-              parts.push(node.textContent ?? '');
-            }
-            const visibleText = normalize(parts.join(' ')).replace(String.fromCodePoint(0xd7), '').replace(/^x$/, '');
-            return Boolean(icon && !visibleText);
+            const labelledBy = (control.getAttribute('aria-labelledby') ?? '').split(/\s+/).filter(Boolean)
+              .map((id) => document.getElementById(id)?.textContent ?? '').join(' ');
+            const name = normalize(control.getAttribute('aria-label') || labelledBy || control.getAttribute('title') || control.textContent);
+            const action = normalize(`${control.getAttribute('data-action')} ${control.getAttribute('data-testid')} ${name}`);
+            if (/filter|chip|clear|cancel|reject|remove/.test(action)) return false;
+            const marked = control.matches('[data-slot="dialog-close"],[data-dialog-close],[data-radix-dialog-close]');
+            const named = /^(close|dismiss)\b/.test(name);
+            const rawText = visibleText(control);
+            const glyphs = [0x78, 0xd7, 0x2715, 0x2716].map((point) => String.fromCodePoint(point));
+            const visibleWords = normalize(glyphs.reduce((value, glyph) => value.split(glyph).join(' '), rawText));
+            const explicitX = Boolean(control.querySelector('svg[data-lucide="x"],.lucide-x,[data-icon="x"],svg[data-testid*="close" i]')) || glyphs.some((glyph) => rawText.includes(glyph));
+            if (!marked && !named && !explicitX) return false;
+            const icon = explicitX || ((marked || named) && Boolean(control.querySelector('svg')));
+            return icon && !visibleWords;
           });
         if (new Set(controls).size > 1) violations.push(`dialog has ${controls.length} icon-only close controls`);
       }
@@ -109,7 +140,8 @@ async function auditVisibleStructure(page: Page) {
 
 async function exerciseCustomComboboxes(page: Page) {
   const failures: string[] = [];
-  const controls = page.locator('[role="combobox"]:visible:not(select):not([aria-disabled="true"])');
+  let candidateCount = 0;
+  const controls = page.locator('[role="combobox"]:visible:not(select):not([disabled]):not([aria-disabled="true"]),button[aria-haspopup="listbox"]:visible:not([disabled]):not([aria-disabled="true"])');
   for (let index = 0; index < await controls.count(); index += 1) {
     const control = controls.nth(index);
     const target = await control.getAttribute('aria-controls') ?? await control.getAttribute('aria-owns');
@@ -120,11 +152,12 @@ async function exerciseCustomComboboxes(page: Page) {
     if (await control.getAttribute('aria-expanded') !== 'true') await control.click();
     const listbox = page.locator(`[id=${JSON.stringify(target)}]`);
     await expect(listbox).toBeVisible();
-    const options = listbox.locator('[role="option"]:visible:not([aria-disabled="true"])');
+    const options = listbox.locator('[role="option"]:visible:not([disabled]):not([aria-disabled="true"])');
     const optionCount = await options.count();
     if (optionCount > 0) {
       const auditState = async (state: string) => {
         const contrast = await auditDropdownContrast(page);
+        candidateCount += contrast.candidateCount;
         failures.push(...contrast.failures.map((failure) => `${state}: ${failure}`));
         if (contrast.candidateCount === 0) failures.push(`${state}: custom combobox ${target} produced no contrast candidates`);
       };
@@ -133,9 +166,11 @@ async function exerciseCustomComboboxes(page: Page) {
       await auditState('hover');
       await control.press('ArrowDown');
       const activeId = await control.getAttribute('aria-activedescendant');
-      if (activeId && !await page.locator(`[id=${JSON.stringify(activeId)}]`).isVisible()) {
-        failures.push(`custom combobox ${target} has no visible keyboard-active option`);
-      }
+      const activeById = activeId
+        ? page.locator(`[id=${JSON.stringify(activeId)}][role="option"]:visible:not([disabled]):not([aria-disabled="true"])`)
+        : null;
+      const activeByFocus = page.locator('[role="option"]:focus:visible:not([disabled]):not([aria-disabled="true"])');
+      if ((!activeById || await activeById.count() === 0) && await activeByFocus.count() === 0) failures.push(`custom combobox ${target} has no visible keyboard-active option`);
       await auditState('keyboard-active');
     } else {
       failures.push(`custom combobox ${target} produced no enabled options`);
@@ -145,7 +180,7 @@ async function exerciseCustomComboboxes(page: Page) {
       failures.push(`custom combobox ${target} did not close with Escape`);
     }
   }
-  return failures;
+  return { failures, candidateCount };
 }
 
 async function auditDropdownContrast(page: Page) {
@@ -196,24 +231,43 @@ async function auditDropdownContrast(page: Page) {
       return (bright + 0.05) / (dark + 0.05);
     };
     const failures: string[] = [];
-    const candidates: Array<{ element: Element; label: string }> = [];
+    const candidates: Array<{ element: Element; label: string; fallback?: Element | null }> = [];
+    const addCandidate = (element: Element, label: string, fallback?: Element | null) => {
+      candidates.push({ element, label, fallback });
+      for (const descendant of Array.from(element.querySelectorAll('*')).filter(visible)) {
+        const hasDirectText = Array.from(descendant.childNodes).some((node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim());
+        if (hasDirectText) candidates.push({ element: descendant, label: `${label} text`, fallback });
+      }
+    };
     const native = Array.from(document.querySelectorAll('select:not(:disabled)')).filter(visible);
-    const custom = Array.from(document.querySelectorAll('[role="combobox"]:not([aria-disabled="true"])')).filter(visible);
+    const datalistInputs = Array.from(document.querySelectorAll('input[list]:not(:disabled)')).filter(visible);
+    const custom = Array.from(document.querySelectorAll('[role="combobox"]:not([disabled]):not([aria-disabled="true"]),button[aria-haspopup="listbox"]:not([disabled]):not([aria-disabled="true"])')).filter(visible);
+    const listboxes = Array.from(document.querySelectorAll('[role="listbox"]:not([aria-disabled="true"])')).filter(visible);
     for (const select of native) {
-      candidates.push({ element: select, label: 'native select current value' });
-      for (const option of Array.from(select.querySelectorAll('option:not(:disabled)'))) {
-        candidates.push({ element: option, label: `native option ${option.textContent?.trim() ?? ''}` });
+      addCandidate(select, 'native select current value');
+      for (const option of Array.from(select.querySelectorAll('option')).filter((item) => !item.disabled && !item.closest('optgroup[disabled]'))) {
+        addCandidate(option, `native option ${option.textContent?.trim() ?? ''}`, select);
       }
     }
-    for (const combobox of custom) candidates.push({ element: combobox, label: 'custom combobox current value' });
-    for (const option of Array.from(document.querySelectorAll('[role="option"]:not([aria-disabled="true"])')).filter(visible)) {
-      candidates.push({ element: option, label: `custom option ${option.textContent?.trim() ?? ''}` });
+    for (const input of datalistInputs) {
+      addCandidate(input, 'native datalist current value');
+      const listId = input.getAttribute('list');
+      const datalist = listId ? document.getElementById(listId) : null;
+      for (const option of Array.from(datalist?.querySelectorAll('option') ?? []).filter((item) => !item.disabled && !item.closest('optgroup[disabled]'))) {
+        addCandidate(option, `native datalist option ${option.getAttribute('value') ?? option.textContent?.trim() ?? ''}`, input);
+      }
+    }
+    for (const combobox of custom) addCandidate(combobox, 'custom combobox current value');
+    for (const listbox of listboxes) addCandidate(listbox, 'standalone listbox');
+    for (const option of Array.from(document.querySelectorAll('[role="option"]:not([disabled]):not([aria-disabled="true"])'))
+      .filter(visible).filter((item) => !item.parentElement?.closest('[aria-disabled="true"],[disabled]'))) {
+      addCandidate(option, `custom option ${option.textContent?.trim() ?? ''}`);
     }
     for (const candidate of candidates) {
-      const fallback = candidate.element instanceof HTMLOptionElement ? candidate.element.closest('select') : null;
+      const fallback = candidate.fallback ?? (candidate.element instanceof HTMLOptionElement ? candidate.element.closest('select') : null);
       const style = getComputedStyle(candidate.element);
-      const text = color(style.color) ?? (fallback ? color(getComputedStyle(fallback).color) : null);
-      const back = background(candidate.element) ?? (fallback ? background(fallback) : null);
+      const text = fallback ? color(getComputedStyle(fallback).color) : color(style.color);
+      const back = fallback ? background(fallback) : background(candidate.element);
       if (!text || !back || back[3] < 0.999) {
         failures.push(`${candidate.label} has an unresolved or gradient color`);
         continue;
@@ -222,7 +276,7 @@ async function auditDropdownContrast(page: Page) {
       const contrast = ratio(effectiveText, back);
       if (contrast < 4.5) failures.push(`${candidate.label} contrast is ${contrast.toFixed(2)}:1`);
     }
-    return { dropdownCount: new Set([...native, ...custom]).size, candidateCount: candidates.length, failures };
+    return { dropdownCount: new Set([...native, ...datalistInputs, ...custom, ...listboxes]).size, candidateCount: candidates.length, failures };
   });
 }
 
@@ -265,20 +319,34 @@ for (const story of focusedStories) {
   }
 }
 
-test('WPD022 and WPD023 audit every Storybook story in light and dark', async ({ page }) => {
+test('WPD022 and WPD023 audit every Storybook story in light and dark', async ({ page }, testInfo) => {
   test.setTimeout(600_000);
   const stories = await storyIds(page);
   expect(stories.length).toBeGreaterThan(0);
+  let dropdownCandidateCount = 0;
   for (const story of stories) {
     for (const theme of ['light', 'dark'] as const) {
       await openStory(page, story, theme);
+      await page.waitForTimeout(300);
       const structureViolations = await auditVisibleStructure(page);
       expect(structureViolations, `${story} ${theme}`).toEqual([]);
-      const behaviorFailures = await exerciseCustomComboboxes(page);
-      expect(behaviorFailures, `${story} ${theme}`).toEqual([]);
+      const behavior = await exerciseCustomComboboxes(page);
+      dropdownCandidateCount += behavior.candidateCount;
+      expect(behavior.failures, `${story} ${theme}`).toEqual([]);
       const contrast = await auditDropdownContrast(page);
+      dropdownCandidateCount += contrast.candidateCount;
       expect(contrast.failures, `${story} ${theme}`).toEqual([]);
       if (contrast.dropdownCount > 0) expect(contrast.candidateCount, `${story} ${theme}`).toBeGreaterThan(0);
     }
   }
+  await testInfo.attach('wingman-browser-audit', {
+    body: JSON.stringify({
+      storyCount: stories.length,
+      themes: ['light', 'dark'],
+      structureUnique: true,
+      dropdownContrast: true,
+      dropdownCandidateCount
+    }),
+    contentType: 'application/json'
+  });
 });

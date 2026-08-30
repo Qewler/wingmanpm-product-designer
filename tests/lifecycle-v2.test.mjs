@@ -6,6 +6,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { hashReviewSources } from '../src/checker.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(root, 'bin', 'wingman-design.mjs');
@@ -36,6 +37,14 @@ async function json(file) {
   return JSON.parse(await readFile(file, 'utf8'));
 }
 
+async function writePassedBrowserEvidence(directory, dropdownCandidateCount = 1) {
+  await writeFile(path.join(directory, '.wingmanpm-design', 'browser-evidence.json'), `${JSON.stringify({
+    schemaVersion: 1, status: 'passed', sourceHash: await hashReviewSources(directory), completedAt: new Date().toISOString(),
+    tests: { passed: 1, failed: 0, skipped: 0 }, storyCount: 1, themes: ['light', 'dark'],
+    structureUnique: true, dropdownContrast: true, dropdownCandidateCount
+  }, null, 2)}\n`);
+}
+
 async function snapshot(files) {
   return Object.fromEntries(await Promise.all(files.map(async (file) => {
     try {
@@ -61,21 +70,28 @@ test('fresh init records v2 ownership, runtime assets, clean checks, and a clean
   assert.equal(manifest.version, '0.2.0-private.2');
   assert.equal(manifest.entries.find(({ path: entry }) => entry === 'design-system/tables/README.md')?.ownership, 'user');
   assert.equal(manifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/table-inventory.json')?.ownership, 'observed');
+  assert.equal(manifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/browser-evidence.json')?.ownership, 'observed');
 
   for (const relative of [
     '.wingmanpm-design/runtime/checker.mjs',
+    '.wingmanpm-design/runtime/browser-reporter.mjs',
     '.wingmanpm-design/runtime/rules.json',
     '.wingmanpm-design/runtime/schemas/config.schema.json',
+    '.wingmanpm-design/runtime/schemas/browser-evidence.schema.json',
     '.wingmanpm-design/runtime/schemas/commands.schema.json',
     '.wingmanpm-design/runtime/schemas/table-contract.schema.json'
   ]) assert.equal(Boolean(await readFile(path.join(directory, relative), 'utf8')), true, relative);
+  assert.match(await readFile(path.join(directory, 'playwright.wingman.config.ts'), 'utf8'), /browser-reporter\.mjs/);
 
+  await writePassedBrowserEvidence(directory);
   const checked = run(['check', '--project', directory, '--allow-pending-review']);
   assert.equal(checked.status, 0, checked.stdout + checked.stderr);
   const doctor = run(['doctor', '--project', directory]);
   assert.equal(doctor.status, 0, doctor.stdout + doctor.stderr);
   assert.match(doctor.stdout, /PASS manifest-version/);
   assert.match(doctor.stdout, /PASS table-inventory-ownership/);
+  assert.match(doctor.stdout, /PASS browser-evidence/);
+  assert.match(doctor.stdout, /PASS browser-evidence-ownership/);
 });
 
 test('doctor describes React projects without the golden stack truthfully', async () => {
@@ -94,6 +110,7 @@ test('upgrade dry-run is read-only and actual upgrade is safe and idempotent', a
   const inventoryFile = path.join(directory, '.wingmanpm-design', 'table-inventory.json');
   const checkerFile = path.join(directory, '.wingmanpm-design', 'runtime', 'checker.mjs');
   const commandSchema = path.join(directory, '.wingmanpm-design', 'runtime', 'schemas', 'commands.schema.json');
+  const playwrightFile = path.join(directory, 'playwright.wingman.config.ts');
 
   const config = await json(configFile);
   config.schemaVersion = 1;
@@ -106,15 +123,19 @@ test('upgrade dry-run is read-only and actual upgrade is safe and idempotent', a
   const oldRuntime = '// managed v1 checker\n';
   await writeFile(checkerFile, oldRuntime);
   manifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/runtime/checker.mjs').hash = hash(oldRuntime);
+  const oldPlaywright = (await readFile(playwrightFile, 'utf8')).replace(/^\s*reporter:.*\n/m, '');
+  await writeFile(playwrightFile, oldPlaywright);
+  manifest.entries.find(({ path: entry }) => entry === 'playwright.wingman.config.ts').hash = hash(oldPlaywright);
   await rm(commandSchema);
   await writeFile(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
 
-  const tracked = [configFile, manifestFile, inventoryFile, checkerFile, commandSchema];
+  const tracked = [configFile, manifestFile, inventoryFile, checkerFile, commandSchema, playwrightFile];
   const beforeDryRun = await snapshot(tracked);
   const dryRun = run(['upgrade', '--project', directory, '--dry-run']);
   assert.equal(dryRun.status, 0, dryRun.stderr);
   assert.match(dryRun.stdout, /REFRESH \.wingmanpm-design\/runtime\/checker\.mjs/);
   assert.match(dryRun.stdout, /CREATE \.wingmanpm-design\/runtime\/schemas\/commands\.schema\.json/);
+  assert.match(dryRun.stdout, /REFRESH playwright\.wingman\.config\.ts/);
   assert.deepEqual(await snapshot(tracked), beforeDryRun);
 
   const upgraded = run(['upgrade', '--project', directory]);
@@ -124,6 +145,7 @@ test('upgrade dry-run is read-only and actual upgrade is safe and idempotent', a
   assert.equal(typeof (await json(configFile)).legacyBaseline, 'boolean');
   assert.equal((await json(manifestFile)).schemaVersion, 2);
   assert.match(await readFile(checkerFile, 'utf8'), /export async function runChecks/);
+  assert.match(await readFile(playwrightFile, 'utf8'), /browser-reporter\.mjs/);
   assert.equal((await json(commandSchema)).title, 'WingmanPM Product Designer command registry');
 
   const afterUpgrade = await snapshot(tracked);
@@ -171,6 +193,7 @@ test('v1 upgrade snapshots legacy table sources and never refreshes their baseli
   assert.equal(legacy.status, 'legacy');
   assert.equal(legacy.sourceHash, hash(source));
 
+  await writePassedBrowserEvidence(directory);
   const unchanged = run(['check', '--project', directory, '--allow-pending-review']);
   assert.equal(unchanged.status, 0, unchanged.stdout + unchanged.stderr);
   assert.match(unchanged.stdout, /WARN WPD018 .*unchanged legacy/);
@@ -262,6 +285,15 @@ test('review confirmations adapt to work and editable table contracts', async ()
   ]);
   assert.equal(withoutTable.status, 1);
   assert.match(withoutTable.stderr, /tableEditing/);
+
+  const withoutEvidence = run([
+    'check', '--record-review', '--project', directory, '--reviewer', 'Julius',
+    '--confirm', [...baseChecks, ...tableChecks, 'tableEditing'].join(',')
+  ]);
+  assert.equal(withoutEvidence.status, 1);
+  assert.match(withoutEvidence.stderr, /Machine-written browser evidence is missing/);
+
+  await writePassedBrowserEvidence(directory, 4);
 
   const complete = run([
     'check', '--record-review', '--project', directory, '--reviewer', 'Julius',

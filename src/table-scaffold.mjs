@@ -241,6 +241,9 @@ function storySource(tableId, profile) {
   const editor = profile === 'editable'
     ? ", editor: { type: 'text', validate: (value: unknown) => String(value ?? '').trim() ? null : 'Name is required.' }"
     : '';
+  const statusEditor = profile === 'editable'
+    ? ", editor: { type: 'select', options: [{ label: 'Ready', value: 'Ready' }, { label: 'In progress', value: 'In progress' }, { label: 'Blocked', value: 'Blocked' }] }"
+    : '';
   const editHandler = profile === 'editable' ? `
         onCommitEdit={async ({ rowId, columnId, value, previousValue }) => {
           if (String(value).toLocaleLowerCase() === 'reject') throw new Error('Sample rejected save. Retry or cancel.');
@@ -277,7 +280,7 @@ const thousandRows: SampleRow[] = Array.from({ length: 1000 }, (_, index) => ({
 }));
 const columns: Array<WingmanDataTableColumn<SampleRow>> = [
   { id: 'name', label: 'Name', description: 'The stable item identity.', accessor: 'name', required: true, hideable: false, reorderable: false, sortable: true, minWidth: 180, defaultWidth: 280, maxWidth: 560, fullValue: 'wrap'${editor} },
-  { id: 'status', label: 'Status', description: 'The current workflow state.', accessor: 'status', sortable: true, minWidth: 112, defaultWidth: 144, maxWidth: 220, fullValue: 'wrap' },
+  { id: 'status', label: 'Status', description: 'The current workflow state.', accessor: 'status', sortable: true, minWidth: 112, defaultWidth: 144, maxWidth: 220, fullValue: 'wrap'${statusEditor} },
   { id: 'owner', label: 'Owner', description: 'The person accountable for the next action.', accessor: 'owner', sortable: true, minWidth: 136, defaultWidth: 184, maxWidth: 320, fullValue: 'focus-tooltip' }
 ];
 const filterDefinitions: WingmanTableFilterDefinition[] = [{
@@ -764,20 +767,28 @@ async function tableSelectContrast(page: Page) {
       return (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) / (Math.min(foregroundLuminance, backgroundLuminance) + 0.05);
     };
     const root = table.closest('.wpd-data-table, .wpd-static-table');
-    if (!root) return { selectCount: 0, candidateCount: 0, failures: [{ label: 'table root', reason: 'missing Wingman table boundary' }] };
+    if (!root) return { selectCount: 0, candidateCount: 0, controlClasses: [], failures: [{ label: 'table root', reason: 'missing Wingman table boundary' }] };
     const documentBackground = parseColor(getComputedStyle(document.body).backgroundColor) ?? { red: 255, green: 255, blue: 255, alpha: 1 };
     const selects = Array.from(root.querySelectorAll('select')).filter((select) => {
       const style = getComputedStyle(select);
       return !select.disabled && !select.hidden && select.getClientRects().length > 0 && style.display !== 'none' && style.visibility !== 'hidden';
     });
     let candidateCount = 0;
+    const controlClasses = [...new Set(selects.map((select) => {
+      if (select.closest('.wpd-column-width-preset')) return 'wpd-column-width-preset';
+      if (select.closest('.wpd-inline-editor')) return 'wpd-inline-editor';
+      if (select.closest('.wpd-table-pagination')) return 'wpd-table-pagination';
+      return 'unclassified-select';
+    }))];
     const failures = selects.flatMap<ContrastFailure>((select, selectIndex) => {
       const selectStyle = getComputedStyle(select);
       const rawSelectBackground = parseColor(selectStyle.backgroundColor) ?? documentBackground;
       const selectBackground = rawSelectBackground.alpha < 1 ? composite(rawSelectBackground, documentBackground) : rawSelectBackground;
       const candidates: Array<{ element: Element; label: string }> = [
         { element: select, label: 'select ' + (select.getAttribute('aria-label') ?? selectIndex + 1) },
-        ...Array.from(select.options).map((option) => ({ element: option, label: 'option ' + option.value }))
+        ...Array.from(select.options)
+          .filter((option) => !option.disabled && !(option.parentElement instanceof HTMLOptGroupElement && option.parentElement.disabled))
+          .map((option) => ({ element: option, label: 'option ' + option.value }))
       ];
       candidateCount += candidates.length;
       return candidates.flatMap<ContrastFailure>(({ element, label }) => {
@@ -791,7 +802,7 @@ async function tableSelectContrast(page: Page) {
         return ratio >= 4.5 ? [] : [{ label, ratio: Number(ratio.toFixed(2)) }];
       });
     });
-    return { selectCount: selects.length, candidateCount, failures };
+    return { selectCount: selects.length, candidateCount, controlClasses, failures };
   });
 }
 
@@ -804,9 +815,15 @@ for (const width of [390, 768, 1280, 1440]) {
       expect(await page.evaluate(() => document.body.scrollWidth <= window.innerWidth)).toBe(true);
       const results = await analyzeWithAxe(page);
       expect(results.violations.filter((item) => ['serious', 'critical'].includes(item.impact ?? ''))).toEqual([]);
+      ${profile === 'editable' ? "await page.getByRole('button', { name: 'Edit Status' }).first().click();\n      await expect(page.locator('.wpd-inline-editor select')).toBeVisible();" : ''}
+      ${profile === 'static' ? '' : "await page.locator('.wpd-column-manager > summary').click();\n      await expect(page.locator('.wpd-column-manager-panel')).toBeVisible();"}
       const selectContrast = await tableSelectContrast(page);
       expect(selectContrast.failures, 'Every table select and option must meet WCAG AA text contrast.').toEqual([]);
-      ${profile === 'static' ? '' : "expect(selectContrast.selectCount, 'At least one visible enabled table select must be checked.').toBeGreaterThan(0);\n      expect(selectContrast.candidateCount, 'Table option contrast checks must not be empty.').toBeGreaterThan(selectContrast.selectCount);"}
+      ${profile === 'static'
+        ? "expect(selectContrast.selectCount, 'Static tables must stay free of operational selects.').toBe(0);\n      expect(selectContrast.candidateCount).toBe(0);\n      expect(selectContrast.controlClasses).toEqual([]);"
+        : profile === 'editable'
+          ? "expect(selectContrast.controlClasses).toEqual(expect.arrayContaining(['wpd-table-pagination', 'wpd-column-width-preset', 'wpd-inline-editor']));\n      expect(selectContrast.selectCount, 'Editable proof must include pagination, every width preset, and its inline editor.').toBeGreaterThanOrEqual(5);\n      expect(selectContrast.candidateCount, 'Editable proof must include the options for every required control.').toBeGreaterThanOrEqual(21);"
+          : "expect(selectContrast.controlClasses).toEqual(expect.arrayContaining(['wpd-table-pagination', 'wpd-column-width-preset']));\n      expect(selectContrast.selectCount, 'Work proof must include pagination and every width preset.').toBeGreaterThanOrEqual(4);\n      expect(selectContrast.candidateCount, 'Work proof must include the options for every required control.').toBeGreaterThanOrEqual(17);"}
     });
   }
 }

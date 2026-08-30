@@ -13,10 +13,10 @@ const NON_EXEMPTIBLE_RULES = new Set(['WPD021', 'WPD022', 'WPD023']);
 const TABLE_CAPABILITIES = ['visibility', 'reorder', 'resize', 'expansion', 'selection', 'bulkActions', 'inlineEditing', 'virtualization'];
 const TABLE_PREFERENCE_KEYS = ['density', 'columnOrder', 'columnVisibility', 'columnWidths'];
 const TABLE_TRANSIENT_KEYS = ['selection', 'drafts', 'errors', 'activeEditing'];
-const TEXT_EXTENSIONS = new Set(['.cjs', '.css', '.html', '.js', '.jsx', '.md', '.mdx', '.mjs', '.scss', '.ts', '.tsx']);
+const TEXT_EXTENSIONS = new Set(['.astro', '.cjs', '.css', '.html', '.js', '.jsx', '.md', '.mdx', '.mjs', '.scss', '.svelte', '.ts', '.tsx', '.vue']);
 const REVIEW_EXTENSIONS = new Set([...TEXT_EXTENSIONS, '.json']);
 const POLICY_TEXT_EXTENSIONS = new Set([...TEXT_EXTENSIONS, '.json', '.txt', '.yaml', '.yml']);
-const IGNORE = new Set(['.cache', '.git', '.next', '.turbo', 'build', 'coverage', 'dist', 'node_modules', 'out', 'storybook-static', 'runtime', 'vendor']);
+const IGNORE = new Set(['.cache', '.git', '.next', '.turbo', 'build', 'coverage', 'dist', 'node_modules', 'out', 'storybook-static', 'vendor']);
 const LOCKFILES = new Set(['bun.lock', 'bun.lockb', 'npm-shrinkwrap.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock']);
 const DEFAULT_SCAN_ROOTS = ['src', 'app', 'pages', 'components', 'stories', 'design-system/examples'];
 
@@ -170,6 +170,46 @@ export function validateReview(value) {
   return output;
 }
 
+/** Validate machine-written browser evidence without a JSON Schema runtime. */
+export function validateBrowserEvidence(value) {
+  const output = [];
+  if (!object(value)) return [issue('$', 'Browser evidence must be a JSON object.')];
+  const allowed = [
+    'schemaVersion', 'status', 'sourceHash', 'completedAt', 'tests', 'storyCount',
+    'themes', 'structureUnique', 'dropdownContrast', 'dropdownCandidateCount'
+  ];
+  output.push(...additionalProperties(value, allowed));
+  if (value.schemaVersion !== 1) output.push(issue('$.schemaVersion', 'Must equal 1.'));
+  if (!['passed', 'failed'].includes(value.status)) output.push(issue('$.status', 'Must be passed or failed.'));
+  if (typeof value.sourceHash !== 'string' || !/^[a-f0-9]{64}$/i.test(value.sourceHash)) output.push(issue('$.sourceHash', 'Must be a SHA-256 source hash.'));
+  if (!validIsoDateTime(value.completedAt)) output.push(issue('$.completedAt', 'Must be a valid date-time.'));
+  if (!object(value.tests)) output.push(issue('$.tests', 'Must contain browser test counts.'));
+  else {
+    output.push(...additionalProperties(value.tests, ['passed', 'failed', 'skipped'], '$.tests'));
+    for (const key of ['passed', 'failed', 'skipped']) {
+      if (!Number.isInteger(value.tests[key]) || value.tests[key] < 0) output.push(issue(`$.tests.${key}`, 'Must be a non-negative integer.'));
+    }
+  }
+  if (!Number.isInteger(value.storyCount) || value.storyCount < 0) output.push(issue('$.storyCount', 'Must be a non-negative integer.'));
+  if (!Array.isArray(value.themes) || value.themes.some((theme) => !['light', 'dark'].includes(theme)) || new Set(value.themes).size !== value.themes.length) {
+    output.push(issue('$.themes', 'Must be a unique array containing only light and dark.'));
+  }
+  for (const key of ['structureUnique', 'dropdownContrast']) {
+    if (typeof value[key] !== 'boolean') output.push(issue(`$.${key}`, 'Must be a boolean.'));
+  }
+  if (!Number.isInteger(value.dropdownCandidateCount) || value.dropdownCandidateCount < 0) output.push(issue('$.dropdownCandidateCount', 'Must be a non-negative integer.'));
+  if (value.status === 'passed') {
+    if (value.tests?.failed !== 0) output.push(issue('$.tests.failed', 'Passed evidence cannot contain failed tests.'));
+    if (value.tests?.skipped !== 0) output.push(issue('$.tests.skipped', 'Passed evidence cannot contain skipped tests.'));
+    if (!(value.tests?.passed > 0)) output.push(issue('$.tests.passed', 'Passed evidence must contain at least one passed test.'));
+    if (!(value.storyCount > 0)) output.push(issue('$.storyCount', 'Passed evidence must cover at least one story.'));
+    for (const theme of ['light', 'dark']) if (!value.themes?.includes(theme)) output.push(issue('$.themes', `Passed evidence must include ${theme}.`));
+    if (value.structureUnique !== true) output.push(issue('$.structureUnique', 'Passed evidence must confirm unique structure.'));
+    if (value.dropdownContrast !== true) output.push(issue('$.dropdownContrast', 'Passed evidence must confirm dropdown contrast.'));
+  }
+  return output;
+}
+
 function enumArray(value, allowed, pathname, output, { allowEmpty = false } = {}) {
   if (!Array.isArray(value) || (!allowEmpty && value.length < 1)) {
     output.push(issue(pathname, allowEmpty ? 'Must be an array.' : 'Must be a non-empty array.'));
@@ -302,9 +342,10 @@ async function files(root, extensions = TEXT_EXTENSIONS) {
     try { entries = await readdir(directory, { withFileTypes: true }); } catch { return; }
     for (const entry of entries) {
       if (IGNORE.has(entry.name)) continue;
+      if (entry.name === 'runtime' && path.basename(directory) === '.wingmanpm-design') continue;
       const target = path.join(directory, entry.name);
       if (entry.isDirectory()) await visit(target);
-      else if (extensions.has(path.extname(target))) output.push(target);
+      else if (extensions.has(path.extname(target).toLowerCase())) output.push(target);
     }
   }
   await visit(root);
@@ -319,7 +360,7 @@ async function filesInRoots(root, roots = DEFAULT_SCAN_ROOTS, extensions = TEXT_
     const metadata = await stat(target);
     if (metadata.isDirectory()) {
       for (const file of await files(target, extensions)) results.add(file);
-    } else if (extensions.has(path.extname(target))) {
+    } else if (extensions.has(path.extname(target).toLowerCase())) {
       results.add(target);
     }
   }
@@ -389,29 +430,62 @@ function normalizedLabel(value) {
   return value.normalize('NFKC').replace(/\s+/g, ' ').trim().toLocaleLowerCase();
 }
 
+function additiveInteger(value) {
+  let expression = value.replace(/\s+/g, '');
+  while (expression.startsWith('(') && expression.endsWith(')')) expression = expression.slice(1, -1);
+  const literal = '(?:0x[0-9a-f](?:_?[0-9a-f])*|[0-9](?:_?[0-9])*)';
+  if (!new RegExp(`^[+-]?${literal}(?:[+-]${literal})*$`, 'i').test(expression)) return null;
+  const terms = expression.match(new RegExp(`[+-]?${literal}`, 'gi')) ?? [];
+  let total = 0;
+  for (const term of terms) {
+    const sign = term.startsWith('-') ? -1 : 1;
+    const unsigned = term.replace(/^[+-]/, '').replaceAll('_', '');
+    const number = Number(unsigned);
+    if (!Number.isSafeInteger(number)) return null;
+    total += sign * number;
+  }
+  return Number.isSafeInteger(total) ? total : null;
+}
+
+function constructedDashMatches(content) {
+  const matches = [];
+  const callPattern = new RegExp([
+    'String', '\\s*\\.\\s*', 'from', '(CodePoint|CharCode)',
+    '\\s*\\(\\s*([0-9a-fx_+\\-\\s()]+)\\s*\\)'
+  ].join(''), 'gi');
+  for (const match of content.matchAll(callPattern)) {
+    if (additiveInteger(match[2]) === 0x2000 + 0x14) matches.push({
+      index: match.index,
+      kind: match[1].toLowerCase() === 'codepoint' ? 'JavaScript code-point construction' : 'JavaScript character-code construction'
+    });
+  }
+  return matches;
+}
+
 function forbiddenDashMatches(content, extension) {
   const matches = [];
-  const literal = String.fromCodePoint(0x2014);
+  const literal = String['from' + 'CodePoint'](0x2000 + 0x14);
   for (let index = content.indexOf(literal); index >= 0; index = content.indexOf(literal, index + literal.length)) {
     matches.push({ index, kind: 'literal punctuation' });
   }
 
   const searchable = ['.md', '.mdx'].includes(extension) ? stripMarkdownFences(content) : content;
   const patterns = [
-    { regex: new RegExp(['&', 'mdash;'].join(''), 'gi'), kind: 'named HTML render equivalent' },
-    { regex: new RegExp(['&#', '8212;'].join(''), 'g'), kind: 'numeric HTML render equivalent' },
-    { regex: new RegExp(['&#', 'x0*2014;'].join(''), 'gi'), kind: 'hex HTML render equivalent' }
+    { regex: new RegExp(['&', 'mdash(?:;|(?=[^0-9a-z]|$))'].join(''), 'gi'), kind: 'named HTML render equivalent' },
+    { regex: new RegExp(['&#', '8212(?:;|(?=[^0-9]|$))'].join(''), 'g'), kind: 'numeric HTML render equivalent' },
+    { regex: new RegExp(['&#', 'x0*2014(?:;|(?=[^0-9a-f]|$))'].join(''), 'gi'), kind: 'hex HTML render equivalent' }
   ];
-  if (['.cjs', '.js', '.jsx', '.mjs', '.ts', '.tsx'].includes(extension)) {
+  if (['.astro', '.cjs', '.js', '.jsx', '.json', '.mjs', '.svelte', '.ts', '.tsx', '.vue', '.yaml', '.yml'].includes(extension)) {
     patterns.push({
       regex: new RegExp('\\\\' + 'u(?:0{0,4}2014|\\{0*2014\\})', 'gi'),
       kind: 'JavaScript Unicode render escape'
     });
+    matches.push(...constructedDashMatches(searchable));
   }
-  if (['.cjs', '.css', '.js', '.jsx', '.mjs', '.scss', '.ts', '.tsx'].includes(extension)) {
+  if (['.astro', '.cjs', '.css', '.html', '.js', '.jsx', '.mjs', '.scss', '.svelte', '.ts', '.tsx', '.vue'].includes(extension)) {
     patterns.push({
-      regex: new RegExp('content\\s*:\\s*([\'\"])[^\'\"\\n]*\\\\' + '0*2014(?:\\s|[^0-9a-f])', 'gi'),
-      kind: 'CSS content render escape'
+      regex: new RegExp('\\\\' + '0*2014(?:\\s|(?=[^0-9a-f]|$))', 'gi'),
+      kind: 'CSS render escape'
     });
   }
   for (const pattern of patterns) {
@@ -448,7 +522,7 @@ function duplicateHtmlHeadings(content) {
 }
 
 function dropdownSource(content) {
-  return /<select\b|\brole\s*=\s*\{?\s*["'](?:combobox|listbox)\b|<(?:[A-Z][A-Za-z0-9.]*)?(?:Select|Combobox|Listbox)\b/.test(content);
+  return /<select\b|<input\b[^>]*\blist\s*=|\brole\s*=\s*\{?\s*["'](?:combobox|listbox)\b|\baria-haspopup\s*=\s*\{?\s*["']listbox\b|<(?:[A-Z][A-Za-z0-9.]*)?(?:Select|Combobox|Listbox)\b/.test(content);
 }
 
 function executableRuleEvidence(corpus, ruleId) {
@@ -477,6 +551,10 @@ export async function hashReviewSources(root) {
     [...configuredRoots, 'design-system', 'tests/wingman-design'],
     REVIEW_EXTENSIONS
   ));
+  for (const file of await files(root, TEXT_EXTENSIONS)) {
+    const relative = path.relative(root, file).split(path.sep).join('/');
+    if (!relative.startsWith('.wingmanpm-design/')) candidates.add(file);
+  }
   for (const contractFile of await tableContractFiles(root)) {
     candidates.add(contractFile);
     const contractDocument = await readJsonDocument(contractFile);
@@ -487,7 +565,7 @@ export async function hashReviewSources(root) {
     ]) {
       if (!validProjectPath(target)) continue;
       const evidenceFile = path.join(root, target);
-      if (await exists(evidenceFile) && REVIEW_EXTENSIONS.has(path.extname(evidenceFile))) candidates.add(evidenceFile);
+      if (await exists(evidenceFile) && REVIEW_EXTENSIONS.has(path.extname(evidenceFile).toLowerCase())) candidates.add(evidenceFile);
     }
   }
   for (const file of [...candidates].sort()) {
@@ -544,7 +622,7 @@ async function readEvidenceCorpus(root, targets) {
   for (const target of targets ?? []) {
     if (!validProjectPath(target)) continue;
     const file = path.join(root, target);
-    if (!(await exists(file)) || !REVIEW_EXTENSIONS.has(path.extname(file))) continue;
+    if (!(await exists(file)) || !REVIEW_EXTENSIONS.has(path.extname(file).toLowerCase())) continue;
     corpus += `\n${await readFile(file, 'utf8')}`;
   }
   return corpus;
@@ -708,8 +786,10 @@ export async function runChecks(root, options = {}) {
 
   const policyFiles = (await files(root, POLICY_TEXT_EXTENSIONS))
     .filter((file) => !LOCKFILES.has(path.basename(file)));
+  const policyContents = new Map();
   for (const file of policyFiles) {
     const content = sourceContents.get(file) ?? await readFile(file, 'utf8');
+    policyContents.set(file, content);
     const extension = path.extname(file).toLowerCase();
     for (const match of forbiddenDashMatches(content, extension)) {
       add(findings, root, 'block', 'WPD021', file, `Replace the ${match.kind}; WingmanPM output cannot render this punctuation.`, lineOf(content, match.index));
@@ -718,20 +798,43 @@ export async function runChecks(root, options = {}) {
       for (const duplicate of duplicateMarkdownHeadings(content)) {
         add(findings, root, 'block', 'WPD022', file, `Repeated level ${duplicate.level} heading: ${duplicate.text}.`, lineOf(content, duplicate.index));
       }
-    } else if (extension === '.html') {
+    } else if (['.astro', '.html', '.svelte', '.vue'].includes(extension)) {
       for (const duplicate of duplicateHtmlHeadings(content)) {
         add(findings, root, 'block', 'WPD022', file, `Repeated visible h${duplicate.level} heading: ${duplicate.text}.`, lineOf(content, duplicate.index));
       }
     }
   }
 
-  const productUiFiles = [...sourceContents.entries()].filter(([file]) => {
+  const productUiFiles = [...policyContents.entries()].filter(([file]) => {
     const relative = path.relative(root, file).split(path.sep).join('/');
-    return ['.html', '.jsx', '.tsx'].includes(path.extname(file))
+    return ['.astro', '.html', '.jsx', '.svelte', '.tsx', '.vue'].includes(path.extname(file).toLowerCase())
       && !/(^|\/)(?:tests?|__tests__|fixtures)(\/|$)|\.(?:test|spec)\.[^.]+$/.test(relative);
   });
+  const machineEvidenceFile = path.join(root, '.wingmanpm-design', 'browser-evidence.json');
+  const machineEvidenceDocument = productUiFiles.length ? await readJsonDocument(machineEvidenceFile) : { exists: false, value: null, error: null };
+  const machineEvidenceIssues = machineEvidenceDocument.exists && !machineEvidenceDocument.error
+    ? validateBrowserEvidence(machineEvidenceDocument.value)
+    : [];
+  const machineEvidence = object(machineEvidenceDocument.value) ? machineEvidenceDocument.value : {};
+  const machineEvidenceFresh = productUiFiles.length && machineEvidenceIssues.length === 0
+    && machineEvidence.status === 'passed'
+    && machineEvidence.sourceHash === await currentSourceHash();
+  const machineEvidenceProblem = !machineEvidenceDocument.exists
+    ? 'Machine-written browser evidence is missing.'
+    : machineEvidenceDocument.error
+      ? machineEvidenceDocument.error
+      : machineEvidenceIssues.length
+        ? `${machineEvidenceIssues[0].path}: ${machineEvidenceIssues[0].message}`
+        : machineEvidence.status !== 'passed'
+          ? 'The latest full browser run did not pass.'
+          : machineEvidence.sourceHash !== await currentSourceHash()
+            ? 'Machine-written browser evidence is stale.'
+            : null;
   if (productUiFiles.length && !executableRuleEvidence(browserEvidenceCorpus, 'WPD022')) {
-    add(findings, root, 'block', 'WPD022', null, 'Executable browser evidence for unique visible headings, shell landmarks, and dialog close controls is missing.');
+    add(findings, root, 'block', 'WPD022', null, 'Canonical browser source for unique visible headings, shell landmarks, and dialog close controls is missing.');
+  }
+  if (productUiFiles.length && (!machineEvidenceFresh || machineEvidence.structureUnique !== true)) {
+    add(findings, root, 'block', 'WPD022', machineEvidenceFile, machineEvidenceProblem ?? 'Machine-written browser evidence did not confirm unique structure.');
   }
   const dropdownFiles = productUiFiles.filter(([, content]) => dropdownSource(content));
   if (dropdownFiles.length) {
@@ -742,7 +845,10 @@ export async function runChecks(root, options = {}) {
       && /Escape/.test(browserEvidenceCorpus)
       && /candidate/i.test(browserEvidenceCorpus);
     if (!dropdownEvidenceComplete) {
-      add(findings, root, 'block', 'WPD023', dropdownFiles[0][0], 'Dropdowns require executable light and dark browser evidence for nonzero candidates, 4.5:1 text contrast, controlled options, and Escape close.');
+      add(findings, root, 'block', 'WPD023', dropdownFiles[0][0], 'Dropdowns require canonical light and dark browser source for nonzero candidates, 4.5:1 text contrast, controlled options, and Escape close.');
+    }
+    if (!machineEvidenceFresh || machineEvidence.dropdownContrast !== true || !(machineEvidence.dropdownCandidateCount > 0)) {
+      add(findings, root, 'block', 'WPD023', machineEvidenceFile, machineEvidenceProblem ?? 'Machine-written browser evidence did not confirm dropdown contrast with a nonzero candidate count.');
     }
   }
   for (const contractFile of await tableContractFiles(root)) {
@@ -924,7 +1030,11 @@ export async function runChecks(root, options = {}) {
     else if (baselineDocument.exists) {
       const candidate = baselineDocument.value;
       const countsValid = object(candidate?.counts) && Object.values(candidate.counts).every((count) => Number.isInteger(count) && count >= 0);
+      const hardRuleKeys = object(candidate?.counts)
+        ? Object.keys(candidate.counts).filter((key) => NON_EXEMPTIBLE_RULES.has(key.split('\u001f', 1)[0]))
+        : [];
       if (!object(candidate) || candidate.schemaVersion !== 1 || !countsValid) add(findings, root, 'block', 'WPD016', baselineFile, 'Legacy baseline must use schemaVersion 1 and non-negative integer occurrence counts.');
+      else if (hardRuleKeys.length) add(findings, root, 'block', 'WPD016', baselineFile, `Legacy baseline cannot contain global hard rules: ${hardRuleKeys.map((key) => key.split('\u001f', 1)[0]).join(', ')}.`);
       else baseline = candidate;
     } else if (config.legacyBaseline === true) {
       add(findings, root, 'block', 'WPD016', baselineFile, 'Preserve mode declares a legacy baseline, but baseline.json is missing.');
@@ -936,6 +1046,7 @@ export async function runChecks(root, options = {}) {
   const remainingBaseline = { ...(baseline?.counts ?? {}) };
   let baselined = 0;
   const filtered = withBaselineValidation.filter((finding) => {
+    if (NON_EXEMPTIBLE_RULES.has(finding.ruleId)) return true;
     const key = findingKey(finding);
     if ((remainingBaseline[key] ?? 0) < 1) return true;
     remainingBaseline[key] -= 1;

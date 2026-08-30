@@ -40,27 +40,19 @@ try {
   const firstUpgrade = run('upgrade', '--project', migratedFixture);
   assert.equal(firstUpgrade.status, 0, firstUpgrade.stdout + firstUpgrade.stderr);
 
-  const review = run(
-    'check',
-    '--project', migratedFixture,
-    '--record-review',
-    '--reviewer', 'Deterministic fixture migration evaluation',
-    '--confirm', 'keyboard,zoom200,reducedMotion,longContent,light,dark,axe,responsiveStates,structureUnique,dropdownContrast',
-    '--notes', 'Deterministic fixture evidence only; not a browser sign-off.'
-  );
-  assert.equal(review.status, 0, review.stdout + review.stderr);
-
-  const strictAfterReview = run('check', '--project', migratedFixture);
-  assert.equal(strictAfterReview.status, 0, strictAfterReview.stdout + strictAfterReview.stderr);
+  const beforeBrowser = run('check', '--project', migratedFixture, '--allow-pending-review');
+  assert.equal(beforeBrowser.status, 1, beforeBrowser.stdout + beforeBrowser.stderr);
+  assert.match(beforeBrowser.stdout, /WPD022[\s\S]*Machine-written browser evidence is missing/);
 
   const secondUpgrade = run('upgrade', '--project', migratedFixture);
   assert.equal(secondUpgrade.status, 0, secondUpgrade.stdout + secondUpgrade.stderr);
   assert.match(secondUpgrade.stdout, /Already current/);
 
-  const strictAfterSecondUpgrade = run('check', '--project', migratedFixture);
-  assert.equal(strictAfterSecondUpgrade.status, 0, strictAfterSecondUpgrade.stdout + strictAfterSecondUpgrade.stderr);
+  const afterSecondUpgrade = run('check', '--project', migratedFixture, '--allow-pending-review');
+  assert.equal(afterSecondUpgrade.status, 1, afterSecondUpgrade.stdout + afterSecondUpgrade.stderr);
+  assert.match(afterSecondUpgrade.stdout, /WPD022[\s\S]*Machine-written browser evidence is missing/);
 
-  console.log(`Fixture evaluation passed: ${benchmarks.length} behavioral contracts; migrated fixture passed two strict checks and an idempotent upgrade.`);
+  console.log(`Fixture evaluation passed: ${benchmarks.length} behavioral contracts; migrated fixture kept the browser evidence gate through an idempotent upgrade.`);
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true });
 }

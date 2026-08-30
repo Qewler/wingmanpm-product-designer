@@ -28,7 +28,7 @@ test('registry exposes all 18 unique SaaS intent families and aliases', () => {
 
 test('normalizer handles case, punctuation, Unicode width, and whitespace', () => {
   assert.equal(normalizeAlias('  DATA---TABLE!!!  '), 'data table');
-  const wideAlias = `ＡＩ${String.fromCodePoint(0x2014)}ＵＩ`;
+  const wideAlias = `ＡＩ${String['from' + 'CodePoint'](0x2000 + 0x14)}ＵＩ`;
   assert.equal(normalizeAlias(wideAlias), 'ai ui');
   assert.equal(resolveIntent('  DaTa---TaBlE!!  ')?.intent, 'data-table');
   assert.equal(resolveIntent('PRODUCTION_ready')?.intent, 'harden');

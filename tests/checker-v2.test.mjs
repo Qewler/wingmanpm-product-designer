@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import {
   hashReviewSources,
   runChecks,
+  validateBrowserEvidence,
   validateConfig,
   validateExceptions,
   validateReview,
@@ -16,6 +17,25 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const requiredStates = ['loading', 'empty', 'no-results', 'partial', 'stale', 'error', 'permission', 'offline', 'saving', 'success'];
+const forbiddenDashCharacter = () => String['from' + 'CodePoint'](0x2000 + 0x14);
+
+async function writePassedBrowserEvidence(directory, overrides = {}) {
+  const evidence = {
+    schemaVersion: 1,
+    status: 'passed',
+    sourceHash: await hashReviewSources(directory),
+    completedAt: new Date().toISOString(),
+    tests: { passed: 1, failed: 0, skipped: 0 },
+    storyCount: 1,
+    themes: ['light', 'dark'],
+    structureUnique: true,
+    dropdownContrast: true,
+    dropdownCandidateCount: 1,
+    ...overrides
+  };
+  await writeFile(path.join(directory, '.wingmanpm-design', 'browser-evidence.json'), `${JSON.stringify(evidence, null, 2)}\n`);
+  return evidence;
+}
 
 async function initializedProject() {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'wingman-checker-v2-'));
@@ -52,6 +72,7 @@ test('WPD023 dropdown contrast in light and dark', async () => { const candidate
     },
     notes: 'Pending review.'
   })}\n`);
+  await writePassedBrowserEvidence(directory);
   return directory;
 }
 
@@ -148,6 +169,16 @@ test('dependency-free validators accept schema v2 and expose v1 as a migration w
   });
   assert.ok(missingGlobalChecks.some((entry) => entry.path === '$.checks.structureUnique'));
   assert.ok(missingGlobalChecks.some((entry) => entry.path === '$.checks.dropdownContrast'));
+  assert.deepEqual(validateBrowserEvidence({
+    schemaVersion: 1, status: 'passed', sourceHash: 'a'.repeat(64), completedAt: new Date().toISOString(),
+    tests: { passed: 2, failed: 0, skipped: 0 }, storyCount: 2, themes: ['light', 'dark'],
+    structureUnique: true, dropdownContrast: true, dropdownCandidateCount: 4
+  }), []);
+  assert.ok(validateBrowserEvidence({
+    schemaVersion: 1, status: 'passed', sourceHash: 'a'.repeat(64), completedAt: new Date().toISOString(),
+    tests: { passed: 1, failed: 1, skipped: 0 }, storyCount: 1, themes: ['light'],
+    structureUnique: true, dropdownContrast: true, dropdownCandidateCount: 0
+  }).length >= 2);
 });
 
 test('table contract validator separates structural and interaction paths', () => {
@@ -343,12 +374,15 @@ test('schema files remain parseable and make config v2 authoritative', async () 
   const configSchema = JSON.parse(await readFile(path.join(root, 'schemas', 'config.schema.json'), 'utf8'));
   const exceptionSchema = JSON.parse(await readFile(path.join(root, 'schemas', 'exceptions.schema.json'), 'utf8'));
   const reviewSchema = JSON.parse(await readFile(path.join(root, 'schemas', 'review.schema.json'), 'utf8'));
+  const browserSchema = JSON.parse(await readFile(path.join(root, 'schemas', 'browser-evidence.schema.json'), 'utf8'));
   const tableSchema = JSON.parse(await readFile(path.join(root, 'schemas', 'table-contract.schema.json'), 'utf8'));
   assert.equal(configSchema.properties.schemaVersion.const, 2);
   assert.ok(configSchema.properties.legacyBaseline);
   assert.ok(configSchema.properties.scanRoots);
   assert.equal(exceptionSchema.additionalProperties, false);
   assert.equal(reviewSchema.additionalProperties, false);
+  assert.equal(browserSchema.properties.schemaVersion.const, 1);
+  assert.deepEqual(browserSchema.properties.status.enum, ['passed', 'failed']);
   assert.equal(tableSchema.$defs.interactionAlternatives.properties.columnReorder.minItems, 0);
   assert.equal(tableSchema.$defs.interactionAlternatives.properties.columnResize.minItems, 0);
   const interactionRequirements = JSON.stringify(tableSchema.allOf);
@@ -361,16 +395,28 @@ test('WPD021 blocks every render-equivalent dash form and allows the shorter das
   const directory = await initializedProject();
   const slash = String.fromCharCode(92);
   const cases = [
-    ['literal.md', `A${String.fromCodePoint(0x2014)}B`],
+    ['literal.md', `A${forbiddenDashCharacter()}B`],
     ['named.html', ['A&', 'mdash;B'].join('')],
+    ['named-no-semicolon.html', ['A&', 'mdash B'].join('')],
     ['decimal.html', ['A&#', '8212;B'].join('')],
     ['hex.html', ['A&#', 'x2014;B'].join('')],
+    ['decimal-no-semicolon.html', ['A&#', '8212 B'].join('')],
+    ['hex-no-semicolon.html', ['A&#', 'x2014 B'].join('')],
     ['escaped.ts', `export const value = "${slash}${'u2014'}";`],
+    ['escaped.json', `{"value":"${slash}${'u2014'}"}`],
+    ['escaped.yaml', `value: "${slash}${'u2014'}"`],
     ['content.css', `p::after { content: "${slash}${'2014 ' }"; }`],
-    ['.wingmanpm-design/manifest.json', JSON.stringify({ entries: [{ path: `copy${String.fromCodePoint(0x2014)}file.md`, ownership: 'user' }] })]
+    ['variable.css', `:root { --separator: "${slash}${'2014 '}"; }`],
+    ['style.html', `<style>.label::after { content: "${slash}${'2014 '}"; }</style>`],
+    ['code-point.ts', ['export const value = String', '.from', 'CodePoint(0x2014);'].join('')],
+    ['char-code.ts', ['export const value = String', '.from', 'CharCode(8212);'].join('')],
+    ['code-point-add.ts', ['export const value = String', '.from', 'CodePoint(0x2000 + 0x14);'].join('')],
+    ['char-code-add.ts', ['export const value = String', '.from', 'CharCode(8_000 + 212);'].join('')],
+    ['.wingmanpm-design/manifest.json', JSON.stringify({ entries: [{ path: `copy${forbiddenDashCharacter()}file.md`, ownership: 'user' }] })]
   ];
   for (const [name, content] of cases) await writeFile(path.join(directory, name), `${content}\n`);
   await writeFile(path.join(directory, 'allowed.md'), `A${String.fromCodePoint(0x2013)}B\n`);
+  await writeFile(path.join(directory, 'allowed-constructor.ts'), ['export const value = String', '.from', 'CodePoint(0x2000 + 0x13);'].join(''));
   await writeFile(path.join(directory, 'encoded-example.md'), ['```html', ['&', 'mdash;'].join(''), '```', ''].join('\n'));
 
   const report = await runChecks(directory, { allowPendingReview: true });
@@ -378,6 +424,7 @@ test('WPD021 blocks every render-equivalent dash form and allows the shorter das
     assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === name), name);
   }
   assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === 'allowed.md'), false);
+  assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === 'allowed-constructor.ts'), false);
   assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === 'encoded-example.md'), false);
 
   await writeFile(path.join(directory, '.wingmanpm-design', 'exceptions.json'), `${JSON.stringify({ exceptions: [{
@@ -411,6 +458,18 @@ test('WPD022 blocks repeated normalized headings but ignores hidden HTML and fen
   assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD022' && entry.file === 'page.html' && /Profile/.test(entry.message)), false);
 });
 
+test('WPD022 accepts only current passed machine-written browser evidence', async () => {
+  const directory = await initializedProject();
+  let report = await runChecks(directory, { allowPendingReview: true });
+  assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD022'), false);
+  await writeFile(path.join(directory, 'src', 'NewSurface.tsx'), 'export const NewSurface = () => <main><h1>New surface</h1></main>;\n');
+  report = await runChecks(directory, { allowPendingReview: true });
+  assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD022' && /stale/.test(entry.message)));
+  await writePassedBrowserEvidence(directory);
+  report = await runChecks(directory, { allowPendingReview: true });
+  assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD022'), false);
+});
+
 test('WPD023 requires executable dropdown proof in light and dark', async () => {
   const directory = await initializedProject();
   await writeFile(path.join(directory, 'src', 'Dropdown.tsx'), 'export const Dropdown = () => <select aria-label="Status"><option>Open</option></select>;\n');
@@ -422,6 +481,9 @@ test('WPD023 requires executable dropdown proof in light and dark', async () => 
 test('WPD022 structure', async () => { const structureViolations = await auditVisibleStructure(); expect(structureViolations).toEqual([]); });
 test('WPD023 light and dark dropdown contrast', async () => { const candidates = await auditDropdownContrast(4.5); expect(candidates).toBeGreaterThan(0); await press('Escape'); });
 `);
+  report = await runChecks(directory, { allowPendingReview: true });
+  assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD023' && /stale/.test(entry.message)));
+  await writePassedBrowserEvidence(directory, { dropdownCandidateCount: 3 });
   report = await runChecks(directory, { allowPendingReview: true });
   assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD023'), false);
 });
@@ -437,4 +499,83 @@ test('WPD022 structure', async () => { const structureViolations = await auditVi
   const report = await runChecks(directory, { allowPendingReview: true });
   assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD023'
     && entry.file === 'src/components/wingman-design/data-table/DataTable.tsx'));
+});
+
+test('legacy baselines reject and never absorb WPD021 through WPD023', async () => {
+  const directory = await initializedProject();
+  await writeFile(path.join(directory, 'hard.md'), `# Copy\n${forbiddenDashCharacter()}\n## Repeat\n## Repeat\n`);
+  await writeFile(path.join(directory, 'src', 'HardDropdown.tsx'), 'export const Hard = () => <select><option>Open</option></select>;\n');
+  const initial = await runChecks(directory, { allowPendingReview: true });
+  const selected = [
+    initial.findings.find((entry) => entry.ruleId === 'WPD021' && entry.file === 'hard.md'),
+    initial.findings.find((entry) => entry.ruleId === 'WPD022' && entry.file === 'hard.md'),
+    initial.findings.find((entry) => entry.ruleId === 'WPD023')
+  ];
+  assert.ok(selected.every(Boolean));
+  const counts = Object.fromEntries(selected.map((entry) => [[entry.ruleId, entry.file, entry.message].join('\u001f'), 1]));
+  await writeFile(path.join(directory, '.wingmanpm-design', 'baseline.json'), `${JSON.stringify({
+    schemaVersion: 1, createdAt: new Date().toISOString(), counts
+  }, null, 2)}\n`);
+  const report = await runChecks(directory, { allowPendingReview: true });
+  assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD016' && /global hard rules/.test(entry.message)));
+  for (const ruleId of ['WPD021', 'WPD022', 'WPD023']) assert.ok(report.findings.some((entry) => entry.ruleId === ruleId), ruleId);
+});
+
+test('Vue, Svelte, and Astro surfaces receive safe literal structure and dropdown checks', async () => {
+  for (const extension of ['vue', 'svelte', 'astro']) {
+    const unsafe = await initializedProject();
+    const unsafeFile = path.join(unsafe, 'src', `Unsafe.${extension}`);
+    await writeFile(unsafeFile, '<section><h2>Status</h2><h2> status </h2><select><option>Open</option></select></section>\n');
+    const unsafeReport = await runChecks(unsafe, { allowPendingReview: true });
+    assert.ok(unsafeReport.findings.some((entry) => entry.ruleId === 'WPD022' && entry.file === `src/Unsafe.${extension}`), extension);
+    assert.ok(unsafeReport.findings.some((entry) => entry.ruleId === 'WPD023'), extension);
+
+    const safe = await initializedProject();
+    const safeFile = path.join(safe, 'src', `Safe.${extension}`);
+    await writeFile(safeFile, '<section><h2>Status</h2><p>Ready</p></section>\n');
+    await writePassedBrowserEvidence(safe);
+    const safeReport = await runChecks(safe, { allowPendingReview: true });
+    assert.equal(safeReport.findings.some((entry) => entry.ruleId === 'WPD022' && entry.file === `src/Safe.${extension}`), false, extension);
+    assert.equal(safeReport.findings.some((entry) => entry.ruleId === 'WPD023' && entry.file === `src/Safe.${extension}`), false, extension);
+  }
+});
+
+test('hard UI discovery ignores narrow scan roots and covers additional dropdown declarations', async () => {
+  const narrow = await initializedProject();
+  const configFile = path.join(narrow, '.wingmanpm-design', 'config.json');
+  const config = JSON.parse(await readFile(configFile, 'utf8'));
+  config.scanRoots = ['design-system/examples'];
+  await writeFile(configFile, `${JSON.stringify(config)}\n`);
+  await mkdir(path.join(narrow, 'outside-scan'), { recursive: true });
+  await writeFile(path.join(narrow, 'outside-scan', 'Surface.vue'), '<h2>Queue</h2><h2>queue</h2><input list="states"><datalist id="states"><option value="Open"></datalist>\n');
+  const narrowReport = await runChecks(narrow, { allowPendingReview: true });
+  assert.ok(narrowReport.findings.some((entry) => entry.ruleId === 'WPD022' && entry.file === 'outside-scan/Surface.vue'));
+  assert.ok(narrowReport.findings.some((entry) => entry.ruleId === 'WPD023'));
+
+  const runtimeDirectory = await initializedProject();
+  await mkdir(path.join(runtimeDirectory, 'src', 'runtime'), { recursive: true });
+  await writeFile(path.join(runtimeDirectory, 'src', 'runtime', 'Unsafe.VUE'), '<h2>Queue</h2><h2>queue</h2><select><option>Open</option></select>\n');
+  await mkdir(path.join(runtimeDirectory, '.wingmanpm-design', 'runtime'), { recursive: true });
+  await writeFile(path.join(runtimeDirectory, '.wingmanpm-design', 'runtime', 'generated.ts'), `export const generated = "${forbiddenDashCharacter()}";\n`);
+  const runtimeReport = await runChecks(runtimeDirectory, { allowPendingReview: true });
+  assert.ok(runtimeReport.findings.some((entry) => entry.ruleId === 'WPD022' && entry.file === 'src/runtime/Unsafe.VUE'));
+  assert.ok(runtimeReport.findings.some((entry) => entry.ruleId === 'WPD023'));
+  assert.equal(runtimeReport.findings.some((entry) => entry.file === '.wingmanpm-design/runtime/generated.ts'), false);
+
+  const uppercase = await initializedProject();
+  await writeFile(path.join(uppercase, 'src', 'Upper.VUE'), '<h2>Queue</h2><h2>queue</h2><input list="states">\n');
+  const uppercaseReport = await runChecks(uppercase, { allowPendingReview: true });
+  assert.ok(uppercaseReport.findings.some((entry) => entry.ruleId === 'WPD022' && entry.file === 'src/Upper.VUE'));
+  assert.ok(uppercaseReport.findings.some((entry) => entry.ruleId === 'WPD023'));
+
+  for (const source of [
+    '<input list="states"><datalist id="states"><option value="Open"></datalist>',
+    '<div role="listbox"><div role="option">Open</div></div>',
+    '<button aria-haspopup="listbox" aria-controls="states">Status</button><div id="states" role="listbox"></div>'
+  ]) {
+    const directory = await initializedProject();
+    await writeFile(path.join(directory, 'src', 'DropdownVariant.tsx'), `export const Variant = () => <>${source}</>;\n`);
+    const report = await runChecks(directory, { allowPendingReview: true });
+    assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD023'), source);
+  }
 });

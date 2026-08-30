@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compileTokenFile, compileTokens } from './tokens.mjs';
 import {
-  createLegacyBaseline, hashReviewSources, runChecks, validateConfig, validateTableContract
+  createLegacyBaseline, hashReviewSources, runChecks, validateBrowserEvidence, validateConfig, validateTableContract
 } from './checker.mjs';
 import { listCommands, resolveRequest } from './intents.mjs';
 import { planDataTableScaffold, applyDataTableScaffold } from './table-scaffold.mjs';
@@ -18,6 +18,7 @@ const SRC_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 const SKILL_NAME = 'wingmanpm-product-designer';
 const POINTER_LABEL = SKILL_NAME;
 const PROJECT_MANIFEST = '.wingmanpm-design/manifest.json';
+const BROWSER_EVIDENCE = '.wingmanpm-design/browser-evidence.json';
 const VERSION = '0.2.0-private.2';
 const PROJECT_SCHEMA_VERSION = 2;
 const DEFAULT_SCAN_ROOTS = ['src', 'app', 'pages', 'components', 'stories', 'design-system/examples'];
@@ -73,7 +74,7 @@ function ownership(relative) {
   if (['design-system/PRODUCT.md', 'design-system/DESIGN.md', 'design-system/COMPONENTS.md'].includes(relative)) return 'user';
   if (relative.startsWith('design-system/surfaces/') || relative.startsWith('design-system/tables/') || relative === 'design-system/tokens/tokens.json') return 'user';
   if (relative.startsWith('src/') || relative.startsWith('.storybook/') || relative.startsWith('tests/wingman-design/')) return 'seeded';
-  if (relative.includes('review.json') || relative.includes('baselines/') || relative.endsWith('table-inventory.json')) return 'observed';
+  if (relative === BROWSER_EVIDENCE || relative.includes('review.json') || relative.includes('baselines/') || relative.endsWith('table-inventory.json')) return 'observed';
   return 'managed';
 }
 
@@ -88,21 +89,24 @@ function upsertManifestEntry(manifest, entry) {
   else manifest.entries.push(entry);
 }
 
-async function runtimeAssets() {
+async function runtimeAssets({ includePlaywright = false } = {}) {
   const schemas = (await readdir(path.join(SRC_ROOT, 'schemas')))
     .filter((name) => name.endsWith('.json'))
     .sort()
     .map((name) => ({ source: path.join(SRC_ROOT, 'schemas', name), relative: `.wingmanpm-design/runtime/schemas/${name}` }));
   return [
     { source: path.join(SRC_ROOT, 'src', 'checker.mjs'), relative: '.wingmanpm-design/runtime/checker.mjs' },
+    { source: path.join(SRC_ROOT, 'src', 'browser-reporter.mjs'), relative: '.wingmanpm-design/runtime/browser-reporter.mjs' },
     { source: path.join(SRC_ROOT, 'registry', 'rules.json'), relative: '.wingmanpm-design/runtime/rules.json' },
-    ...schemas
+    ...schemas,
+    ...(includePlaywright ? [{ source: path.join(SRC_ROOT, 'templates', 'project', 'root', 'playwright.wingman.config.ts'), relative: 'playwright.wingman.config.ts' }] : [])
   ];
 }
 
 async function syncRuntimeAssets(root, manifest, options = {}) {
   const changes = [];
-  for (const asset of await runtimeAssets()) {
+  const includePlaywright = options.includePlaywright ?? await exists(path.join(root, 'playwright.wingman.config.ts'));
+  for (const asset of await runtimeAssets({ includePlaywright })) {
     const target = path.join(root, asset.relative);
     const expectedHash = await fileHash(asset.source);
     const priorEntry = manifest.entries?.find((entry) => entry.path === asset.relative);
@@ -271,13 +275,37 @@ function normalizeV2Ownership(manifest) {
   for (const entry of manifest.entries ?? []) {
     let expected;
     if (entry.path?.startsWith('design-system/tables/')) expected = 'user';
-    else if (entry.path?.endsWith('.wingmanpm-design/table-inventory.json') || entry.path === '.wingmanpm-design/table-inventory.json') expected = 'observed';
+    else if (entry.path?.endsWith('.wingmanpm-design/table-inventory.json') || entry.path === '.wingmanpm-design/table-inventory.json' || entry.path === BROWSER_EVIDENCE) expected = 'observed';
     if (expected && entry.ownership !== expected) {
       entry.ownership = expected;
       changed = true;
     }
+    if (entry.path === BROWSER_EVIDENCE && (entry.action !== 'observed' || entry.hash !== undefined)) {
+      entry.action = 'observed';
+      delete entry.hash;
+      changed = true;
+    }
   }
   return changed;
+}
+
+function ensureBrowserEvidenceEntry(manifest) {
+  const entry = { path: BROWSER_EVIDENCE, ownership: 'observed', action: 'observed' };
+  const index = manifest.entries.findIndex((candidate) => candidate.path === BROWSER_EVIDENCE);
+  if (index >= 0) manifest.entries[index] = entry;
+  else manifest.entries.push(entry);
+}
+
+async function browserEvidenceProblem(root) {
+  const target = path.join(root, BROWSER_EVIDENCE);
+  if (!(await exists(target))) return 'Machine-written browser evidence is missing. Run the full Playwright suite.';
+  let evidence;
+  try { evidence = await readJson(target); } catch (error) { return `Browser evidence is malformed: ${error.message}`; }
+  const issues = validateBrowserEvidence(evidence);
+  if (issues.length) return `Browser evidence is invalid: ${issues[0].path} ${issues[0].message}`;
+  if (evidence.status !== 'passed') return 'The latest full Playwright run failed.';
+  if (evidence.sourceHash !== await hashReviewSources(root)) return 'Browser evidence is stale because UI or design sources changed.';
+  return null;
 }
 
 async function rollback(root, created, modified) {
@@ -377,6 +405,7 @@ async function initProject(flags) {
     for (const change of await syncRuntimeAssets(root, manifest)) {
       if (change.status === 'create') created.push(change.target);
     }
+    ensureBrowserEvidenceEntry(manifest);
 
     const generatedConfig = await readJson(path.join(root, '.wingmanpm-design', 'config.json'), {});
     const generatedConfigIssues = validateConfig(generatedConfig, { allowLegacy: false }).filter((issue) => issue.severity === 'block');
@@ -563,6 +592,7 @@ async function upgradeProject(flags) {
     const inventoryHash = inventoryChanged ? sha256(`${JSON.stringify(inventory, null, 2)}\n`) : await fileHash(inventoryFile);
     upsertManifestEntry(preview, { path: relativeUnix(root, inventoryFile), ownership: 'observed', action: 'created', hash: inventoryHash });
   }
+  ensureBrowserEvidenceEntry(preview);
   normalizeV2Ownership(preview);
   preview.schemaVersion = PROJECT_SCHEMA_VERSION;
   preview.version = VERSION;
@@ -605,6 +635,8 @@ async function upgradeProject(flags) {
       });
     }
 
+    ensureBrowserEvidenceEntry(manifest);
+
     manifest.schemaVersion = PROJECT_SCHEMA_VERSION;
     manifest.version = VERSION;
     normalizeV2Ownership(manifest);
@@ -637,6 +669,8 @@ async function recordReview(root, flags) {
   const confirmed = new Set(String(flags.confirm ?? '').split(',').map((item) => item.trim()).filter(Boolean));
   const missing = required.filter((item) => !confirmed.has(item));
   if (reviewer.length < 2 || missing.length) throw new Error(`Review recording needs --reviewer and all confirmations. Missing: ${missing.join(', ') || 'reviewer'}`);
+  const evidenceProblem = await browserEvidenceProblem(root);
+  if (evidenceProblem) throw new Error(`Cannot record review. ${evidenceProblem}`);
   const report = await runChecks(root, { allowPendingReview: true });
   const otherBlocks = report.findings.filter((finding) => {
     if (finding.severity !== 'block' || finding.ruleId === 'WPD011') return false;
@@ -739,7 +773,7 @@ async function doctorProject(flags) {
     }
   } else push('tokens', 'fail', 'DTCG token source is missing.');
 
-  for (const asset of await runtimeAssets()) {
+  for (const asset of await runtimeAssets({ includePlaywright: await exists(path.join(root, 'playwright.wingman.config.ts')) })) {
     const target = path.join(root, asset.relative);
     const expectedHash = await fileHash(asset.source);
     const fileCurrent = await exists(target) && await fileHash(target) === expectedHash;
@@ -819,6 +853,15 @@ async function doctorProject(flags) {
     push('storybook', storybookMajors.size === 1 ? 'pass' : 'fail', storybookMajors.size === 1 ? 'Storybook packages use one compatible major version.' : 'Storybook packages have major-version drift.');
   }
   push('playwright', deps['@playwright/test'] ? 'pass' : 'warn', 'Playwright dependency presence checked.');
+  const evidenceProblem = await browserEvidenceProblem(root);
+  push('browser-evidence', evidenceProblem ? 'fail' : 'pass', evidenceProblem ?? 'Machine-written browser evidence is passed and current.');
+  if (manifest) {
+    const evidenceEntry = manifest.entries?.find((entry) => entry.path === BROWSER_EVIDENCE);
+    push('browser-evidence-ownership', evidenceEntry?.ownership === 'observed' && evidenceEntry?.action === 'observed' ? 'pass' : 'fail',
+      evidenceEntry?.ownership === 'observed' && evidenceEntry?.action === 'observed'
+        ? 'Browser evidence is recorded as observed output.'
+        : 'Browser evidence ownership is stale; run wingman-design upgrade.');
+  }
   const report = await runChecks(root, { allowPendingReview: true });
   push('rules', report.counts.block ? 'fail' : 'pass', `${report.counts.block} blocking and ${report.counts.warn} warning findings.`);
   const result = { project: root, checks, counts: { fail: checks.filter((item) => item.status === 'fail').length, warn: checks.filter((item) => item.status === 'warn').length } };

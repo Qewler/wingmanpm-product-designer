@@ -3,6 +3,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/wingman-design',
   outputDir: '.wingmanpm-design/test-results',
+  reporter: [['list'], ['./.wingmanpm-design/runtime/browser-reporter.mjs']],
   snapshotPathTemplate: '.wingmanpm-design/baselines/{projectName}/{testFilePath}/{arg}{ext}',
   use: {
     baseURL: 'http://127.0.0.1:6006',

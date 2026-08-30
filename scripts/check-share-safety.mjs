@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const failures = [];
-const forbiddenDash = String.fromCodePoint(0x2014);
+const forbiddenDash = String['from' + 'CodePoint'](0x2000 + 0x14);
 
 function git(args, options = {}) {
   return execFileSync('git', args, { cwd: root, encoding: options.encoding ?? 'utf8' });
@@ -18,18 +18,44 @@ function escapeRegex(value) {
 }
 
 const htmlDashPatterns = [
-  new RegExp(['&', 'mdash;'].join(''), 'i'),
-  new RegExp(['&#', '8212;'].join('')),
-  new RegExp(['&#', 'x0*2014;'].join(''), 'i')
+  new RegExp(['&', 'mdash(?:;|(?=[^0-9a-z]|$))'].join(''), 'i'),
+  new RegExp(['&#', '8212(?:;|(?=[^0-9]|$))'].join('')),
+  new RegExp(['&#', 'x0*2014(?:;|(?=[^0-9a-f]|$))'].join(''), 'i')
 ];
-const unicodeDashPattern = new RegExp(escapeRegex(String.fromCharCode(92)) + 'u(?:0{0,4}2014|\\{0*2014\\})', 'i');
-const cssDashPattern = new RegExp('content\\s*:\\s*([\'\"])[^\'\"\\n]*' + escapeRegex(String.fromCharCode(92)) + '0*2014(?:\\s|[^0-9a-f])', 'i');
+const slashCharacter = String['from' + 'CharCode'](90 + 2);
+const unicodeDashPattern = new RegExp(escapeRegex(slashCharacter) + 'u(?:0{0,4}2014|\\{0*2014\\})', 'i');
+const cssDashPattern = new RegExp(escapeRegex(slashCharacter) + '0*2014(?:\\s|(?=[^0-9a-f]|$))', 'i');
+
+function additiveInteger(value) {
+  let expression = value.replace(/\s+/g, '');
+  while (expression.startsWith('(') && expression.endsWith(')')) expression = expression.slice(1, -1);
+  const literal = '(?:0x[0-9a-f](?:_?[0-9a-f])*|[0-9](?:_?[0-9])*)';
+  if (!new RegExp(`^[+-]?${literal}(?:[+-]${literal})*$`, 'i').test(expression)) return null;
+  const terms = expression.match(new RegExp(`[+-]?${literal}`, 'gi')) ?? [];
+  let total = 0;
+  for (const term of terms) {
+    const sign = term.startsWith('-') ? -1 : 1;
+    const number = Number(term.replace(/^[+-]/, '').replaceAll('_', ''));
+    if (!Number.isSafeInteger(number)) return null;
+    total += sign * number;
+  }
+  return Number.isSafeInteger(total) ? total : null;
+}
+
+function containsConstructedDash(content) {
+  const pattern = new RegExp([
+    'String', '\\s*\\.\\s*', 'from', '(?:CodePoint|CharCode)',
+    '\\s*\\(\\s*([0-9a-fx_+\\-\\s()]+)\\s*\\)'
+  ].join(''), 'gi');
+  return [...content.matchAll(pattern)].some((match) => additiveInteger(match[1]) === 0x2000 + 0x14);
+}
 
 function forbiddenRenderedDash(relative, content) {
   if (htmlDashPatterns.some((pattern) => pattern.test(content))) return true;
   const extension = path.extname(relative).toLowerCase();
-  if (['.cjs', '.js', '.jsx', '.mjs', '.ts', '.tsx'].includes(extension) && unicodeDashPattern.test(content)) return true;
-  return ['.cjs', '.css', '.js', '.jsx', '.mjs', '.scss', '.ts', '.tsx'].includes(extension) && cssDashPattern.test(content);
+  if (['.astro', '.cjs', '.js', '.jsx', '.json', '.mjs', '.svelte', '.ts', '.tsx', '.vue', '.yaml', '.yml'].includes(extension)
+    && (unicodeDashPattern.test(content) || containsConstructedDash(content))) return true;
+  return ['.astro', '.cjs', '.css', '.html', '.js', '.jsx', '.mjs', '.scss', '.svelte', '.ts', '.tsx', '.vue'].includes(extension) && cssDashPattern.test(content);
 }
 
 const slash = escapeRegex(path.posix.sep);

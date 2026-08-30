@@ -101,3 +101,7 @@ jobs:
             tests/wingman-design/ci-static-report.spec.ts \
             tests/wingman-design/ci-work-items.spec.ts \
             tests/wingman-design/ci-editable-items.spec.ts
+
+      - name: Verify machine-written browser evidence
+        working-directory: fixtures/neutral-saas
+        run: node ../../bin/wingman-design.mjs check --project . --allow-pending-review

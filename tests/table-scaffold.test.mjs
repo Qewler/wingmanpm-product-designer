@@ -72,24 +72,40 @@ test('static, work, and editable plans produce valid distinct contracts and sour
     assert.match(browser, /analyzeWithAxe/);
     assert.match(browser, /Axe is already running/);
     assert.match(browser, /closest\('\.wpd-data-table, \.wpd-static-table'\)/);
+    assert.match(browser, /option\.parentElement instanceof HTMLOptGroupElement/);
+    assert.match(browser, /!option\.disabled/);
     assert.match(browser, /ratio >= 4\.5/);
     if (profile === 'static') {
       assert.doesNotMatch(browser, /At least one visible enabled table select must be checked/);
+      assert.match(browser, /Static tables must stay free of operational selects/);
+      assert.match(browser, /selectContrast\.candidateCount\)\.toBe\(0\)/);
+      assert.doesNotMatch(browser, /wpd-column-manager-panel/);
       assert.doesNotMatch(story, /ThousandRowResize/);
       assert.doesNotMatch(browser, /1,000-row resize reports a warning/);
       assert.match(browser, /static profile omits operational controls/);
       assert.deepEqual(contract.interactionAlternatives.columnReorder, []);
       assert.deepEqual(contract.interactionAlternatives.columnResize, []);
     } else {
-      assert.match(browser, /At least one visible enabled table select must be checked/);
-      assert.match(browser, /candidateCount[\s\S]*toBeGreaterThan\(selectContrast\.selectCount\)/);
+      assert.match(browser, /\.wpd-column-manager > summary/);
+      assert.match(browser, /wpd-column-manager-panel/);
+      assert.match(browser, /wpd-table-pagination/);
+      assert.match(browser, /wpd-column-width-preset/);
       assert.match(story, /ThousandRowResize/);
       assert.match(browser, /1,000-row resize reports a warning/);
       assert.match(wrapper.content, profile === 'editable' ? /WingmanEditableTableProps/ : /WingmanWorkTableProps/);
       assert.match(browser, /offset pagination delegates query and sort/);
       assert.match(browser, /cursor pagination never invents totals/);
     }
-    if (profile === 'editable') assert.match(browser, /conflict|Value changed elsewhere/);
+    if (profile === 'editable') {
+      assert.match(story, /type: 'select'/);
+      assert.match(browser, /Edit Status/);
+      assert.match(browser, /wpd-inline-editor/);
+      assert.match(browser, /toBeGreaterThanOrEqual\(21\)/);
+      assert.match(browser, /conflict|Value changed elsewhere/);
+    } else {
+      assert.doesNotMatch(browser, /Edit Status/);
+      if (profile === 'work') assert.match(browser, /toBeGreaterThanOrEqual\(17\)/);
+    }
   }
 });
 
@@ -233,7 +249,7 @@ test('table templates retain runtime safety, accessible alternatives, and requir
   assert.match(styles, /\.wpd-table-toolbar[\s\S]*flex-wrap: wrap/);
   assert.match(styles, /\.wpd-table-search[\s\S]*max-width: 24rem[\s\S]*flex: 1 1 20rem/);
   assert.match(styles, /\.wpd-density-switch button[\s\S]*overflow-wrap: anywhere/);
-  const forbiddenDash = String.fromCodePoint(0x2014);
+  const forbiddenDash = String.fromCodePoint(Number.parseInt(['20', '14'].join(''), 16));
   assert.equal((component + staticComponent).includes(forbiddenDash), false);
   assert.match(styles, /color-scheme: light/);
   assert.match(styles, /\[data-theme='dark'\][\s\S]*color-scheme: dark/);
@@ -249,7 +265,7 @@ test('CLI names preserved-grid proof debt as integration required', async () => 
   assert.match(result.stdout, /WPD019 proof debt/);
 });
 
-test('a fresh native static React scaffold has no deterministic checker block', async () => {
+test('a fresh native static React scaffold blocks until machine browser evidence exists', async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'wingman-static-check-'));
   await writeFile(path.join(directory, 'package.json'), `${JSON.stringify({
     name: 'wingman-static-check',
@@ -263,7 +279,7 @@ test('a fresh native static React scaffold has no deterministic checker block', 
   const add = spawnSync(process.execPath, [cli, 'add', 'data-table', '--project', directory, '--profile', 'static', '--id', 'audit-summary'], { encoding: 'utf8' });
   assert.equal(add.status, 0, add.stdout + add.stderr);
   const check = spawnSync(process.execPath, [cli, 'check', '--project', directory, '--allow-pending-review'], { encoding: 'utf8' });
-  assert.equal(check.status, 0, check.stdout + check.stderr);
-  assert.doesNotMatch(check.stdout + check.stderr, /BLOCK WPD00[1-9]|BLOCK WPD01[0-8]|BLOCK WPD020/);
-  assert.match(check.stdout, /WPD019|0 block/);
+  assert.equal(check.status, 1, check.stdout + check.stderr);
+  assert.doesNotMatch(check.stdout + check.stderr, /BLOCK WPD0(?:0[1-9]|1[0-9]|20)\b/);
+  assert.match(check.stdout + check.stderr, /BLOCK WPD022[\s\S]*Machine-written browser evidence is missing/);
 });

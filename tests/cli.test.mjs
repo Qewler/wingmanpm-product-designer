@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { compileTokens } from '../src/tokens.mjs';
+import { hashReviewSources } from '../src/checker.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(root, 'bin', 'wingman-design.mjs');
@@ -25,6 +26,14 @@ async function project(options = {}) {
   await writeFile(path.join(directory, 'package.json'), `${JSON.stringify(packageJson, null, 2)}\n`);
   if (options.git) spawnSync('git', ['init', '-b', 'main'], { cwd: directory, encoding: 'utf8' });
   return directory;
+}
+
+async function writePassedBrowserEvidence(directory, dropdownCandidateCount = 1) {
+  await writeFile(path.join(directory, '.wingmanpm-design', 'browser-evidence.json'), `${JSON.stringify({
+    schemaVersion: 1, status: 'passed', sourceHash: await hashReviewSources(directory), completedAt: new Date().toISOString(),
+    tests: { passed: 1, failed: 0, skipped: 0 }, storyCount: 1, themes: ['light', 'dark'],
+    structureUnique: true, dropdownContrast: true, dropdownCandidateCount
+  }, null, 2)}\n`);
 }
 
 test('help lists the five lifecycle commands', () => {
@@ -80,7 +89,7 @@ test('init creates a complete golden-stack contract and is idempotent', async ()
     'design-system/PRODUCT.md', 'design-system/DESIGN.md', 'design-system/tokens/tokens.json',
     'design-system/tokens/tokens.css', 'src/components/wingman-design/AppShell.tsx',
     'src/stories/WingmanProduct.stories.tsx', '.storybook/main.ts',
-    '.wingmanpm-design/manifest.json', '.wingmanpm-design/runtime/checker.mjs',
+    '.wingmanpm-design/manifest.json', '.wingmanpm-design/runtime/checker.mjs', '.wingmanpm-design/runtime/browser-reporter.mjs',
     '.cursor/rules/wingmanpm-product-designer.mdc', 'playwright.wingman.config.ts'
   ]) assert.equal(await readFile(path.join(directory, relative), 'utf8').then(() => true), true, relative);
   assert.match(await readFile(path.join(directory, 'AGENTS.md'), 'utf8'), /Existing instructions stay[\s\S]*wingmanpm-product-designer:start/);
@@ -88,6 +97,7 @@ test('init creates a complete golden-stack contract and is idempotent', async ()
   const second = run(['init', '--project', directory], root);
   assert.equal(second.status, 0, second.stderr);
   assert.match(await readFile(path.join(directory, 'design-system', 'PRODUCT.md'), 'utf8'), /User-owned fact/);
+  await writePassedBrowserEvidence(directory);
   const check = run(['check', '--project', directory, '--allow-pending-review'], root);
   assert.equal(check.status, 0, check.stdout + check.stderr);
   assert.match(check.stdout, /0 block/);
@@ -124,6 +134,7 @@ test('preserve mode baselines old findings but blocks a new regression', async (
   await writeFile(path.join(directory, 'tests', 'wingman-design', 'visual.spec.ts'), `
 test('WPD022 structure audit', async () => { const structureViolations = await auditVisibleStructure(); expect(structureViolations).toEqual([]); });
 `);
+  await writePassedBrowserEvidence(directory);
   const clean = run(['check', '--project', directory, '--allow-pending-review'], root);
   assert.equal(clean.status, 0, clean.stdout + clean.stderr);
   assert.match(clean.stdout, /1 legacy/);
@@ -138,6 +149,7 @@ test('check blocks a deterministic violation and accepts a scoped dated exceptio
   assert.equal(run(['init', '--project', directory], root).status, 0);
   const target = path.join(directory, 'src', 'components', 'wingman-design', 'Violation.tsx');
   await writeFile(target, 'export const Bad = () => <div className="transition-all">Bad</div>;\n');
+  await writePassedBrowserEvidence(directory);
   const blocked = run(['check', '--project', directory, '--allow-pending-review'], root);
   assert.equal(blocked.status, 1);
   assert.match(blocked.stdout, /WPD005/);

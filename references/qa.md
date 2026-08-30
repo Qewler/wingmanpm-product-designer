@@ -21,6 +21,10 @@ results. Separate confirmed defects from design preference.
 5. Axe has no serious or critical issue in the changed surfaces.
 6. Visual comparison has explicit reviewer evidence; unexpected baselines were
    not silently replaced.
+7. The full Playwright run wrote current passed evidence to
+   `.wingmanpm-design/browser-evidence.json`. Source-shaped test files alone do
+   not satisfy WPD022 or WPD023, and review recording refuses missing, failed,
+   or stale browser evidence.
 
 ## Global hard rules
 
@@ -44,6 +48,11 @@ unresolved colors as failures. Set `color-scheme: light dark` on the document
 or theme root so native controls use the intended platform palette. Browser
 evidence must enumerate every Storybook story from its runtime index. It must
 not rely on a fixed story list.
+
+The managed reporter invalidates the prior browser record when a run starts.
+It writes passed evidence only after the canonical all-story audit and the full
+Playwright run pass. Vue, Svelte, and Astro surfaces use the same hard rules as
+HTML and React surfaces.
 
 ## Exceptions
 

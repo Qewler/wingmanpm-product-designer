@@ -5,11 +5,13 @@ This private `0.2.0-private.2` build was tested on 2026-08-30 with Node.js
 
 | Check | Tool or version | Current evidence |
 | --- | --- | --- |
-| Repository tests | Node.js 24.18.0 | 58/58 passed |
+| Repository tests | Node.js 24.18.0 | 67/67 passed |
 | Command benchmark | Codex | 14/14 decision scenarios pass |
 | Generated TypeScript | TypeScript 7.0.2 | Strict generated-fixture TSC passed |
-| Story inventory | Storybook 10.5.10 | Build passed with 52 stories: 14 static, 19 work, and 19 editable |
-| Browser proof | Playwright 1.62.1 | Local Chromium passed 84/84, with 0 failed and 0 skipped, in 1.2 minutes across the global suite and generated static, work, and editable fixtures |
+| Story inventory | Storybook 10.5.10 | Build passed with 59 total stories: 52 generated profile stories plus 7 base stories |
+| Browser proof | Playwright 1.62.1 | Local Chromium passed 84/84 in 2.0 minutes, with 0 failed, 0 skipped, 1,056 dropdown candidates, and all 4 expected specs |
+| Design check | `wingman-design check` | 0 blocks; one WPD014 performance warning |
+| Project doctor | `wingman-design doctor` | 0 failures; one expected no-Git-hook warning in the non-Git temp project |
 | Builder | Vite 8.0.16 | Pinned for the checked-in Storybook configuration |
 
 ## Agent command interface
