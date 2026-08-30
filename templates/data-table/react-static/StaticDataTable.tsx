@@ -165,7 +165,7 @@ export function StaticDataTable<T extends Record<string, unknown>>({
                   return (
                     <td key={column.id} data-align={column.align ?? 'start'}>
                       <span className="wpd-static-table-value">
-                        {column.render ? column.render(value, row) : String(value ?? '—')}
+                        {column.render ? column.render(value, row) : String(value ?? 'Not available')}
                       </span>
                     </td>
                   );

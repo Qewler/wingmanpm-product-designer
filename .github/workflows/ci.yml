@@ -93,4 +93,9 @@ jobs:
 
       - name: Run one Chromium suite for all profiles
         working-directory: fixtures/neutral-saas
-        run: npm run design:test:visual
+        run: |
+          npm run design:test:visual -- \
+            tests/wingman-design/visual.spec.ts \
+            tests/wingman-design/ci-static-report.spec.ts \
+            tests/wingman-design/ci-work-items.spec.ts \
+            tests/wingman-design/ci-editable-items.spec.ts

@@ -191,9 +191,9 @@ import '../components/wingman-design/system.css';
 type SampleRow = { id: string; name: string; status: string; owner: string };
 const sampleRows: SampleRow[] = Array.from({ length: 12 }, (_, index) => ({
   id: 'sample-' + (index + 1),
-  name: index === 0 ? 'Przykład (dane testowe): Zażółć gęślą jaźń — 31.08.2026 · 1 234,56 zł — długie tłumaczenie pozostaje kompletne' : 'Sample report item ' + (index + 1),
+  name: index === 0 ? 'Przykład (dane testowe): Zażółć gęślą jaźń, 31.08.2026 · 1 234,56 zł, długie tłumaczenie pozostaje kompletne' : 'Sample report item ' + (index + 1),
   status: index % 3 === 0 ? 'Ready' : index % 3 === 1 ? 'In progress' : 'Blocked',
-  owner: index === 0 ? 'Beispieldaten: Łucja Weiß — vollständige Verantwortlichenbezeichnung' : index % 2 ? 'Sample: Alex Nowak' : 'Sample: Sam Rivera'
+  owner: index === 0 ? 'Beispieldaten: Łucja Weiß, vollständige Verantwortlichenbezeichnung' : index % 2 ? 'Sample: Alex Nowak' : 'Sample: Sam Rivera'
 }));
 const columns: Array<WingmanStaticTableColumn<SampleRow>> = [
   { id: 'name', label: 'Name', description: 'The stable report identity.', accessor: 'name', width: '44%' },
@@ -265,9 +265,9 @@ import '../components/wingman-design/system.css';
 type SampleRow = { id: string; name: string; status: string; owner: string };
 const sampleRows: SampleRow[] = Array.from({ length: 53 }, (_, index) => ({
   id: 'sample-' + (index + 1),
-  name: index === 0 ? 'Przykład (dane testowe): Zażółć gęślą jaźń — 31.08.2026 · 1 234,56 zł — długie tłumaczenie pozostaje kompletne' : 'Sample work item ' + (index + 1),
+  name: index === 0 ? 'Przykład (dane testowe): Zażółć gęślą jaźń, 31.08.2026 · 1 234,56 zł, długie tłumaczenie pozostaje kompletne' : 'Sample work item ' + (index + 1),
   status: index % 3 === 0 ? 'Ready' : index % 3 === 1 ? 'In progress' : 'Blocked',
-  owner: index === 0 ? 'Beispieldaten: Łucja Weiß — vollständige Verantwortlichenbezeichnung' : index % 2 ? 'Sample: Alex Nowak' : 'Sample: Sam Rivera'
+  owner: index === 0 ? 'Beispieldaten: Łucja Weiß, vollständige Verantwortlichenbezeichnung' : index % 2 ? 'Sample: Alex Nowak' : 'Sample: Sam Rivera'
 }));
 const thousandRows: SampleRow[] = Array.from({ length: 1000 }, (_, index) => ({
   id: 'scale-' + (index + 1),
@@ -722,8 +722,66 @@ test('inline edit drafts and active editors never survive reload', async ({ page
 ` : '';
   return `import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 const story = '/iframe.html?id=${storyId}&viewMode=story';
+
+async function tableSelectContrast(page: Page) {
+  return page.locator('[data-wingman-table-id="${tableId}"]').evaluate((table) => {
+    type Color = { red: number; green: number; blue: number; alpha: number };
+    type ContrastFailure = { label: string; reason?: string; ratio?: number };
+    const parseColor = (value: string): Color | null => {
+      const channels = value.match(/[\\d.]+/g)?.map(Number);
+      if (!channels || channels.length < 3) return null;
+      return { red: channels[0], green: channels[1], blue: channels[2], alpha: channels[3] ?? 1 };
+    };
+    const composite = (foreground: Color, background: Color): Color => ({
+      red: foreground.red * foreground.alpha + background.red * (1 - foreground.alpha),
+      green: foreground.green * foreground.alpha + background.green * (1 - foreground.alpha),
+      blue: foreground.blue * foreground.alpha + background.blue * (1 - foreground.alpha),
+      alpha: 1
+    });
+    const channelLuminance = (channel: number) => {
+      const normalized = channel / 255;
+      return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = (color: Color) => 0.2126 * channelLuminance(color.red) + 0.7152 * channelLuminance(color.green) + 0.0722 * channelLuminance(color.blue);
+    const contrast = (foreground: Color, background: Color) => {
+      const foregroundLuminance = luminance(foreground);
+      const backgroundLuminance = luminance(background);
+      return (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) / (Math.min(foregroundLuminance, backgroundLuminance) + 0.05);
+    };
+    const root = table.closest('.wpd-data-table');
+    if (!root) return { selectCount: 0, candidateCount: 0, failures: [{ label: 'table root', reason: 'missing .wpd-data-table boundary' }] };
+    const documentBackground = parseColor(getComputedStyle(document.body).backgroundColor) ?? { red: 255, green: 255, blue: 255, alpha: 1 };
+    const selects = Array.from(root.querySelectorAll('select')).filter((select) => {
+      const style = getComputedStyle(select);
+      return !select.disabled && !select.hidden && select.getClientRects().length > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    });
+    let candidateCount = 0;
+    const failures = selects.flatMap<ContrastFailure>((select, selectIndex) => {
+      const selectStyle = getComputedStyle(select);
+      const rawSelectBackground = parseColor(selectStyle.backgroundColor) ?? documentBackground;
+      const selectBackground = rawSelectBackground.alpha < 1 ? composite(rawSelectBackground, documentBackground) : rawSelectBackground;
+      const candidates: Array<{ element: Element; label: string }> = [
+        { element: select, label: 'select ' + (select.getAttribute('aria-label') ?? selectIndex + 1) },
+        ...Array.from(select.options).map((option) => ({ element: option, label: 'option ' + option.value }))
+      ];
+      candidateCount += candidates.length;
+      return candidates.flatMap<ContrastFailure>(({ element, label }) => {
+        const style = getComputedStyle(element);
+        const rawBackground = parseColor(style.backgroundColor) ?? selectBackground;
+        const background = rawBackground.alpha < 1 ? composite(rawBackground, selectBackground) : rawBackground;
+        const rawForeground = parseColor(style.color);
+        if (!rawForeground) return [{ label, reason: 'unresolved text color' }];
+        const foreground = rawForeground.alpha < 1 ? composite(rawForeground, background) : rawForeground;
+        const ratio = contrast(foreground, background);
+        return ratio >= 4.5 ? [] : [{ label, ratio: Number(ratio.toFixed(2)) }];
+      });
+    });
+    return { selectCount: selects.length, candidateCount, failures };
+  });
+}
 
 for (const width of [390, 768, 1280, 1440]) {
   for (const theme of ['light', 'dark']) {
@@ -734,6 +792,9 @@ for (const width of [390, 768, 1280, 1440]) {
       expect(await page.evaluate(() => document.body.scrollWidth <= window.innerWidth)).toBe(true);
       const results = await new AxeBuilder({ page }).analyze();
       expect(results.violations.filter((item) => ['serious', 'critical'].includes(item.impact ?? ''))).toEqual([]);
+      const selectContrast = await tableSelectContrast(page);
+      expect(selectContrast.failures, 'Every table select and option must meet WCAG AA text contrast.').toEqual([]);
+      ${profile === 'static' ? '' : "expect(selectContrast.selectCount, 'At least one visible enabled table select must be checked.').toBeGreaterThan(0);\n      expect(selectContrast.candidateCount, 'Table option contrast checks must not be empty.').toBeGreaterThan(selectContrast.selectCount);"}
     });
   }
 }

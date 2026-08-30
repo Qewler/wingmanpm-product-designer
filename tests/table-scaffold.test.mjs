@@ -68,13 +68,19 @@ test('static, work, and editable plans produce valid distinct contracts and sour
     const browser = plan.operations.find(({ target }) => target.endsWith('.spec.ts')).content;
     assert.doesNotMatch(story + browser, /\{\{[A-Z_]+\}\}/);
     assert.ok(browser.includes('Przykład \\(dane testowe\\)'), 'localized regexes must preserve literal parentheses');
+    assert.match(browser, /tableSelectContrast/);
+    assert.match(browser, /closest\('\.wpd-data-table'\)/);
+    assert.match(browser, /ratio >= 4\.5/);
     if (profile === 'static') {
+      assert.doesNotMatch(browser, /At least one visible enabled table select must be checked/);
       assert.doesNotMatch(story, /ThousandRowResize/);
       assert.doesNotMatch(browser, /1,000-row resize reports a warning/);
       assert.match(browser, /static profile omits operational controls/);
       assert.deepEqual(contract.interactionAlternatives.columnReorder, []);
       assert.deepEqual(contract.interactionAlternatives.columnResize, []);
     } else {
+      assert.match(browser, /At least one visible enabled table select must be checked/);
+      assert.match(browser, /candidateCount[\s\S]*toBeGreaterThan\(selectContrast\.selectCount\)/);
       assert.match(story, /ThousandRowResize/);
       assert.match(browser, /1,000-row resize reports a warning/);
       assert.match(wrapper.content, profile === 'editable' ? /WingmanEditableTableProps/ : /WingmanWorkTableProps/);
@@ -204,6 +210,7 @@ test('table templates retain runtime safety, accessible alternatives, and requir
   const component = await readFile(path.join(repository, 'templates', 'data-table', 'react', 'data-table', 'DataTable.tsx'), 'utf8');
   const types = await readFile(path.join(repository, 'templates', 'data-table', 'react', 'data-table', 'DataTable.types.ts'), 'utf8');
   const preferences = await readFile(path.join(repository, 'templates', 'data-table', 'react', 'data-table', 'DataTablePreferences.ts'), 'utf8');
+  const styles = await readFile(path.join(repository, 'templates', 'data-table', 'react', 'data-table', 'DataTable.css'), 'utf8');
   const staticComponent = await readFile(path.join(repository, 'templates', 'data-table', 'react-static', 'StaticDataTable.tsx'), 'utf8');
   assert.match(types, /WingmanWorkTableProps/);
   assert.match(types, /WingmanEditableTableProps/);
@@ -221,6 +228,14 @@ test('table templates retain runtime safety, accessible alternatives, and requir
   assert.match(component, /disabled=\{!selectionAllowed\}/);
   assert.match(component, /const checked = event\.currentTarget\.checked/);
   assert.match(preferences, /validPreferences/);
+  assert.match(styles, /\.wpd-table-toolbar[\s\S]*flex-wrap: wrap/);
+  assert.match(styles, /\.wpd-table-search[\s\S]*max-width: 24rem[\s\S]*flex: 1 1 20rem/);
+  assert.match(styles, /\.wpd-density-switch button[\s\S]*overflow-wrap: anywhere/);
+  const forbiddenDash = String.fromCodePoint(0x2014);
+  assert.equal((component + staticComponent).includes(forbiddenDash), false);
+  assert.match(styles, /color-scheme: light/);
+  assert.match(styles, /\[data-theme='dark'\][\s\S]*color-scheme: dark/);
+  assert.match(styles, /\.wpd-data-table select,[\s\S]*\.wpd-data-table option[\s\S]*color: var\(--wpd-color-text\)[\s\S]*background-color: var\(--wpd-color-surface\)/);
   assert.doesNotMatch(staticComponent, /@tanstack|@dnd-kit|lucide-react/);
 });
 

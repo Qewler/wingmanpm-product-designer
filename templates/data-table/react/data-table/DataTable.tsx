@@ -452,7 +452,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
   const renderValue = (row: T, column: WingmanDataTableColumn<T>): ReactNode => {
     const value = getValue(column, row);
-    const rendered = column.render ? column.render(value, row) : String(value ?? '—');
+    const rendered = column.render ? column.render(value, row) : String(value ?? 'Not available');
     const rowId = getRowId(row);
     if (edit?.rowId === rowId && edit.columnId === column.id && column.editor) {
       return (
