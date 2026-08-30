@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { appendFile, lstat, mkdir, mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -13,6 +14,10 @@ const cli = path.join(root, 'bin', 'wingman-design.mjs');
 
 function run(args, cwd) {
   return spawnSync(process.execPath, [cli, ...args], { cwd, encoding: 'utf8' });
+}
+
+async function hashFile(file) {
+  return createHash('sha256').update(await readFile(file)).digest('hex');
 }
 
 async function project(options = {}) {
@@ -222,6 +227,59 @@ test('project-scoped skill install and uninstall preserve changed installed file
   assert.equal(uninstall.status, 0, uninstall.stderr);
   assert.match(uninstall.stdout, /conflict/);
   assert.match(await readFile(skill, 'utf8'), /Local change/);
+});
+
+test('project-scoped all-agent install is portable, complete, repeatable, and safely removable', async () => {
+  const directory = await project({ neutral: true });
+  const install = run(['install', '--agent', 'all', '--scope', 'project', '--project', directory], root);
+  assert.equal(install.status, 0, install.stdout + install.stderr);
+  const destinations = [
+    path.join(directory, '.agents', 'skills', 'wingmanpm-product-designer'),
+    path.join(directory, '.claude', 'skills', 'wingmanpm-product-designer'),
+    path.join(directory, '.cursor', 'skills', 'wingmanpm-product-designer')
+  ];
+  const requiredAssets = [
+    'bin/wingman-design.mjs',
+    'src/cli.mjs',
+    'src/checker.mjs',
+    'src/browser-reporter.mjs',
+    'templates/project/tests/wingman-design/visual.spec.ts',
+    'templates/data-table/react/data-table/DataTable.tsx',
+    'scripts/validate-skill.mjs',
+    'schemas/browser-evidence.schema.json'
+  ];
+
+  for (const destination of destinations) {
+    const manifest = JSON.parse(await readFile(path.join(destination, '.wingman-install.json'), 'utf8'));
+    assert.match(manifest.source, /^wingmanpm-product-designer@0\.2\.0-private\.2$/);
+    assert.equal(path.isAbsolute(manifest.source), false);
+    assert.equal(JSON.stringify(manifest).includes(root), false);
+    assert.equal(JSON.stringify(manifest).includes(directory), false);
+    for (const item of manifest.files) {
+      assert.equal(path.isAbsolute(item.path), false, item.path);
+      const installedFile = path.join(destination, item.path);
+      assert.equal(item.hash, await hashFile(installedFile), item.path);
+      assert.equal((await readFile(installedFile)).includes(Buffer.from(root)), false, item.path);
+    }
+    for (const relative of requiredAssets) {
+      const installedFile = path.join(destination, relative);
+      const entry = manifest.files.find((item) => item.path === relative);
+      assert.ok(entry, relative);
+      assert.equal(entry.hash, await hashFile(installedFile), relative);
+    }
+  }
+
+  const repeat = run(['install', '--agent', 'all', '--scope', 'project', '--project', directory], root);
+  assert.equal(repeat.status, 0, repeat.stdout + repeat.stderr);
+  for (const destination of destinations) await writeFile(path.join(destination, 'LOCAL-NOTE.md'), 'Keep this user file.\n');
+
+  const uninstall = run(['uninstall', '--agent', 'all', '--scope', 'project', '--project', directory], root);
+  assert.equal(uninstall.status, 0, uninstall.stdout + uninstall.stderr);
+  for (const destination of destinations) {
+    assert.match(await readFile(path.join(destination, 'LOCAL-NOTE.md'), 'utf8'), /Keep this user file/);
+    await assert.rejects(readFile(path.join(destination, 'src', 'browser-reporter.mjs')), { code: 'ENOENT' });
+    await assert.rejects(readFile(path.join(destination, '.wingman-install.json')), { code: 'ENOENT' });
+  }
 });
 
 test('DTCG token compiler creates theme, Tailwind, and shadcn outputs', async () => {

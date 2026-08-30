@@ -5,7 +5,7 @@ This private `0.2.0-private.2` build was tested on 2026-08-30 with Node.js
 
 | Check | Tool or version | Current evidence |
 | --- | --- | --- |
-| Repository tests | Node.js 24.18.0 | 68/68 passed |
+| Repository tests | Node.js 24.18.0 | 69/69 passed |
 | Command benchmark | Codex | 14/14 decision scenarios pass |
 | Generated TypeScript | TypeScript 7.0.2 | Strict generated-fixture TSC passed |
 | Story inventory | Storybook 10.5.10 | Build passed with 59 total stories: 52 generated profile stories plus 7 base stories |

@@ -899,7 +899,10 @@ async function installSkill(flags) {
   const scope = flags.scope === 'project' ? 'project' : 'user';
   const roots = installRoots(scope, flags.project);
   const agents = selectedAgents(flags.agent);
-  const sourceEntries = ['SKILL.md', 'LICENSE', 'NOTICE', 'agents', 'references', 'registry', 'schemas'];
+  const sourceEntries = [
+    'SKILL.md', 'LICENSE', 'NOTICE', 'agents', 'bin', 'references', 'registry',
+    'schemas', 'scripts', 'src', 'templates'
+  ];
   const results = [];
   for (const agent of agents) {
     const destination = roots[agent];
@@ -929,7 +932,7 @@ async function installSkill(flags) {
     const installedFiles = await listFiles(destination, { ignored: [] });
     const manifest = {
       schemaVersion: 1, skill: SKILL_NAME, version: VERSION, agent, scope,
-      source: SRC_ROOT, installedAt: new Date().toISOString(),
+      source: `${SKILL_NAME}@${VERSION}`, installedAt: new Date().toISOString(),
       files: await Promise.all(installedFiles.filter((file) => !file.endsWith('.wingman-install.json')).map(async (file) => ({ path: relativeUnix(destination, file), hash: await fileHash(file) })))
     };
     await writeJsonAtomic(path.join(destination, '.wingman-install.json'), manifest);
