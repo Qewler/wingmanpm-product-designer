@@ -10,6 +10,7 @@ import {
   writeAtomic,
   writeJsonAtomic
 } from './utils.mjs';
+import { applyReviewInvalidation, planReviewInvalidation, upsertObservedReviewEntry } from './review.mjs';
 
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TEMPLATE_COMPONENT_ROOT = path.join(
@@ -940,6 +941,15 @@ export async function planDataTableScaffold(projectRoot, options = {}) {
       ? 'tanstack-react'
       : 'framework-neutral';
   const contractTarget = path.join(root, 'design-system', 'tables', `${tableId}.json`);
+  if (await exists(contractTarget)) {
+    let existingContract;
+    try { existingContract = await readJson(contractTarget); } catch (error) {
+      throw new Error(`Cannot reuse table ID ${tableId}; its existing contract is malformed: ${error.message}`);
+    }
+    if (existingContract?.profile && existingContract.profile !== profile) {
+      throw new Error(`Table ID ${tableId} already uses profile ${existingContract.profile}; choose a new ID or keep that profile.`);
+    }
+  }
   const operations = [{
     type: 'create',
     target: contractTarget,
@@ -1065,10 +1075,10 @@ async function updateProjectPackage(plan, createdDependencies) {
   if (changed) await writeJsonAtomic(packageFile, packageJson);
 }
 
-async function registerManifest(plan, created, createdDependencies) {
+async function registerManifest(plan, created, createdDependencies, reviewHash) {
   const manifestFile = path.join(plan.projectRoot, PROJECT_MANIFEST);
-  const manifest = await readJson(manifestFile, null);
-  if (!manifest) return;
+  if (!(await exists(manifestFile))) return;
+  const manifest = await readJson(manifestFile);
   manifest.entries ??= [];
   manifest.packageDependencies ??= [];
   for (const item of created) {
@@ -1094,6 +1104,7 @@ async function registerManifest(plan, created, createdDependencies) {
     if (inventoryEntry) Object.assign(inventoryEntry, next);
     else manifest.entries.push(next);
   }
+  upsertObservedReviewEntry(manifest, reviewHash);
   await writeJsonAtomic(manifestFile, manifest);
 }
 
@@ -1135,6 +1146,17 @@ export async function applyDataTableScaffold(plan, options = {}) {
       preserved: plan.operations.filter((item) => item.type === 'preserve').map((item) => relativeUnix(plan.projectRoot, item.target))
     };
   }
+  const willCreateGeneratedSource = (await Promise.all(plan.operations.map(async (operation) =>
+    operation.type === 'create' && !(await exists(operation.target))
+  ))).some(Boolean);
+  const reviewPlan = willCreateGeneratedSource
+    ? await planReviewInvalidation(plan.projectRoot, {
+      force: true,
+      additionalProfiles: [plan.profile],
+      notes: 'Review invalidated after WingmanPM generated table changes. Run browser checks, then record a new human review.'
+    })
+    : null;
+  const reviewHash = reviewPlan ? await applyReviewInvalidation(reviewPlan) : null;
   const created = [];
   const preserved = [];
   for (const operation of plan.operations) {
@@ -1149,10 +1171,12 @@ export async function applyDataTableScaffold(plan, options = {}) {
   const createdDependencies = [];
   await updateProjectPackage(plan, createdDependencies);
   const inventoryChanged = await updateTableInventory(plan);
-  await registerManifest(plan, created, createdDependencies);
+  const generatedSourceChanged = created.length > 0;
+  const projectChanged = generatedSourceChanged || createdDependencies.length > 0 || inventoryChanged;
+  if (projectChanged) await registerManifest(plan, created, createdDependencies, reviewHash);
   const status = plan.requiresIntegration
     ? 'integration-required'
-    : created.length || createdDependencies.length || inventoryChanged
+    : projectChanged
       ? 'scaffolded'
       : 'current';
   return {

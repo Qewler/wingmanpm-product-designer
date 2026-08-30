@@ -111,6 +111,7 @@ test('upgrade dry-run is read-only and actual upgrade is safe and idempotent', a
   const checkerFile = path.join(directory, '.wingmanpm-design', 'runtime', 'checker.mjs');
   const commandSchema = path.join(directory, '.wingmanpm-design', 'runtime', 'schemas', 'commands.schema.json');
   const playwrightFile = path.join(directory, 'playwright.wingman.config.ts');
+  const reviewFile = path.join(directory, '.wingmanpm-design', 'review.json');
 
   const config = await json(configFile);
   config.schemaVersion = 1;
@@ -126,16 +127,25 @@ test('upgrade dry-run is read-only and actual upgrade is safe and idempotent', a
   const oldPlaywright = (await readFile(playwrightFile, 'utf8')).replace(/^\s*reporter:.*\n/m, '');
   await writeFile(playwrightFile, oldPlaywright);
   manifest.entries.find(({ path: entry }) => entry === 'playwright.wingman.config.ts').hash = hash(oldPlaywright);
+  const oldReview = {
+    status: 'reviewed', reviewer: 'Legacy reviewer', reviewedAt: '2026-08-30T10:00:00.000Z', sourceHash: 'a'.repeat(64),
+    viewports: [390, 768, 1280, 1440],
+    checks: { keyboard: true, zoom200: true, reducedMotion: true, longContent: true, light: true, dark: true, axe: true, responsiveStates: true },
+    notes: 'Old review shape.'
+  };
+  await writeFile(reviewFile, `${JSON.stringify(oldReview, null, 2)}\n`);
+  manifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/review.json').hash = hash(`${JSON.stringify(oldReview, null, 2)}\n`);
   await rm(commandSchema);
   await writeFile(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
 
-  const tracked = [configFile, manifestFile, inventoryFile, checkerFile, commandSchema, playwrightFile];
+  const tracked = [configFile, manifestFile, inventoryFile, checkerFile, commandSchema, playwrightFile, reviewFile];
   const beforeDryRun = await snapshot(tracked);
   const dryRun = run(['upgrade', '--project', directory, '--dry-run']);
   assert.equal(dryRun.status, 0, dryRun.stderr);
   assert.match(dryRun.stdout, /REFRESH \.wingmanpm-design\/runtime\/checker\.mjs/);
   assert.match(dryRun.stdout, /CREATE \.wingmanpm-design\/runtime\/schemas\/commands\.schema\.json/);
   assert.match(dryRun.stdout, /REFRESH playwright\.wingman\.config\.ts/);
+  assert.match(dryRun.stdout, /UPDATE \.wingmanpm-design\/review\.json to pending/);
   assert.deepEqual(await snapshot(tracked), beforeDryRun);
 
   const upgraded = run(['upgrade', '--project', directory]);
@@ -144,6 +154,12 @@ test('upgrade dry-run is read-only and actual upgrade is safe and idempotent', a
   assert.deepEqual((await json(configFile)).scanRoots, ['src', 'app', 'pages', 'components', 'stories', 'design-system/examples']);
   assert.equal(typeof (await json(configFile)).legacyBaseline, 'boolean');
   assert.equal((await json(manifestFile)).schemaVersion, 2);
+  const migratedReview = await json(reviewFile);
+  assert.equal(migratedReview.status, 'pending');
+  assert.equal(migratedReview.reviewer, null);
+  assert.equal(migratedReview.checks.structureUnique, false);
+  assert.equal(migratedReview.checks.dropdownContrast, false);
+  assert.equal((await json(manifestFile)).entries.find(({ path: entry }) => entry === '.wingmanpm-design/review.json').hash, hash(await readFile(reviewFile, 'utf8')));
   assert.match(await readFile(checkerFile, 'utf8'), /export async function runChecks/);
   assert.match(await readFile(playwrightFile, 'utf8'), /browser-reporter\.mjs/);
   assert.equal((await json(commandSchema)).title, 'WingmanPM Product Designer command registry');
@@ -167,6 +183,36 @@ test('upgrade refuses and preserves a locally changed managed runtime', async ()
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Refusing to replace a locally changed or unmanaged runtime asset/);
   assert.deepEqual(await snapshot([runtime, config, manifest]), before);
+});
+
+test('no-change upgrade preserves valid reviewed proof bytes and mtimes', async () => {
+  const directory = await project();
+  assert.equal(run(['init', '--project', directory]).status, 0);
+  await writePassedBrowserEvidence(directory);
+  const recorded = run([
+    'check', '--record-review', '--project', directory, '--reviewer', 'Julius',
+    '--confirm', baseChecks.join(',')
+  ]);
+  assert.equal(recorded.status, 0, recorded.stdout + recorded.stderr);
+  const reviewFile = path.join(directory, '.wingmanpm-design', 'review.json');
+  const manifestFile = path.join(directory, '.wingmanpm-design', 'manifest.json');
+  const before = await snapshot([reviewFile, manifestFile]);
+  const upgrade = run(['upgrade', '--project', directory]);
+  assert.equal(upgrade.status, 0, upgrade.stdout + upgrade.stderr);
+  assert.match(upgrade.stdout, /Already current/);
+  assert.deepEqual(await snapshot([reviewFile, manifestFile]), before);
+
+  const incompleteReview = await json(reviewFile);
+  incompleteReview.checks.keyboard = false;
+  const incompleteContent = `${JSON.stringify(incompleteReview, null, 2)}\n`;
+  await writeFile(reviewFile, incompleteContent);
+  const incompleteManifest = await json(manifestFile);
+  incompleteManifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/review.json').hash = hash(incompleteContent);
+  await writeFile(manifestFile, `${JSON.stringify(incompleteManifest, null, 2)}\n`);
+  const invalidated = run(['upgrade', '--project', directory]);
+  assert.equal(invalidated.status, 0, invalidated.stdout + invalidated.stderr);
+  assert.equal((await json(reviewFile)).status, 'pending');
+  assert.ok(Object.values((await json(reviewFile)).checks).every((value) => value === false));
 });
 
 test('v1 upgrade snapshots legacy table sources and never refreshes their baseline hash', async () => {
@@ -295,6 +341,16 @@ test('review confirmations adapt to work and editable table contracts', async ()
 
   await writePassedBrowserEvidence(directory, 4);
 
+  const pendingCheck = run(['check', '--project', directory, '--allow-pending-review']);
+  assert.equal(pendingCheck.status, 0, pendingCheck.stdout + pendingCheck.stderr);
+  assert.doesNotMatch(pendingCheck.stdout, /BLOCK /);
+  assert.match(pendingCheck.stdout, /WARN WPD019|WARN WPD011/);
+
+  await writeFile(path.join(directory, '.wingmanpm-design', 'review.json'), `${JSON.stringify({
+    status: 'reviewed', reviewer: 'Legacy reviewer', reviewedAt: '2026-08-30T10:00:00.000Z', sourceHash: 'a'.repeat(64),
+    viewports: [390, 768, 1280, 1440], checks: Object.fromEntries(baseChecks.slice(0, 8).map((key) => [key, true])), notes: 'Invalid old review.'
+  }, null, 2)}\n`);
+
   const complete = run([
     'check', '--record-review', '--project', directory, '--reviewer', 'Julius',
     '--confirm', [...baseChecks, ...tableChecks, 'tableEditing'].join(',')
@@ -305,6 +361,35 @@ test('review confirmations adapt to work and editable table contracts', async ()
   assert.equal(review.checks.tableEditing, true);
   assert.equal(review.checks.structureUnique, true);
   assert.equal(review.checks.dropdownContrast, true);
+  const recordedReviewFile = path.join(directory, '.wingmanpm-design', 'review.json');
+  assert.equal((await json(path.join(directory, '.wingmanpm-design', 'manifest.json'))).entries
+    .find(({ path: entry }) => entry === '.wingmanpm-design/review.json')?.hash, hash(await readFile(recordedReviewFile, 'utf8')));
+});
+
+test('CI flow migrates legacy review, adds all table profiles, and accepts valid pending evidence', async () => {
+  const directory = await project();
+  assert.equal(run(['init', '--project', directory]).status, 0);
+  const reviewFile = path.join(directory, '.wingmanpm-design', 'review.json');
+  await writeFile(reviewFile, `${JSON.stringify({
+    status: 'reviewed', reviewer: 'Legacy reviewer', reviewedAt: '2026-08-30T10:00:00.000Z', sourceHash: 'a'.repeat(64),
+    viewports: [390, 768, 1280, 1440], checks: Object.fromEntries(baseChecks.slice(0, 8).map((key) => [key, true])), notes: 'Legacy CI fixture review.'
+  }, null, 2)}\n`);
+  assert.equal(run(['upgrade', '--project', directory]).status, 0);
+  assert.equal((await json(reviewFile)).status, 'pending');
+  for (const profile of ['static', 'work', 'editable']) {
+    const added = run(['add', 'data-table', '--project', directory, '--profile', profile, '--id', `ci-${profile}`]);
+    assert.equal(added.status, 0, added.stdout + added.stderr);
+  }
+  const pending = await json(reviewFile);
+  assert.equal(pending.status, 'pending');
+  assert.equal(Object.keys(pending.checks).length, 16);
+  assert.ok(Object.values(pending.checks).every((value) => value === false));
+  await writePassedBrowserEvidence(directory, 12);
+  const check = run(['check', '--project', directory, '--allow-pending-review']);
+  assert.equal(check.status, 0, check.stdout + check.stderr);
+  assert.doesNotMatch(check.stdout, /BLOCK /);
+  assert.equal((await json(path.join(directory, '.wingmanpm-design', 'manifest.json'))).entries
+    .find(({ path: entry }) => entry === '.wingmanpm-design/review.json')?.hash, hash(await readFile(reviewFile, 'utf8')));
 });
 
 test('project uninstall preserves table dependencies only while preserved table consumers remain', async () => {

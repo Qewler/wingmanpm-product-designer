@@ -8,6 +8,7 @@ import {
 } from './checker.mjs';
 import { listCommands, resolveRequest } from './intents.mjs';
 import { planDataTableScaffold, applyDataTableScaffold } from './table-scaffold.mjs';
+import { applyReviewInvalidation, planReviewInvalidation, upsertObservedReviewEntry } from './review.mjs';
 import {
   copyTemplateTree, exists, fileHash, listFiles, makeExecutable, managedBlock,
   parseArgs, readJson, relativeUnix, removeManagedBlock, sha256, upsertManagedBlock,
@@ -581,6 +582,9 @@ async function upgradeProject(flags) {
     tables: inventoryTables
   } : priorInventory;
   const configChanged = JSON.stringify(config) !== JSON.stringify(nextConfig);
+  const reviewPlan = await planReviewInvalidation(root, {
+    notes: 'Review invalidated during WingmanPM upgrade. Run browser checks, then record a new human review.'
+  });
 
   const preview = structuredClone(manifest);
   for (const change of runtimeChanges) {
@@ -592,6 +596,7 @@ async function upgradeProject(flags) {
     const inventoryHash = inventoryChanged ? sha256(`${JSON.stringify(inventory, null, 2)}\n`) : await fileHash(inventoryFile);
     upsertManifestEntry(preview, { path: relativeUnix(root, inventoryFile), ownership: 'observed', action: 'created', hash: inventoryHash });
   }
+  upsertObservedReviewEntry(preview, reviewPlan.hash);
   ensureBrowserEvidenceEntry(preview);
   normalizeV2Ownership(preview);
   preview.schemaVersion = PROJECT_SCHEMA_VERSION;
@@ -602,6 +607,7 @@ async function upgradeProject(flags) {
     ...runtimeChanges.map((change) => `${change.status.toUpperCase()} ${change.relative}`),
     ...(configChanged ? ['UPDATE .wingmanpm-design/config.json to schemaVersion 2'] : []),
     ...(inventoryChanged ? [`${inventoryExists ? 'UPDATE' : 'CREATE'} .wingmanpm-design/table-inventory.json`] : []),
+    ...(reviewPlan.changed ? ['UPDATE .wingmanpm-design/review.json to pending'] : []),
     ...(manifestChanged ? [`UPDATE ${PROJECT_MANIFEST} to schemaVersion 2 and version ${VERSION}`] : [])
   ];
   if (flags['dry-run']) {
@@ -612,9 +618,11 @@ async function upgradeProject(flags) {
   const created = [];
   const modified = new Map();
   try {
-    if (manifestChanged || runtimeChanges.length || configChanged || inventoryChanged) modified.set(manifestFile, await readFile(manifestFile, 'utf8'));
+    if (manifestChanged || runtimeChanges.length || configChanged || inventoryChanged || reviewPlan.changed) modified.set(manifestFile, await readFile(manifestFile, 'utf8'));
     if (configChanged) modified.set(configFile, await readFile(configFile, 'utf8'));
     if (inventoryChanged && inventoryExists) modified.set(inventoryFile, await readFile(inventoryFile, 'utf8'));
+    if (reviewPlan.changed && reviewPlan.existed) modified.set(reviewPlan.file, await readFile(reviewPlan.file, 'utf8'));
+    else if (reviewPlan.changed) created.push(reviewPlan.file);
     for (const change of runtimeChanges) {
       if (change.status === 'refresh') modified.set(change.target, await readFile(change.target, 'utf8'));
       else if (change.status === 'create') created.push(change.target);
@@ -635,6 +643,9 @@ async function upgradeProject(flags) {
       });
     }
 
+    const reviewHash = await applyReviewInvalidation(reviewPlan);
+    upsertObservedReviewEntry(manifest, reviewHash);
+
     ensureBrowserEvidenceEntry(manifest);
 
     manifest.schemaVersion = PROJECT_SCHEMA_VERSION;
@@ -643,7 +654,7 @@ async function upgradeProject(flags) {
     manifest.entries = manifest.entries.filter((entry, index, entries) =>
       entries.findIndex((candidate) => candidate.path === entry.path) === index
     );
-    const changed = runtimeChanges.length > 0 || configChanged || inventoryChanged || manifestChanged;
+    const changed = runtimeChanges.length > 0 || configChanged || inventoryChanged || reviewPlan.changed || manifestChanged;
     if (changed) {
       manifest.upgradedAt = new Date().toISOString();
       await writeJsonAtomic(manifestFile, manifest);
@@ -674,7 +685,7 @@ async function recordReview(root, flags) {
   const report = await runChecks(root, { allowPendingReview: true });
   const otherBlocks = report.findings.filter((finding) => {
     if (finding.severity !== 'block' || finding.ruleId === 'WPD011') return false;
-    if (finding.ruleId === 'WPD019' && finding.file === '.wingmanpm-design/review.json' && /Visual review evidence/.test(finding.message)) return false;
+    if (finding.ruleId === 'WPD019' && finding.file === '.wingmanpm-design/review.json') return false;
     return true;
   });
   if (otherBlocks.length) throw new Error(`Cannot record review while ${otherBlocks.length} non-review blocking findings remain.`);
@@ -684,7 +695,22 @@ async function recordReview(root, flags) {
     checks: Object.fromEntries(required.map((item) => [item, true])),
     notes: flags.notes ?? 'Explicit visual and interaction review confirmed by CLI operator.'
   };
-  await writeJsonAtomic(path.join(root, '.wingmanpm-design', 'review.json'), review);
+  const reviewFile = path.join(root, '.wingmanpm-design', 'review.json');
+  const manifestFile = path.join(root, PROJECT_MANIFEST);
+  const reviewContent = `${JSON.stringify(review, null, 2)}\n`;
+  const priorReview = await exists(reviewFile) ? await readFile(reviewFile, 'utf8') : null;
+  const priorManifest = await exists(manifestFile) ? await readFile(manifestFile, 'utf8') : null;
+  const manifest = priorManifest === null ? null : JSON.parse(priorManifest);
+  if (manifest) upsertObservedReviewEntry(manifest, sha256(reviewContent));
+  try {
+    await writeAtomic(reviewFile, reviewContent);
+    if (manifest) await writeJsonAtomic(manifestFile, manifest);
+  } catch (error) {
+    if (priorReview === null) await rm(reviewFile, { force: true });
+    else await writeAtomic(reviewFile, priorReview);
+    if (priorManifest !== null) await writeAtomic(manifestFile, priorManifest);
+    throw error;
+  }
   console.log(`Recorded explicit review evidence for ${reviewer}.`);
 }
 

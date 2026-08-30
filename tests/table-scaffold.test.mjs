@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { mkdtemp, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { validateTableContract } from '../src/checker.mjs';
+import { hashReviewSources, validateTableContract } from '../src/checker.mjs';
 import {
   applyDataTableScaffold,
   planDataTableScaffold,
@@ -43,6 +44,26 @@ async function project(dependencies = {}) {
 
 async function json(file) {
   return JSON.parse(await readFile(file, 'utf8'));
+}
+
+const reviewChecks = ['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates', 'structureUnique', 'dropdownContrast'];
+
+async function seedReviewedEvidence(directory) {
+  const reviewFile = path.join(directory, '.wingmanpm-design', 'review.json');
+  const review = {
+    status: 'reviewed', reviewer: 'Julius', reviewedAt: '2026-08-30T10:00:00.000Z', sourceHash: 'a'.repeat(64),
+    viewports: [390, 768, 1280, 1440], checks: Object.fromEntries(reviewChecks.map((key) => [key, true])), notes: 'Reviewed.'
+  };
+  const content = `${JSON.stringify(review, null, 2)}\n`;
+  await writeFile(reviewFile, content);
+  const manifestFile = path.join(directory, '.wingmanpm-design', 'manifest.json');
+  const manifest = await json(manifestFile);
+  const next = { path: '.wingmanpm-design/review.json', ownership: 'observed', action: 'created', hash: createHash('sha256').update(content).digest('hex') };
+  const entry = manifest.entries.find((item) => item.path === next.path);
+  if (entry) Object.assign(entry, next);
+  else manifest.entries.push(next);
+  await writeFile(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
+  return { reviewFile, manifestFile };
 }
 
 test('static, work, and editable plans produce valid distinct contracts and source evidence', async () => {
@@ -119,6 +140,101 @@ test('dry-run writes nothing and reports the complete plan', async () => {
   assert.equal(result.created.length, 0);
   await assert.rejects(readFile(path.join(directory, 'design-system', 'tables', 'dry-table.json')));
   assert.deepEqual((await json(path.join(directory, '.wingmanpm-design', 'table-inventory.json'))).tables, []);
+});
+
+test('table changes invalidate reviewed evidence, track its hash, and stay idempotent', async () => {
+  const directory = await project({ react: '19.2.0' });
+  const { reviewFile, manifestFile } = await seedReviewedEvidence(directory);
+  const duplicateManifest = await json(manifestFile);
+  duplicateManifest.entries.push({ ...duplicateManifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/review.json') });
+  await writeFile(manifestFile, `${JSON.stringify(duplicateManifest, null, 2)}\n`);
+  const plan = await planDataTableScaffold(directory, { profile: 'work', tableId: 'review-work' });
+  const reviewBefore = await readFile(reviewFile, 'utf8');
+  const manifestBefore = await readFile(manifestFile, 'utf8');
+  await applyDataTableScaffold(plan, { dryRun: true });
+  assert.equal(await readFile(reviewFile, 'utf8'), reviewBefore);
+  assert.equal(await readFile(manifestFile, 'utf8'), manifestBefore);
+
+  const first = await applyDataTableScaffold(plan);
+  assert.equal(first.status, 'scaffolded');
+  const pending = await json(reviewFile);
+  assert.equal(pending.status, 'pending');
+  assert.equal(pending.reviewer, null);
+  assert.equal(pending.reviewedAt, null);
+  assert.equal(pending.sourceHash, null);
+  for (const key of [...reviewChecks, 'tableDensity', 'tableColumns', 'tablePagination', 'tableExpansion', 'tableBulk']) assert.equal(pending.checks[key], false, key);
+  assert.equal(Object.keys(pending.checks).length, 15);
+  assert.equal(pending.checks.tableEditing, undefined);
+  const reviewHash = createHash('sha256').update(await readFile(reviewFile)).digest('hex');
+  const firstManifest = await json(manifestFile);
+  assert.equal(firstManifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/review.json').hash, reviewHash);
+  assert.equal(firstManifest.entries.filter(({ path: entry }) => entry === '.wingmanpm-design/review.json').length, 1);
+
+  const protectedFiles = [reviewFile, manifestFile, path.join(directory, '.wingmanpm-design', 'table-inventory.json'), path.join(directory, 'package.json')];
+  const beforeConflict = await Promise.all(protectedFiles.map(async (file) => ({ content: await readFile(file, 'utf8'), mtimeMs: (await stat(file)).mtimeMs })));
+  await assert.rejects(planDataTableScaffold(directory, { profile: 'editable', tableId: 'review-work' }), /already uses profile work/);
+  assert.deepEqual(await Promise.all(protectedFiles.map(async (file) => ({ content: await readFile(file, 'utf8'), mtimeMs: (await stat(file)).mtimeMs }))), beforeConflict);
+
+  const reviewed = {
+    ...pending,
+    status: 'reviewed',
+    reviewer: 'Julius',
+    reviewedAt: new Date().toISOString(),
+    sourceHash: await hashReviewSources(directory),
+    checks: Object.fromEntries(Object.keys(pending.checks).map((key) => [key, true]))
+  };
+  const reviewedContent = `${JSON.stringify(reviewed, null, 2)}\n`;
+  await writeFile(reviewFile, reviewedContent);
+  const reviewedManifest = await json(manifestFile);
+  reviewedManifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/review.json').hash = createHash('sha256').update(reviewedContent).digest('hex');
+  await writeFile(manifestFile, `${JSON.stringify(reviewedManifest, null, 2)}\n`);
+  const inventoryFile = path.join(directory, '.wingmanpm-design', 'table-inventory.json');
+  const inventory = await json(inventoryFile);
+  inventory.tables = [];
+  await writeFile(inventoryFile, `${JSON.stringify(inventory, null, 2)}\n`);
+  const reviewBeforeRepair = { content: await readFile(reviewFile, 'utf8'), mtimeMs: (await stat(reviewFile)).mtimeMs };
+  const repairPlan = await planDataTableScaffold(directory, { profile: 'work', tableId: 'review-work' });
+  const repaired = await applyDataTableScaffold(repairPlan);
+  assert.equal(repaired.status, 'scaffolded');
+  assert.deepEqual({ content: await readFile(reviewFile, 'utf8'), mtimeMs: (await stat(reviewFile)).mtimeMs }, reviewBeforeRepair);
+
+  const secondPlan = await planDataTableScaffold(directory, { profile: 'work', tableId: 'review-work' });
+  const beforeCurrent = { review: await readFile(reviewFile, 'utf8'), manifest: await readFile(manifestFile, 'utf8'), reviewMtime: (await stat(reviewFile)).mtimeMs, manifestMtime: (await stat(manifestFile)).mtimeMs };
+  const second = await applyDataTableScaffold(secondPlan);
+  assert.equal(second.status, 'current');
+  assert.deepEqual({ review: await readFile(reviewFile, 'utf8'), manifest: await readFile(manifestFile, 'utf8'), reviewMtime: (await stat(reviewFile)).mtimeMs, manifestMtime: (await stat(manifestFile)).mtimeMs }, beforeCurrent);
+
+  const editable = await planDataTableScaffold(directory, { profile: 'editable', tableId: 'review-editable' });
+  await applyDataTableScaffold(editable);
+  const editablePending = await json(reviewFile);
+  assert.equal(editablePending.checks.tableEditing, false);
+  assert.equal(Object.keys(editablePending.checks).length, 16);
+
+  const staticDirectory = await project({ react: '19.2.0' });
+  await seedReviewedEvidence(staticDirectory);
+  const staticPlan = await planDataTableScaffold(staticDirectory, { profile: 'static', tableId: 'review-static' });
+  await applyDataTableScaffold(staticPlan);
+  assert.equal(Object.keys((await json(path.join(staticDirectory, '.wingmanpm-design', 'review.json'))).checks).length, 10);
+
+  const malformedContractDirectory = await project({ react: '19.2.0' });
+  const malformedEvidence = await seedReviewedEvidence(malformedContractDirectory);
+  const malformedPlan = await planDataTableScaffold(malformedContractDirectory, { profile: 'work', tableId: 'safe-table' });
+  const malformedContract = path.join(malformedContractDirectory, 'design-system', 'tables', 'broken.json');
+  await mkdir(path.dirname(malformedContract), { recursive: true });
+  await writeFile(malformedContract, '{ bad contract');
+  const beforeMalformed = { review: await readFile(malformedEvidence.reviewFile, 'utf8'), manifest: await readFile(malformedEvidence.manifestFile, 'utf8') };
+  await assert.rejects(applyDataTableScaffold(malformedPlan), /malformed table contract broken\.json/);
+  assert.deepEqual({ review: await readFile(malformedEvidence.reviewFile, 'utf8'), manifest: await readFile(malformedEvidence.manifestFile, 'utf8') }, beforeMalformed);
+  await assert.rejects(readFile(path.join(malformedContractDirectory, 'src', 'components', 'wingman-design', 'tables', 'SafeTableTable.tsx')));
+
+  const failedManifestDirectory = await project({ react: '19.2.0' });
+  const failedManifestEvidence = await seedReviewedEvidence(failedManifestDirectory);
+  const failedManifestPlan = await planDataTableScaffold(failedManifestDirectory, { profile: 'work', tableId: 'failed-manifest' });
+  await writeFile(failedManifestEvidence.manifestFile, '{ bad manifest');
+  await assert.rejects(applyDataTableScaffold(failedManifestPlan));
+  assert.equal((await json(failedManifestEvidence.reviewFile)).status, 'pending');
+  const failedManifestSurface = failedManifestPlan.operations.find(({ target }) => target.endsWith('FailedManifestTable.tsx')).target;
+  assert.match(await readFile(failedManifestSurface, 'utf8'), /profile="work"/);
 });
 
 test('React scaffold is pinned, no-overwrite, idempotent, inventoried, and reusable', async () => {
