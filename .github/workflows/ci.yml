@@ -86,9 +86,9 @@ jobs:
           node ./skills/wingmanpm-product-designer/bin/wingman-design.mjs add data-table --project fixtures/neutral-saas --profile work --id ci-work-items
           node ./skills/wingmanpm-product-designer/bin/wingman-design.mjs add data-table --project fixtures/neutral-saas --profile editable --id ci-editable-items
 
-      - name: Install fixture dependencies
+      - name: Resolve generated fixture dependencies
         working-directory: fixtures/neutral-saas
-        run: npm ci --ignore-scripts
+        run: npm install --ignore-scripts --no-audit --no-fund
 
       - name: Install Chromium
         working-directory: fixtures/neutral-saas

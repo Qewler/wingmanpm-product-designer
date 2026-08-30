@@ -110,3 +110,8 @@ test('branded npm installer shows the maker note once while the portable CLI sta
     await assert.rejects(access(path.join(project, relative)), { code: 'ENOENT' });
   }
 });
+
+test('browser CI resolves dependencies added by generated table profiles', async () => {
+  const workflow = await readFile(path.join(root, '.github', 'workflows', 'ci.yml'), 'utf8');
+  assert.match(workflow, /Scaffold all table profiles[\s\S]*Resolve generated fixture dependencies[\s\S]*npm install --ignore-scripts --no-audit --no-fund/);
+});
