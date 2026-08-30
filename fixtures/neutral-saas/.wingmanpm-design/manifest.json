@@ -57,7 +57,7 @@
       "path": ".wingmanpm-design/review.json",
       "ownership": "observed",
       "action": "created",
-      "hash": "c46b77bda4232900d177e02395c62b694beccb974bdf5e01f396f387671fa714"
+      "hash": "5623d799edffd2c8be04a40c0f61048c36b6186cb15f6334e51c4fe309960c2a"
     },
     {
       "path": "src/components/wingman-design/AccountPatterns.tsx",

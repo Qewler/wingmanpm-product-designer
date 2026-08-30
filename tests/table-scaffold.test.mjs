@@ -6,12 +6,12 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { hashReviewSources, validateTableContract } from '../src/checker.mjs';
+import { hashReviewSources, validateTableContract } from '../skills/wingmanpm-product-designer/src/checker.mjs';
 import {
   applyDataTableScaffold,
   planDataTableScaffold,
   TABLE_PROFILES
-} from '../src/table-scaffold.mjs';
+} from '../skills/wingmanpm-product-designer/src/table-scaffold.mjs';
 
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repository, 'bin', 'wingman-design.mjs');
@@ -51,7 +51,7 @@ const reviewChecks = ['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'li
 async function seedReviewedEvidence(directory) {
   const reviewFile = path.join(directory, '.wingmanpm-design', 'review.json');
   const review = {
-    status: 'reviewed', reviewer: 'Julius', reviewedAt: '2026-08-30T10:00:00.000Z', sourceHash: 'a'.repeat(64),
+    status: 'reviewed', reviewer: 'Morgan Lee', reviewedAt: '2026-08-30T10:00:00.000Z', sourceHash: 'a'.repeat(64),
     viewports: [390, 768, 1280, 1440], checks: Object.fromEntries(reviewChecks.map((key) => [key, true])), notes: 'Reviewed.'
   };
   const content = `${JSON.stringify(review, null, 2)}\n`;
@@ -178,7 +178,7 @@ test('table changes invalidate reviewed evidence, track its hash, and stay idemp
   const reviewed = {
     ...pending,
     status: 'reviewed',
-    reviewer: 'Julius',
+    reviewer: 'Morgan Lee',
     reviewedAt: new Date().toISOString(),
     sourceHash: await hashReviewSources(directory),
     checks: Object.fromEntries(Object.keys(pending.checks).map((key) => [key, true]))
@@ -343,11 +343,12 @@ test('CLI add formats dry-run and rejects invalid profiles without mutation', as
 });
 
 test('table templates retain runtime safety, accessible alternatives, and required public handlers', async () => {
-  const component = await readFile(path.join(repository, 'templates', 'data-table', 'react', 'data-table', 'DataTable.tsx'), 'utf8');
-  const types = await readFile(path.join(repository, 'templates', 'data-table', 'react', 'data-table', 'DataTable.types.ts'), 'utf8');
-  const preferences = await readFile(path.join(repository, 'templates', 'data-table', 'react', 'data-table', 'DataTablePreferences.ts'), 'utf8');
-  const styles = await readFile(path.join(repository, 'templates', 'data-table', 'react', 'data-table', 'DataTable.css'), 'utf8');
-  const staticComponent = await readFile(path.join(repository, 'templates', 'data-table', 'react-static', 'StaticDataTable.tsx'), 'utf8');
+  const templateRoot = path.join(repository, 'skills', 'wingmanpm-product-designer', 'templates');
+  const component = await readFile(path.join(templateRoot, 'data-table', 'react', 'data-table', 'DataTable.tsx'), 'utf8');
+  const types = await readFile(path.join(templateRoot, 'data-table', 'react', 'data-table', 'DataTable.types.ts'), 'utf8');
+  const preferences = await readFile(path.join(templateRoot, 'data-table', 'react', 'data-table', 'DataTablePreferences.ts'), 'utf8');
+  const styles = await readFile(path.join(templateRoot, 'data-table', 'react', 'data-table', 'DataTable.css'), 'utf8');
+  const staticComponent = await readFile(path.join(templateRoot, 'data-table', 'react-static', 'StaticDataTable.tsx'), 'utf8');
   assert.match(types, /WingmanWorkTableProps/);
   assert.match(types, /WingmanEditableTableProps/);
   assert.match(types, /onBulkAction:\s*\(/);

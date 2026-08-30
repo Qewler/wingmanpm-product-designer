@@ -13,7 +13,7 @@ offline, responsive.
 - [x] Forms and validation
 - [x] Overlays
 - [x] Settings and onboarding
-- [x] Permissions, billing, paywalls, and team administration
+- [x] Permissions, operational settings, access controls, and team administration
 - [x] Notifications and audit logs
 - [x] File management
 - [x] Tables, charts, filters, selection, and bulk actions

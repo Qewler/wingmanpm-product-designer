@@ -1,196 +1,161 @@
-# WingmanPM Product Designer
+<p align="center">
+  <img src="assets/wordmark.svg" width="360" alt="WingmanPM Product Designer" />
+</p>
 
-Private `0.2.0-private.2` development build of a portable Agent Skill for
-designing and shipping high-quality SaaS product interfaces.
+<h1 align="center">Product design judgment for coding agents.</h1>
 
-Created by [Julius (@Qewler)](https://github.com/Qewler), creator of
-[WingmanPM](https://wingman.pm).
+<p align="center">
+  A portable design partner that reads the product, chooses the right level of change,
+  ships the interface, and proves it in the browser.
+</p>
 
-## Status
+<p align="center">
+  <a href="https://www.npmjs.com/package/wingmanpm-product-designer"><img alt="npm version" src="https://img.shields.io/npm/v/wingmanpm-product-designer?style=flat-square&color=256f4d" /></a>
+  <a href="https://github.com/Qewler/wingmanpm-product-designer/actions/workflows/ci.yml"><img alt="CI status" src="https://img.shields.io/github/actions/workflow/status/Qewler/wingmanpm-product-designer/ci.yml?branch=main&style=flat-square&label=quality" /></a>
+  <a href="https://agentskills.io/specification"><img alt="Agent Skills compatible" src="https://img.shields.io/badge/Agent%20Skills-compatible-256f4d?style=flat-square" /></a>
+  <a href="LICENSE"><img alt="Apache 2.0 license" src="https://img.shields.io/badge/license-Apache--2.0-172019?style=flat-square" /></a>
+  <img alt="Node 20 or newer" src="https://img.shields.io/badge/node-%3E%3D20-172019?style=flat-square" />
+</p>
 
-- Private GitHub development build
-- GitHub owner: [@Qewler](https://github.com/Qewler)
-- Repository: [Qewler/wingmanpm-product-designer](https://github.com/Qewler/wingmanpm-product-designer)
-- Private GitHub repository; no public release
-- No npm publication
-- Apache 2.0 license prepared for a later release
-
-## Local commands
+<p align="center"><strong>Codex&nbsp;&nbsp; Claude Code&nbsp;&nbsp; Cursor&nbsp;&nbsp; Agent Skills</strong></p>
 
 ```bash
-npm test
-node ./bin/wingman-design.mjs --help
-node ./bin/wingman-design.mjs install --agent all
-node ./bin/wingman-design.mjs init --project /path/to/project
-node ./bin/wingman-design.mjs upgrade --project /path/to/project
-node ./bin/wingman-design.mjs commands
-node ./bin/wingman-design.mjs explain "make this stunning"
-node ./bin/wingman-design.mjs add data-table \
-  --project /path/to/project --profile work --id customer-records
-node ./bin/wingman-design.mjs check --project /path/to/project
-node ./bin/wingman-design.mjs doctor --project /path/to/project
-node ./bin/wingman-design.mjs uninstall --project /path/to/project
+npx plugins add Qewler/wingmanpm-product-designer
 ```
 
-The skill is portable through the
-[Agent Skills `SKILL.md` format](https://agentskills.io/specification). Project
-initialization creates a framework-neutral design contract and, for the golden
-Next.js stack, project-owned components plus Storybook.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/hero-dark.webp">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/hero-light.webp">
+  <img src="docs/assets/readme/hero-light.webp" alt="WingmanPM Product Designer beside a refined renewable-energy operations workspace" width="1600">
+</picture>
 
-## Design commands
+## Proof, not promises
 
-Use one skill with an intent and optional target:
+The showcase uses runnable React stories, the same copy and sample data on both sides, and deterministic Playwright captures. Every Tamarack Renewables surface is clearly marked **Concept demo**.
+
+### Operational workspace
+
+A usable first pass becomes a calm operating surface with clearer hierarchy, real status meaning, compact navigation, and less card noise.
+
+<img src="docs/assets/readme/comparison-workspace.webp" alt="Before and after comparison of the Tamarack FieldOps operational workspace" width="1600">
+
+### Transparent AI review
+
+The same generated draft becomes reviewable. Sources, uncertainty, and the human approval boundary stay visible at the moment of action.
+
+<img src="docs/assets/readme/comparison-ai-review.webp" alt="Before and after comparison of a source-aware AI review flow" width="1600">
+
+### SaaS marketing first view
+
+The same promise, actions, and photograph move from a familiar split layout to a product-specific, atmospheric first view.
+
+<img src="docs/assets/readme/comparison-marketing.webp" alt="Before and after comparison of the Tamarack Renewables marketing first view" width="1600">
+
+> **From the maker of WingmanPM**
+>
+> You fly the product. We cover your six. WingmanPM is an AI copilot for product managers that turns the chaos of customer feedback into organized, ranked, actionable decisions.
+>
+> [Explore WingmanPM](https://wingman.pm)
+
+## One skill, several harnesses
+
+Install through the interface your agent already understands.
+
+| Target | Command |
+| --- | --- |
+| Agent Plugins | `npx plugins add Qewler/wingmanpm-product-designer` |
+| Agent Skills | `npx skills add Qewler/wingmanpm-product-designer --skill wingmanpm-product-designer` |
+| OpenAI Codex | `codex plugin add wingmanpm-product-designer@wingmanpm` |
+| Claude Code | `claude plugin install wingmanpm-product-designer@wingmanpm` |
+| npm / npx | `npx wingmanpm-product-designer@latest install --agent all` |
+
+Native marketplace installs need a one-time catalog setup:
+
+```bash
+codex plugin marketplace add Qewler/wingmanpm-product-designer
+claude plugin marketplace add Qewler/wingmanpm-product-designer
+```
+
+Then ask for the outcome, not a pile of style tokens:
 
 ```text
 # Codex
-$wingmanpm-product-designer stunning billing settings
+$wingmanpm-product-designer stunning onboarding
 
-# Claude Code and Cursor
-/wingmanpm-product-designer standout billing settings
+# Claude Code or Cursor
+/wingmanpm-product-designer review billing settings
 
-# Direct level selection
-$wingmanpm-product-designer beautiful settings --level refine
+# Direct scope
+$wingmanpm-product-designer elevate the pricing page --level elevate
 ```
 
-Professional and plain aliases are equal. Examples include `polish` /
-`beautiful`, `standout` / `stunning`, `amplify` / `pimp`, `review` / `audit`,
-and `data-table` / `table`. Run `wingman-design commands` for all 18 families
-or `wingman-design explain <phrase> --json` for the exact resolved contract.
+Plain requests work too. “Make this beautiful” starts with product inspection and one bounded choice. It does not silently turn a focused repair into a redesign.
 
-An explicit skill command acts directly. A free-form request such as “make it
-beautiful,” “make this stunning,” or “pimp it up” does not guess how far to go.
-After inspecting the product, the skill offers one choice:
+Claude marketplace installs namespace the explicit command as
+`/wingmanpm-product-designer:wingmanpm-product-designer`. A standalone Agent
+Skills install keeps the shorter `/wingmanpm-product-designer` form.
 
-- **Refine:** preserve the direction and repair execution.
-- **Elevate:** refine it and add one useful product-specific signature moment.
-- **Reimagine:** show three responsive coded directions before full work.
+## Judgment before decoration
 
-Free-form `beautiful` recommends Refine. `stunning` and `pimp it up` recommend
-Elevate. Reviews stay read-only unless the user explicitly requests changes or
-uses `--fix`.
+Most design prompts fail before the first pixel. They skip context, choose a fashionable default, and stop at one successful desktop state. This skill follows a stricter loop:
 
-## Data tables
+1. **Inspect:** understand the product, stack, design system, information structure, and constraints.
+2. **Choose:** use **Refine**, **Elevate**, or **Reimagine** to set an honest change boundary.
+3. **Build:** implement product-owned components, useful motion, complete states, and explicit responsive behavior.
+4. **Prove:** run deterministic checks, Storybook, keyboard review, accessibility checks, and browser evidence.
 
-Every table uses the smallest profile that matches the task:
+It covers product UI, marketing surfaces, design-system work, AI interactions, forms, navigation, account patterns, and operational tables. Existing capable components stay in place. Project truth wins over a generic aesthetic.
 
-- `static`: semantic comparison or report content without grid controls;
-- `work`: operational data with density, column controls, pagination,
-  expansion, selection, and bulk actions;
-- `editable`: the work profile plus deliberate inline editing and recovery.
+## Built for real product work
 
-The generator preserves a capable existing grid. In React projects without
-one, it creates a project-owned TanStack-based table kit. Other stacks receive
-a table contract and semantic HTML/CSS reference. It never runs a package
-install; it records the exact dependencies for the user or CI to install.
+- **Existing products stay recognizable.** The skill reads routes, permissions, copy, data meaning, tokens, and shared components before it changes the surface.
+- **New work gets a clear contract.** Product facts, visual direction, components, responsive rules, states, and proof live together instead of drifting across prompts.
+- **Dense tools stay fast.** Tables, filters, bulk actions, inline edits, preferences, and keyboard paths are treated as workflows, not decorative grids.
+- **AI stays under human control.** Drafts show scope, sources, uncertainty, progress, recovery, and the exact approval boundary before a consequential action.
+- **Reviews stay honest.** `review` and `audit` are read-only unless a fix is requested. Findings separate measured defects from taste and name the proof still needed.
+- **Handoffs are reproducible.** Managed files have hashes, user-owned files stay protected, browser evidence expires when sources change, and install state can be removed safely.
+
+## The quality bar is executable
+
+`npx wingmanpm-product-designer@latest check` blocks missing contracts and stale evidence. It checks token use, semantics, keyboard paths, loading and error states, responsive behavior, dark mode, reduced motion, AI approval boundaries, table behavior, and visual review freshness.
+
+The checker does not pretend that a regular expression can measure beauty. Machine checks prove the contract. Browser evidence and human review prove the result.
 
 ```bash
-wingman-design add data-table \
-  --project /path/to/project \
-  --profile work \
-  --id customer-records
+npx wingmanpm-product-designer@latest init --project /path/to/project
+npx wingmanpm-product-designer@latest check --project /path/to/project
+npx wingmanpm-product-designer@latest doctor --project /path/to/project
 ```
 
-Each generated table has a stable contract in `design-system/tables/`, plus
-Storybook and browser-test evidence where the detected stack supports them.
-Use `--dry-run` to inspect the plan without writing files.
+Generated files are recorded in `.wingmanpm-design/manifest.json`. Upgrades refresh unchanged managed files and preserve project-owned work. Uninstall removes only unchanged managed files. `--dry-run` shows the plan before a write.
 
-## Ownership and safety
+## Responsive by construction
 
-`init` does not overwrite existing product documents, components, stories, or
-instructions. It adds marked instruction blocks and records generated files in
-`.wingmanpm-design/manifest.json`.
+<img src="docs/assets/readme/responsive-proof.webp" alt="The same Tamarack FieldOps story shown at desktop, tablet, and mobile widths" width="1600">
 
-`upgrade` moves an initialized v1 project to the v2 contract. It refreshes only
-unchanged managed runtime files, migrates configuration, inventories discovered
-tables, and preserves project-owned work. It is safe to repeat and supports
-`--dry-run`. Table scaffolding remains a separate, explicit command.
+The golden React path includes Storybook and Playwright proof. Other stacks receive the same design contract and portable references without pretending to be React.
 
-Use `--mode preserve` for an established product. It records legacy findings in
-`.wingmanpm-design/baseline.json`, keeps them visible as a count, and blocks new
-occurrences. This prevents a first install from treating old debt as new work.
+## Trust is part of the design
 
-The manifest classifies files as:
+- Apache-2.0 licensed, with no MCP server, account, secret, or plugin telemetry.
+- The portable skill and OpenAI review archive contain no maker promotion.
+- Normal agent output stays focused on the user's product. It does not inject WingmanPM mentions.
+- The public maker story uses only public copy and assets. It includes no production data, private route, pricing, checkout, or sign-in.
+- The showcase is repository proof and is excluded from the runtime package.
 
-- `managed`: generated runtime, compiled outputs, configuration, and adapters;
-- `seeded`: project-owned components, stories, and test references;
-- `user`: product truth, design decisions, surfaces, and token source;
-- `observed`: baselines and review evidence.
+## Reproduce the visuals
 
-Project uninstall removes unchanged managed files and marked pointer blocks.
-It preserves user, seeded, observed, and locally changed files. Global skill
-uninstall uses content hashes and refuses to replace or delete changed files.
-
-## Quality gate
-
-`wingman-design check` blocks deterministic contract, token, accessibility,
-keyboard, state, theme, motion, responsive, vocabulary, card-wall, AI, and
-visual-evidence failures. Performance findings warn.
-
-Table enforcement adds:
-
-- `WPD018`: the table declaration or contract is missing or invalid;
-- `WPD019`: Storybook, browser, or visual-review evidence is missing or stale;
-- `WPD020`: reorder, resize, full-value, or grid behavior lacks an accessible
-  alternative.
-
-Three global rules apply to generated code, UI copy, documents, stories,
-templates, and handoff text:
-
-- `WPD021`: the forbidden long dash or a render equivalent is present;
-- `WPD022`: a surface repeats heading structure, shell landmarks, or dialog
-  close controls;
-- `WPD023`: a dropdown lacks executable light and dark contrast and behavior
-  evidence.
-
-The checker does not pretend to measure beauty with source-code patterns.
-Subjective quality is proven by browser evidence and review; the hook enforces
-that the evidence exists and is current.
-
-Visual evidence is pending after initialization. After a real browser review,
-record it explicitly:
+Every image above comes from [`showcase/`](showcase/), not a painted screenshot.
 
 ```bash
-wingman-design check --project /path/to/project \
-  --record-review --reviewer "Reviewer name" \
-  --confirm keyboard,zoom200,reducedMotion,longContent,light,dark,axe,responsiveStates,structureUnique,dropdownContrast
+npm --prefix showcase ci
+npm --prefix showcase run build
+npm --prefix showcase run capture
+npm --prefix showcase run check
 ```
 
-The source-linked rule registry is searchable:
+Read the [compatibility report](docs/compatibility.md), [publication record](docs/publication-record.md), [release notes](CHANGELOG.md), [security policy](SECURITY.md), or [support guide](SUPPORT.md). For all commands, run `npx wingmanpm-product-designer@latest --help`.
 
-```bash
-wingman-design search reduced motion
-```
-
-## Share safety
-
-This release stays private. The npm package uses an explicit allowlist, so
-local evaluations, fixtures, screenshots, and tests are not included in a
-future package archive. Before sharing a repository copy, run:
-
-```bash
-npm run check:share
-```
-
-The check rejects absolute home and temporary paths, secret-shaped values,
-tracked environment or OS files, PNG metadata, generated build directories,
-unexpected Git remotes, a non-private package, and local data left in Git
-history.
-
-Public GitHub visibility and npm publication remain blocked until the complete
-behavioral benchmark passes in Codex, Claude Code, and Cursor against both the
-neutral fixture and the private preservation fixture. See
-[`docs/release-roadmap.md`](docs/release-roadmap.md).
-
-## Repository map
-
-- `SKILL.md`: portable Agent Skill router.
-- `references/`: focused product, system, motion, QA, and marketing guidance.
-- `registry/`: original command and source-linked rule registries.
-- `schemas/`: command, project, review, exception, and table contracts.
-- `templates/`: generated design contracts, product patterns, tables,
-  Storybook, and browser tests.
-- `src/`: CLI, intent resolver, table scaffolder, token compiler, checker,
-  adapters, upgrade, and uninstall logic.
-- `fixtures/neutral-saas/`: neutral golden-stack overfitting fixture.
-- `evals/`: fourteen behavioral contracts and cross-agent prompt.
-- `docs/compatibility.md`: tested local tool versions and build results.
+<p align="center">
+  Built by <a href="https://github.com/Qewler">Julius / Qewler</a>. Released under <a href="LICENSE">Apache-2.0</a>.
+</p>

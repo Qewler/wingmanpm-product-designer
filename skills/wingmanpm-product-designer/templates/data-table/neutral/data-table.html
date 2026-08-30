@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WingmanPM semantic data table</title>
+  <link rel="stylesheet" href="../tokens/tokens.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; padding: clamp(1rem, 4vw, 3rem); color: var(--wpd-color-text); background: var(--wpd-color-canvas); font-family: system-ui, sans-serif; }
+    main { width: min(100%, 80rem); margin-inline: auto; }
+    h1 { margin-block: 0 .4rem; font-size: clamp(1.7rem, 4vw, 2.5rem); letter-spacing: -.035em; }
+    .intro { margin-block: 0 2rem; color: var(--wpd-color-muted); }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-block-end: .75rem; }
+    .controls label { display: flex; min-height: 2.25rem; align-items: center; gap: .5rem; padding-inline: .75rem; border: 1px solid var(--wpd-color-border); border-radius: var(--wpd-radius-control); background: var(--wpd-color-surface); }
+    input, button, select { font: inherit; }
+    input[type='search'] { min-width: 12rem; border: 0; outline: 0; color: inherit; background: transparent; }
+    button, select { min-height: 2.25rem; padding-inline: .65rem; border: 1px solid var(--wpd-color-border); border-radius: var(--wpd-radius-control); color: var(--wpd-color-text); background: var(--wpd-color-surface); cursor: pointer; }
+    button[aria-pressed='true'] { border-color: var(--wpd-color-brand); background: color-mix(in srgb, var(--wpd-color-brand) 9%, var(--wpd-color-surface)); }
+    :focus-visible { outline: 3px solid color-mix(in srgb, var(--wpd-color-brand) 65%, white); outline-offset: 2px; }
+    .table-region { overflow: auto; border-block: 1px solid var(--wpd-color-border); }
+    table { width: 100%; min-width: 42rem; table-layout: fixed; border-collapse: collapse; }
+    th, td { height: var(--row-height, 3rem); padding-inline: .75rem; border-bottom: 1px solid var(--wpd-color-border); text-align: start; overflow-wrap: anywhere; }
+    thead th { height: 2.625rem; color: var(--wpd-color-muted); background: var(--wpd-color-surface); font-size: .75rem; }
+    tbody tr:hover > * { background: color-mix(in srgb, var(--wpd-color-brand) 4%, var(--wpd-color-surface)); }
+    .density-dense { --row-height: 2.25rem; }
+    .numeric { text-align: end; font-variant-numeric: tabular-nums; }
+    .status { display: inline-flex; padding: .15rem .5rem; border-radius: 999px; color: var(--wpd-color-status-success); background: color-mix(in srgb, var(--wpd-color-status-success) 10%, transparent); font-size: .75rem; font-weight: 700; }
+    .column-tools { margin-block: .75rem; padding: .75rem; border: 1px solid var(--wpd-color-border); background: var(--wpd-color-surface); }
+    .column-tools legend { font-weight: 700; }
+    .column-tools-row { display: grid; grid-template-columns: minmax(8rem, 1fr) auto auto; align-items: center; gap: .5rem; padding-block: .35rem; }
+    .column-tools-row > span { display: inline-flex; }
+    .column-tools-row button { width: 2.25rem; padding: 0; }
+    .resize { width: 1rem; min-height: 2rem; margin-inline-start: auto; padding: 0; border: 0; border-inline-end: 2px solid var(--wpd-color-border); border-radius: 0; cursor: col-resize; }
+    .pagination { display: flex; min-height: 3.25rem; align-items: center; justify-content: flex-end; gap: 1rem; color: var(--wpd-color-muted); font-size: .8125rem; font-variant-numeric: tabular-nums; }
+    @media (pointer: coarse) { main { --row-height: 3rem; } .resize { display: none; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @media (forced-colors: active) { table, th, td, .column-tools { border-color: CanvasText; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p>Framework-neutral reference · Sample data</p>
+    <h1>Operational data</h1>
+    <p class="intro">Replace the sample contract and values with product truth. Preserve native table semantics unless a complete grid keyboard model is required.</p>
+
+    <div class="controls" aria-label="Table controls">
+      <label><span>Search</span><input id="search" type="search" autocomplete="off"></label>
+      <button type="button" data-density="dense" aria-pressed="false">Dense</button>
+      <button type="button" data-density="comfortable" aria-pressed="true">Comfort</button>
+      <button type="button" aria-expanded="false" aria-controls="column-tools">Columns</button>
+      <span id="count" role="status">3 rows</span>
+    </div>
+
+    <fieldset class="column-tools" id="column-tools" hidden>
+      <legend>Columns</legend>
+      <div class="column-tools-row" data-column="status">
+        <label><input type="checkbox" checked> Status</label>
+        <span aria-label="Move Status column">
+          <button type="button" aria-label="Move Status left">←</button>
+          <button type="button" aria-label="Move Status right">→</button>
+        </span>
+        <select aria-label="Status width"><option>Compact</option><option selected>Default</option><option>Wide</option></select>
+      </div>
+      <div class="column-tools-row" data-column="owner">
+        <label><input type="checkbox" checked> Owner</label>
+        <span aria-label="Move Owner column">
+          <button type="button" aria-label="Move Owner left">←</button>
+          <button type="button" aria-label="Move Owner right">→</button>
+        </span>
+        <select aria-label="Owner width"><option>Compact</option><option selected>Default</option><option>Wide</option></select>
+      </div>
+    </fieldset>
+
+    <div class="table-region" tabindex="0" role="region" aria-label="Scrollable sample data table">
+      <table data-wingman-table-id="{{TABLE_ID}}" data-wingman-table-profile="{{TABLE_PROFILE}}">
+        <caption class="visually-hidden">Sample operational data</caption>
+        <colgroup><col style="width:40%"><col style="width:18%"><col style="width:27%"><col style="width:15%"></colgroup>
+        <thead><tr>
+          <th scope="col">Item</th>
+          <th scope="col" data-column="status">Status</th>
+          <th scope="col" data-column="owner">Owner</th>
+          <th scope="col" class="numeric">Score <span class="resize" role="separator" aria-orientation="vertical" aria-label="Resize Score column" aria-valuemin="72" aria-valuenow="120" aria-valuemax="280" tabindex="0"></span></th>
+        </tr></thead>
+        <tbody>
+          <tr><th scope="row">Sample: Complete long-form item title</th><td data-column="status"><span class="status">Ready</span></td><td data-column="owner">Sample: Maya Chen</td><td class="numeric">98</td></tr>
+          <tr><th scope="row">Sample: Keyboard alternative review</th><td data-column="status">In progress</td><td data-column="owner">Sample: Alex Nowak</td><td class="numeric">87</td></tr>
+          <tr><th scope="row">Sample: Offline recovery contract</th><td data-column="status">Blocked</td><td data-column="owner">Sample: Sam Rivera</td><td class="numeric">72</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <nav class="pagination" aria-label="Table pagination"><span>1-3 of 3</span><button type="button" disabled>Previous</button><button type="button" disabled>Next</button></nav>
+  </main>
+  <script>
+    const main = document.querySelector('main');
+    const rows = [...document.querySelectorAll('tbody tr')];
+    const search = document.querySelector('#search');
+    const count = document.querySelector('#count');
+    document.querySelectorAll('[data-density]').forEach((button) => button.addEventListener('click', () => {
+      main.classList.toggle('density-dense', button.dataset.density === 'dense');
+      document.querySelectorAll('[data-density]').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+    }));
+    document.querySelector('[aria-controls="column-tools"]').addEventListener('click', (event) => {
+      const tools = document.querySelector('#column-tools');
+      tools.hidden = !tools.hidden;
+      event.currentTarget.setAttribute('aria-expanded', String(!tools.hidden));
+    });
+    search.addEventListener('input', () => {
+      const query = search.value.toLocaleLowerCase();
+      let visible = 0;
+      rows.forEach((row) => { row.hidden = !row.textContent.toLocaleLowerCase().includes(query); if (!row.hidden) visible += 1; });
+      count.textContent = `${visible} ${visible === 1 ? 'row' : 'rows'}`;
+    });
+    document.querySelectorAll('.column-tools input').forEach((input) => input.addEventListener('change', () => {
+      document.querySelectorAll(`[data-column="${input.closest('[data-column]').dataset.column}"]`).forEach((cell) => { cell.hidden = !input.checked; });
+    }));
+    document.querySelector('.resize').addEventListener('keydown', (event) => {
+      const current = Number(event.currentTarget.getAttribute('aria-valuenow'));
+      const step = event.shiftKey ? 32 : 8;
+      const next = event.key === 'ArrowLeft' ? current - step : event.key === 'ArrowRight' ? current + step : event.key === 'Home' ? 72 : event.key === 'End' ? 280 : null;
+      if (next !== null) { event.preventDefault(); event.currentTarget.setAttribute('aria-valuenow', String(Math.max(72, Math.min(280, next)))); }
+    });
+  </script>
+</body>
+</html>

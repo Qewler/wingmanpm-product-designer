@@ -1,24 +1,32 @@
-# Private release roadmap
+# Version 1 release roadmap
 
 ## Current gate
 
-This repository stays private until the behavioral benchmark passes in Codex,
-Claude Code, and Cursor against both the neutral fixture and an isolated
-private preservation fixture.
+The public Tamarack FieldOps `Concept demo` fixture now replaces all private or
+redacted preservation evidence. Its contract benchmark, Storybook build,
+20-test browser suite, accessibility checks, four responsive baselines, light
+and dark themes, and visual review pass.
 
-Current result on 2026-08-30:
+The release remains gated until:
 
-- Codex passed all 8 behavioral cases.
-- The neutral fixture passed build, browser, accessibility, theme, and motion checks.
-- The isolated private preserve-mode pilot passed and the worktree was removed.
-- Shareable Claude Code and Cursor results are not recorded yet, so the public
-  release gate remains closed.
+- Hosted CI confirms the already-green local package and manifest checks on
+  Node.js 20, 22, and 24 plus Linux, macOS, and Windows.
+- Codex, Claude Code, and Cursor each pass the same 14 decision cases and one
+  isolated design implementation.
+- The final history, secret, local-path, package-content, and image-metadata
+  scans pass.
 
-## Later publication
+## Publication order
 
-- Private GitHub repository: `Qewler/wingmanpm-product-designer`.
-- Keep repository visibility private until the full cross-agent gate passes.
-- Review the Apache 2.0 NOTICE and source citations before changing visibility.
-- Reserve npm publication for a later release.
-- Preferred future package name: `wingmanpm-product-designer`.
-- Do not mix this release reminder into `SKILL.md` or generated design rules.
+1. Make `Qewler/wingmanpm-product-designer` public and create tag `v1.0.0`.
+2. Publish the GitHub release archives and checksums.
+3. Publish `wingmanpm-product-designer@1.0.0` to npm with two-factor approval.
+4. Verify the automatic skills.sh page after one public `npx skills add` run.
+5. Verify direct Codex and Claude Code marketplace installation from GitHub.
+6. Submit the promotion-free skill archive to OpenAI.
+7. Submit the plugin to Claude's community marketplace and Cursor Marketplace.
+8. Record each public URL, version, review state, and verified install command.
+
+The release plan is approved. Authenticated publisher actions are still needed
+for repository visibility, npm publication, and external marketplace
+submissions. Promotion stays out of agent answers and portable review bundles.

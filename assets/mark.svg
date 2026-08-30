@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">WingmanPM Product Designer mark</title>
+  <desc id="desc">Two offset design planes with a precise center point.</desc>
+  <rect width="96" height="96" rx="24" fill="#172019"/>
+  <g fill="none" stroke-linejoin="round" stroke-width="4">
+    <path d="M30 23h39l10 12-8 35H32L21 58z" stroke="#9fd05b" opacity=".78"/>
+    <path d="M22 31h39l10 12-8 35H24L13 66z" stroke="#f0f5f1"/>
+  </g>
+  <rect x="37" y="49" width="9" height="9" rx="2" fill="#9fd05b"/>
+  <rect x="51" y="55" width="9" height="9" rx="2" fill="#aebbb2"/>
+</svg>

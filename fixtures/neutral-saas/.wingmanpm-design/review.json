@@ -1,8 +1,8 @@
 {
   "status": "reviewed",
-  "reviewer": "Codex browser QA for Julius",
-  "reviewedAt": "2026-08-30T15:54:45.467Z",
-  "sourceHash": "fdd38e0efbc7584dcb5f5579f1672ba83e75541ed462c20e8a43e9ee193b97e8",
+  "reviewer": "Public fixture browser QA",
+  "reviewedAt": "2026-08-30T22:02:47.820Z",
+  "sourceHash": "b02134ebfdf0db6445c4199b1113c6fc0bf6f96531c2a8ba649e552dd046e0d3",
   "viewports": [
     390,
     768,
@@ -17,7 +17,9 @@
     "light": true,
     "dark": true,
     "axe": true,
-    "responsiveStates": true
+    "responsiveStates": true,
+    "structureUnique": true,
+    "dropdownContrast": true
   },
-  "notes": "Refreshed after newline-only repository formatting; no UI semantics changed after the 19-test browser pass."
+  "notes": "Explicit visual and interaction review confirmed by CLI operator."
 }

@@ -1,6 +1,12 @@
 {
-  "checkedAt": "2026-08-30",
+  "checkedAt": "2026-08-31",
   "releaseGate": "closed",
+  "publicFixture": {
+    "status": "passed",
+    "result": "evals/results/public-fixture-validation.json",
+    "concept": "Tamarack FieldOps (Concept demo)",
+    "browserTests": 20
+  },
   "agents": {
     "codex": {
       "status": "passed",
@@ -10,7 +16,7 @@
     },
     "claude-code": {
       "status": "blocked-auth",
-      "version": "2.1.241",
+      "version": "2.1.251",
       "scenarios": 0,
       "reason": "Authentication was unavailable, so the benchmark was not run."
     },
@@ -21,5 +27,5 @@
       "reason": "Authentication was unavailable, so the benchmark was not run."
     }
   },
-  "nextGate": "Authenticate Claude Code and Cursor, run and validate the 14-scenario benchmark in both, complete the all-profile Chromium gate, then review cross-agent differences. npm publication remains blocked."
+  "nextGate": "Complete the final package and all-profile CI gates, then authenticate Claude Code and Cursor and run the same 14-scenario benchmark plus one isolated design implementation in each. npm publication remains blocked until those checks pass."
 }

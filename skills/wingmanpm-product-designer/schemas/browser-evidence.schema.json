@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Qewler/wingmanpm-product-designer/main/skills/wingmanpm-product-designer/schemas/browser-evidence.schema.json",
+  "title": "WingmanPM Product Designer browser evidence",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "status",
+    "sourceHash",
+    "completedAt",
+    "tests",
+    "storyCount",
+    "themes",
+    "structureUnique",
+    "dropdownContrast",
+    "dropdownCandidateCount"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "status": { "enum": ["passed", "failed"] },
+    "sourceHash": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+    "completedAt": { "type": "string", "format": "date-time" },
+    "tests": {
+      "type": "object",
+      "required": ["passed", "failed", "skipped"],
+      "properties": {
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "storyCount": { "type": "integer", "minimum": 0 },
+    "themes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["light", "dark"] }
+    },
+    "structureUnique": { "type": "boolean" },
+    "dropdownContrast": { "type": "boolean" },
+    "dropdownCandidateCount": { "type": "integer", "minimum": 0 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "passed" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "tests": { "properties": { "passed": { "minimum": 1 }, "failed": { "const": 0 }, "skipped": { "const": 0 } } },
+          "storyCount": { "minimum": 1 },
+          "themes": {
+            "allOf": [
+              { "contains": { "const": "light" } },
+              { "contains": { "const": "dark" } }
+            ]
+          },
+          "structureUnique": { "const": true },
+          "dropdownContrast": { "const": true }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

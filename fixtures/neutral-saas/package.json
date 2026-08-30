@@ -1,11 +1,11 @@
 {
-  "name": "wingmanpm-neutral-saas-fixture",
+  "name": "tamarack-fieldops-concept-fixture",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "design:check": "node .wingmanpm-design/runtime/checker.mjs --project .",
-    "design:doctor": "wingman-design doctor --project .",
+    "design:doctor": "npx --yes wingmanpm-product-designer@1.0.0 doctor --project .",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "design:test:visual": "playwright test --config playwright.wingman.config.ts"

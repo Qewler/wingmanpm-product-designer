@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "sourceHash": "b02134ebfdf0db6445c4199b1113c6fc0bf6f96531c2a8ba649e552dd046e0d3",
+  "completedAt": "2026-08-30T22:02:41.678Z",
+  "tests": {
+    "passed": 20,
+    "failed": 0,
+    "skipped": 0
+  },
+  "storyCount": 7,
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "structureUnique": true,
+  "dropdownContrast": true,
+  "dropdownCandidateCount": 0
+}

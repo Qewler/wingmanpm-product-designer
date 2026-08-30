@@ -1,12 +1,12 @@
-# Surface: Product Home
+# Surface: Renewable Operations Home
 
 - Mode: operate
 - Motion role: repeated product interaction
 
 ## User task
 
-See current work, find an item, understand its state, and take the next safe
-action.
+See current renewable assets, find a work order, understand its state, and take
+the next safe action.
 
 ## Preserved authority
 

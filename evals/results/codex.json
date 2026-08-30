@@ -11,7 +11,7 @@
       "id": "preserve",
       "classification": "Established product extension",
       "decision": "Load references/product-ui.md. Inspect existing instructions, tokens, components, routes, representative screens, and working behavior. Preserve the existing visual authority and extend its vocabulary; do not create a parallel design language.",
-      "proof": "Require exact code and Storybook evidence that established patterns remain intact, plus clean responsive, keyboard, zoom, browser, and accessibility checks. The isolated v1 upgrade evaluation preserved a user-owned marker and was hash-stable on its second run.",
+      "proof": "Require exact code and Storybook evidence that established patterns remain intact, plus clean responsive, keyboard, zoom, browser, and accessibility checks. The committed renewable-operations fixture kept the browser-evidence gate active through an idempotent v1-to-v2 upgrade.",
       "risk": "A local improvement can still cause visual drift when it introduces a second component or styling system."
     },
     {

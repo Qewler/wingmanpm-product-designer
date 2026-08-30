@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { runCli } from '../src/cli.mjs';
+import { runCli } from '../skills/wingmanpm-product-designer/src/cli.mjs';
 
 try {
   await runCli();

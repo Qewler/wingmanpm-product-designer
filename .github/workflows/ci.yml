@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_call:
 
 permissions:
   contents: read
@@ -17,14 +18,17 @@ jobs:
   quality:
     name: Node ${{ matrix.node }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 24]
+        node: [20, 22, 24]
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
@@ -32,15 +36,15 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
 
+      - name: Verify share safety
+        if: matrix.node == 24
+        run: npm run check:share
+
       - name: Install package metadata
         run: npm ci --ignore-scripts
 
       - name: Run tests and fixture evaluations
         run: npm run test:all
-
-      - name: Verify share safety
-        if: matrix.node == 24
-        run: npm run check:share
 
       - name: Audit dependencies
         if: matrix.node == 24
@@ -53,10 +57,13 @@ jobs:
   fixture-browser:
     name: Node 24 fixture browser
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
@@ -71,17 +78,17 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Upgrade the checked-out v1 fixture
-        run: node ./bin/wingman-design.mjs upgrade --project fixtures/neutral-saas
+        run: node ./skills/wingmanpm-product-designer/bin/wingman-design.mjs upgrade --project fixtures/neutral-saas
 
       - name: Scaffold all table profiles
         run: |
-          node ./bin/wingman-design.mjs add data-table --project fixtures/neutral-saas --profile static --id ci-static-report
-          node ./bin/wingman-design.mjs add data-table --project fixtures/neutral-saas --profile work --id ci-work-items
-          node ./bin/wingman-design.mjs add data-table --project fixtures/neutral-saas --profile editable --id ci-editable-items
+          node ./skills/wingmanpm-product-designer/bin/wingman-design.mjs add data-table --project fixtures/neutral-saas --profile static --id ci-static-report
+          node ./skills/wingmanpm-product-designer/bin/wingman-design.mjs add data-table --project fixtures/neutral-saas --profile work --id ci-work-items
+          node ./skills/wingmanpm-product-designer/bin/wingman-design.mjs add data-table --project fixtures/neutral-saas --profile editable --id ci-editable-items
 
       - name: Install fixture dependencies
         working-directory: fixtures/neutral-saas
-        run: npm install --ignore-scripts
+        run: npm ci --ignore-scripts
 
       - name: Install Chromium
         working-directory: fixtures/neutral-saas
@@ -104,4 +111,71 @@ jobs:
 
       - name: Verify machine-written browser evidence
         working-directory: fixtures/neutral-saas
-        run: node ../../bin/wingman-design.mjs check --project . --allow-pending-review
+        run: node ../../skills/wingmanpm-product-designer/bin/wingman-design.mjs check --project . --allow-pending-review
+
+  showcase:
+    name: Node 24 public showcase
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: showcase/package-lock.json
+
+      - name: Install showcase dependencies
+        run: npm --prefix showcase ci --ignore-scripts
+
+      - name: Build and verify public showcase assets
+        run: npm run test:showcase
+
+  package-smoke:
+    name: Package lifecycle (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: 20
+          - os: ubuntu-latest
+            node: 22
+          - os: ubuntu-latest
+            node: 24
+          - os: macos-latest
+            node: 24
+          - os: windows-latest
+            node: 24
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install package metadata
+        run: npm ci --ignore-scripts
+
+      - name: Build npm archive without publishing
+        id: pack
+        shell: bash
+        run: |
+          npm pack --json --ignore-scripts > "$RUNNER_TEMP/npm-pack.json"
+          node -e "const fs = require('node:fs'); const path = require('node:path'); const result = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + '/npm-pack.json', 'utf8')); fs.appendFileSync(process.env.GITHUB_OUTPUT, 'tarball=' + path.resolve(result[0].filename) + '\n');"
+
+      - name: Test packed install, upgrade, uninstall, and changed-file protection
+        shell: bash
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: node ./scripts/smoke-packed-package.mjs "$TARBALL"

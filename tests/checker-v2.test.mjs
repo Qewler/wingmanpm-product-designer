@@ -13,11 +13,12 @@ import {
   validateExceptions,
   validateReview,
   validateTableContract
-} from '../src/checker.mjs';
+} from '../skills/wingmanpm-product-designer/src/checker.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const requiredStates = ['loading', 'empty', 'no-results', 'partial', 'stale', 'error', 'permission', 'offline', 'saving', 'success'];
 const forbiddenDashCharacter = () => String['from' + 'CodePoint'](0x2000 + 0x14);
+const forbiddenEnDashCharacter = () => String['from' + 'CodePoint'](0x2000 + 0x13);
 
 async function writePassedBrowserEvidence(directory, overrides = {}) {
   const evidence = {
@@ -134,17 +135,17 @@ test('dependency-free validators accept schema v2 and expose v1 as a migration w
   assert.deepEqual(validateConfig(validConfig()), []);
   assert.deepEqual(validateConfig(validConfig(1)), [{
     path: '$.schemaVersion',
-    message: 'Schema version 1 is supported only for migration; run wingman-design upgrade.',
+    message: 'Schema version 1 is supported only for migration; run npx --yes wingmanpm-product-designer@1.0.0 upgrade.',
     severity: 'warn'
   }]);
   assert.match(validateConfig({ ...validConfig(), scanRoots: ['../private'] })[0].message, /safe project-relative/);
   assert.deepEqual(validateExceptions({ exceptions: [] }, { today: '2026-08-30' }), []);
   assert.equal(validateExceptions({ exceptions: [{
-    ruleId: 'WPD020', target: 'src/table.tsx', reason: 'Temporary safe migration.', approver: 'Julius', reviewDate: '2026-08-29'
+    ruleId: 'WPD020', target: 'src/table.tsx', reason: 'Temporary safe migration.', approver: 'Morgan Lee', reviewDate: '2026-08-29'
   }] }, { today: '2026-08-30' })[0].path, '$.exceptions[0].reviewDate');
   for (const ruleId of ['WPD021', 'WPD022', 'WPD023']) {
     const hardRule = validateExceptions({ exceptions: [{
-      ruleId, target: 'src/example.tsx', reason: 'Attempted global bypass.', approver: 'Julius', reviewDate: '2099-12-31'
+      ruleId, target: 'src/example.tsx', reason: 'Attempted global bypass.', approver: 'Morgan Lee', reviewDate: '2099-12-31'
     }] }, { today: '2026-08-30' });
     assert.ok(hardRule.some((entry) => entry.path === '$.exceptions[0].ruleId' && /cannot be excepted/.test(entry.message)));
   }
@@ -301,7 +302,7 @@ test('WPD019 blocks missing evidence and stale visual review evidence', async ()
   const sourceHash = await hashReviewSources(directory);
   const checks = Object.fromEntries(['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates', 'structureUnique', 'dropdownContrast'].map((key) => [key, true]));
   await writeFile(path.join(directory, '.wingmanpm-design', 'review.json'), `${JSON.stringify({
-    status: 'reviewed', reviewer: 'Julius', reviewedAt: new Date().toISOString(), sourceHash,
+    status: 'reviewed', reviewer: 'Morgan Lee', reviewedAt: new Date().toISOString(), sourceHash,
     viewports: [390, 768, 1280, 1440], checks, notes: 'Reviewed table evidence.'
   }, null, 2)}\n`);
   report = await runChecks(directory);
@@ -311,7 +312,7 @@ test('WPD019 blocks missing evidence and stale visual review evidence', async ()
     tableExpansion: true, tableBulk: true, tableEditing: false
   });
   await writeFile(path.join(directory, '.wingmanpm-design', 'review.json'), `${JSON.stringify({
-    status: 'reviewed', reviewer: 'Julius', reviewedAt: new Date().toISOString(), sourceHash,
+    status: 'reviewed', reviewer: 'Morgan Lee', reviewedAt: new Date().toISOString(), sourceHash,
     viewports: [390, 768, 1280, 1440], checks, notes: 'Reviewed table evidence.'
   }, null, 2)}\n`);
   await writeFile(path.join(directory, 'src', 'ChangedAfterReview.tsx'), 'export const Changed = () => <p>Changed</p>;\n');
@@ -371,11 +372,12 @@ test('WPD020 rejects interaction claims without implementation and browser evide
 });
 
 test('schema files remain parseable and make config v2 authoritative', async () => {
-  const configSchema = JSON.parse(await readFile(path.join(root, 'schemas', 'config.schema.json'), 'utf8'));
-  const exceptionSchema = JSON.parse(await readFile(path.join(root, 'schemas', 'exceptions.schema.json'), 'utf8'));
-  const reviewSchema = JSON.parse(await readFile(path.join(root, 'schemas', 'review.schema.json'), 'utf8'));
-  const browserSchema = JSON.parse(await readFile(path.join(root, 'schemas', 'browser-evidence.schema.json'), 'utf8'));
-  const tableSchema = JSON.parse(await readFile(path.join(root, 'schemas', 'table-contract.schema.json'), 'utf8'));
+  const schemaRoot = path.join(root, 'skills', 'wingmanpm-product-designer', 'schemas');
+  const configSchema = JSON.parse(await readFile(path.join(schemaRoot, 'config.schema.json'), 'utf8'));
+  const exceptionSchema = JSON.parse(await readFile(path.join(schemaRoot, 'exceptions.schema.json'), 'utf8'));
+  const reviewSchema = JSON.parse(await readFile(path.join(schemaRoot, 'review.schema.json'), 'utf8'));
+  const browserSchema = JSON.parse(await readFile(path.join(schemaRoot, 'browser-evidence.schema.json'), 'utf8'));
+  const tableSchema = JSON.parse(await readFile(path.join(schemaRoot, 'table-contract.schema.json'), 'utf8'));
   assert.equal(configSchema.properties.schemaVersion.const, 2);
   assert.ok(configSchema.properties.legacyBaseline);
   assert.ok(configSchema.properties.scanRoots);
@@ -391,18 +393,22 @@ test('schema files remain parseable and make config v2 authoritative', async () 
   }
 });
 
-test('WPD021 blocks every render-equivalent dash form and allows the shorter dash', async () => {
+test('WPD021 blocks every long-dash render form and allows the regular hyphen', async () => {
   const directory = await initializedProject();
   const slash = String.fromCharCode(92);
   const cases = [
     ['literal.md', `A${forbiddenDashCharacter()}B`],
+    ['literal-en.md', `A${forbiddenEnDashCharacter()}B`],
     ['named.html', ['A&', 'mdash;B'].join('')],
+    ['named-en.html', ['A&', 'ndash;B'].join('')],
     ['named-no-semicolon.html', ['A&', 'mdash B'].join('')],
     ['decimal.html', ['A&#', '8212;B'].join('')],
     ['hex.html', ['A&#', 'x2014;B'].join('')],
+    ['hex-en.html', ['A&#', 'x2013;B'].join('')],
     ['decimal-no-semicolon.html', ['A&#', '8212 B'].join('')],
     ['hex-no-semicolon.html', ['A&#', 'x2014 B'].join('')],
     ['escaped.ts', `export const value = "${slash}${'u2014'}";`],
+    ['escaped-en.ts', `export const value = "${slash}${'u2013'}";`],
     ['escaped.json', `{"value":"${slash}${'u2014'}"}`],
     ['escaped.yaml', `value: "${slash}${'u2014'}"`],
     ['content.css', `p::after { content: "${slash}${'2014 ' }"; }`],
@@ -411,12 +417,12 @@ test('WPD021 blocks every render-equivalent dash form and allows the shorter das
     ['code-point.ts', ['export const value = String', '.from', 'CodePoint(0x2014);'].join('')],
     ['char-code.ts', ['export const value = String', '.from', 'CharCode(8212);'].join('')],
     ['code-point-add.ts', ['export const value = String', '.from', 'CodePoint(0x2000 + 0x14);'].join('')],
+    ['code-point-add-en.ts', ['export const value = String', '.from', 'CodePoint(0x2000 + 0x13);'].join('')],
     ['char-code-add.ts', ['export const value = String', '.from', 'CharCode(8_000 + 212);'].join('')],
     ['.wingmanpm-design/manifest.json', JSON.stringify({ entries: [{ path: `copy${forbiddenDashCharacter()}file.md`, ownership: 'user' }] })]
   ];
   for (const [name, content] of cases) await writeFile(path.join(directory, name), `${content}\n`);
-  await writeFile(path.join(directory, 'allowed.md'), `A${String.fromCodePoint(0x2013)}B\n`);
-  await writeFile(path.join(directory, 'allowed-constructor.ts'), ['export const value = String', '.from', 'CodePoint(0x2000 + 0x13);'].join(''));
+  await writeFile(path.join(directory, 'allowed.md'), 'A-B\n');
   await writeFile(path.join(directory, 'encoded-example.md'), ['```html', ['&', 'mdash;'].join(''), '```', ''].join('\n'));
 
   const report = await runChecks(directory, { allowPendingReview: true });
@@ -424,11 +430,10 @@ test('WPD021 blocks every render-equivalent dash form and allows the shorter das
     assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === name), name);
   }
   assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === 'allowed.md'), false);
-  assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === 'allowed-constructor.ts'), false);
   assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === 'encoded-example.md'), false);
 
   await writeFile(path.join(directory, '.wingmanpm-design', 'exceptions.json'), `${JSON.stringify({ exceptions: [{
-    ruleId: 'WPD021', target: 'literal.md', reason: 'Attempted global bypass.', approver: 'Julius', reviewDate: '2099-12-31'
+    ruleId: 'WPD021', target: 'literal.md', reason: 'Attempted global bypass.', approver: 'Morgan Lee', reviewDate: '2099-12-31'
   }] })}\n`);
   const bypass = await runChecks(directory, { allowPendingReview: true });
   assert.ok(bypass.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === 'literal.md'));

@@ -6,8 +6,8 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { compileTokens } from '../src/tokens.mjs';
-import { hashReviewSources } from '../src/checker.mjs';
+import { compileTokens } from '../skills/wingmanpm-product-designer/src/tokens.mjs';
+import { hashReviewSources } from '../skills/wingmanpm-product-designer/src/checker.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(root, 'bin', 'wingman-design.mjs');
@@ -83,6 +83,11 @@ test('explain distinguishes vague pickers, explicit commands, and read-only revi
   const fixedAudit = run(['explain', 'audit', '--explicit', '--fix', '--json'], root);
   assert.equal(fixedAudit.status, 0, fixedAudit.stderr);
   assert.equal(JSON.parse(fixedAudit.stdout).readOnly, false);
+
+  const compoundAudit = run(['explain', 'audit', 'the', 'AI', 'approval', 'flow'], root);
+  assert.equal(compoundAudit.status, 0, compoundAudit.stderr);
+  assert.match(compoundAudit.stdout, /Reference: references\/qa\.md#read-only-reviews/);
+  assert.match(compoundAudit.stdout, /Supporting reference: references\/ai-ui\.md/);
 });
 
 test('init creates a complete golden-stack contract and is idempotent', async () => {
@@ -98,6 +103,8 @@ test('init creates a complete golden-stack contract and is idempotent', async ()
     '.cursor/rules/wingmanpm-product-designer.mdc', 'playwright.wingman.config.ts'
   ]) assert.equal(await readFile(path.join(directory, relative), 'utf8').then(() => true), true, relative);
   assert.match(await readFile(path.join(directory, 'AGENTS.md'), 'utf8'), /Existing instructions stay[\s\S]*wingmanpm-product-designer:start/);
+  const initializedPackage = JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
+  assert.equal(initializedPackage.scripts['design:doctor'], 'npx --yes wingmanpm-product-designer@1.0.0 doctor --project .');
   await appendFile(path.join(directory, 'design-system', 'PRODUCT.md'), '\nUser-owned fact.\n');
   const second = run(['init', '--project', directory], root);
   assert.equal(second.status, 0, second.stderr);
@@ -106,6 +113,51 @@ test('init creates a complete golden-stack contract and is idempotent', async ()
   const check = run(['check', '--project', directory, '--allow-pending-review'], root);
   assert.equal(check.status, 0, check.stdout + check.stderr);
   assert.match(check.stdout, /0 block/);
+});
+
+test('init emits a public renewable-operations concept instead of product-specific examples', async () => {
+  const directory = await project();
+  const initialized = run(['init', '--project', directory], root);
+  assert.equal(initialized.status, 0, initialized.stderr);
+
+  const generated = await Promise.all([
+    'src/stories/WingmanProduct.stories.tsx',
+    'src/components/wingman-design/AccountPatterns.tsx',
+    'src/components/wingman-design/OperationalPatterns.tsx',
+    'src/components/wingman-design/ProductWorkspace.tsx'
+  ].map((relative) => readFile(path.join(directory, relative), 'utf8')));
+  const publicExample = generated.join('\n').toLowerCase();
+
+  assert.match(publicExample, /concept demo/);
+  assert.match(publicExample, /renewable|solar|turbine|inverter/);
+  for (const privateProductExample of ['feedback', 'knowledge', 'billing', ['reply', 'domain'].join(' '), 'wingman.pm']) {
+    assert.doesNotMatch(publicExample, new RegExp(privateProductExample.replace('.', '\\.')));
+  }
+});
+
+test('project skill install exposes resolving public schema and rule source URLs', async () => {
+  const directory = await project({ neutral: true });
+  const install = run(['install', '--agent', 'codex', '--scope', 'project', '--project', directory], root);
+  assert.equal(install.status, 0, install.stdout + install.stderr);
+
+  const installed = path.join(directory, '.agents', 'skills', 'wingmanpm-product-designer');
+  const schemaFiles = ['browser-evidence', 'commands', 'config', 'exceptions', 'review', 'table-contract'];
+  for (const name of schemaFiles) {
+    const schema = JSON.parse(await readFile(path.join(installed, 'schemas', `${name}.schema.json`), 'utf8'));
+    assert.equal(
+      schema.$id,
+      `https://raw.githubusercontent.com/Qewler/wingmanpm-product-designer/main/skills/wingmanpm-product-designer/schemas/${name}.schema.json`
+    );
+  }
+
+  const rules = JSON.parse(await readFile(path.join(installed, 'registry', 'rules.json'), 'utf8'));
+  for (const rule of rules.entries) {
+    assert.match(rule.source, /^https:\/\//);
+    assert.doesNotMatch(rule.source, /^wingmanpm:\/\//);
+    if (rule.source.startsWith('https://github.com/Qewler/wingmanpm-product-designer/')) {
+      assert.match(rule.source, /\/blob\/main\/skills\/wingmanpm-product-designer\/references\//);
+    }
+  }
 });
 
 test('framework-neutral init creates semantic output without React files', async () => {
@@ -161,7 +213,7 @@ test('check blocks a deterministic violation and accepts a scoped dated exceptio
   await writeFile(path.join(directory, '.wingmanpm-design', 'exceptions.json'), `${JSON.stringify({
     exceptions: [{
       ruleId: 'WPD005', target: 'src/components/wingman-design/Violation.tsx',
-      reason: 'Temporary migration of an established interaction.', approver: 'Julius', reviewDate: '2099-12-31'
+      reason: 'Temporary migration of an established interaction.', approver: 'Morgan Lee', reviewDate: '2099-12-31'
     }]
   }, null, 2)}\n`);
   const excepted = run(['check', '--project', directory, '--allow-pending-review'], root);
@@ -245,13 +297,14 @@ test('project-scoped all-agent install is portable, complete, repeatable, and sa
     'src/browser-reporter.mjs',
     'templates/project/tests/wingman-design/visual.spec.ts',
     'templates/data-table/react/data-table/DataTable.tsx',
-    'scripts/validate-skill.mjs',
-    'schemas/browser-evidence.schema.json'
+    'schemas/browser-evidence.schema.json',
+    'LICENSE',
+    'NOTICE'
   ];
 
   for (const destination of destinations) {
     const manifest = JSON.parse(await readFile(path.join(destination, '.wingman-install.json'), 'utf8'));
-    assert.match(manifest.source, /^wingmanpm-product-designer@0\.2\.0-private\.2$/);
+    assert.match(manifest.source, /^wingmanpm-product-designer@1\.0\.0$/);
     assert.equal(path.isAbsolute(manifest.source), false);
     assert.equal(JSON.stringify(manifest).includes(root), false);
     assert.equal(JSON.stringify(manifest).includes(directory), false);
@@ -283,7 +336,7 @@ test('project-scoped all-agent install is portable, complete, repeatable, and sa
 });
 
 test('DTCG token compiler creates theme, Tailwind, and shadcn outputs', async () => {
-  const tokens = JSON.parse(await readFile(path.join(root, 'templates', 'design-system', 'tokens', 'tokens.json'), 'utf8'));
+  const tokens = JSON.parse(await readFile(path.join(root, 'skills', 'wingmanpm-product-designer', 'templates', 'design-system', 'tokens', 'tokens.json'), 'utf8'));
   const compiled = compileTokens(tokens);
   assert.match(compiled.css, /--wpd-color-canvas/);
   assert.match(compiled.css, /data-theme="dark"/);

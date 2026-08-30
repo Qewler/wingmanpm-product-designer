@@ -1,8 +1,7 @@
 {
-  "name": "wingmanpm-product-designer-private",
-  "version": "0.2.0-private.2",
-  "private": true,
-  "description": "Private development build of the WingmanPM Product Designer Agent Skill.",
+  "name": "wingmanpm-product-designer",
+  "version": "1.0.0",
+  "description": "Product design judgment, production UI patterns, and verifiable quality gates for coding agents.",
   "author": {
     "name": "Julius",
     "url": "https://github.com/Qewler"
@@ -17,36 +16,59 @@
   },
   "type": "module",
   "bin": {
-    "wingman-design": "./bin/wingman-design.mjs"
+    "wingmanpm-product-designer": "./bin/wingmanpm-product-designer.mjs",
+    "wingman-design": "./skills/wingmanpm-product-designer/bin/wingman-design.mjs"
   },
   "files": [
-    "SKILL.md",
-    "LICENSE",
-    "NOTICE",
-    "README.md",
-    "agents/",
+    "plugin.json",
+    ".codex-plugin/",
+    ".claude-plugin/",
+    ".agents/plugins/",
+    "skills/",
+    "assets/",
     "bin/",
+    "README.md",
     "docs/",
-    "references/",
-    "registry/",
-    "schemas/",
-    "src/",
-    "templates/"
+    "PRIVACY.md",
+    "TERMS.md",
+    "SUPPORT.md",
+    "SECURITY.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "NOTICE"
   ],
   "scripts": {
-    "check": "npm run validate:skill && npm test",
-    "doctor": "node ./bin/wingman-design.mjs --help",
+    "check": "npm run validate:release && npm test",
+    "doctor": "node ./skills/wingmanpm-product-designer/bin/wingman-design.mjs --help",
     "test": "node --test tests/*.test.mjs",
-    "test:all": "npm run test && npm run validate:skill && npm run eval:fixtures",
+    "test:all": "npm run test && npm run validate:release && npm run eval:fixtures",
     "test:fixture:storybook": "npm --prefix fixtures/neutral-saas run build-storybook",
     "test:fixture:browser": "npm --prefix fixtures/neutral-saas run design:test:visual",
-    "validate:skill": "node ./scripts/validate-skill.mjs .",
+    "test:showcase": "npm --prefix showcase run check",
+    "validate:skill": "node ./scripts/validate-skill.mjs ./skills/wingmanpm-product-designer",
+    "validate:release": "node ./scripts/validate-release.mjs",
     "eval:fixtures": "node ./evals/run-fixture-evals.mjs",
     "eval:codex": "node ./evals/validate-agent-result.mjs ./evals/results/codex.json",
-    "check:share": "node ./scripts/check-share-safety.mjs"
+    "check:share": "node ./scripts/check-share-safety.mjs",
+    "check:release": "node ./scripts/check-share-safety.mjs",
+    "release:bundle": "npm run validate:release && node ./scripts/build-release.mjs",
+    "prepack": "npm run validate:release"
   },
   "engines": {
     "node": ">=20"
+  },
+  "keywords": [
+    "agent-plugin",
+    "agent-skill",
+    "codex",
+    "claude-code",
+    "cursor",
+    "product-design",
+    "saas",
+    "ui-ux"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "license": "Apache-2.0"
 }

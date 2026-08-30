@@ -22,7 +22,7 @@ test('share safety accepts clean text and rejects forbidden long-dash output', a
   const directory = await mkdtemp(path.join(os.tmpdir(), 'wingman-share-test-'));
   await mkdir(path.join(directory, 'scripts'), { recursive: true });
   await writeFile(path.join(directory, 'scripts', 'check-share-safety.mjs'), await readFile(path.join(root, 'scripts', 'check-share-safety.mjs')));
-  await writeFile(path.join(directory, 'package.json'), `${JSON.stringify({ name: 'share-test', private: true, files: [] }, null, 2)}\n`);
+  await writeFile(path.join(directory, 'package.json'), `${JSON.stringify({ name: 'wingmanpm-product-designer', version: '1.0.0', files: [] }, null, 2)}\n`);
   await writeFile(path.join(directory, 'README.md'), '# Safe repository\n');
   assert.equal(run('git', ['init', '-b', 'main'], directory).status, 0);
   await commit(directory, 'safe fixture');
@@ -30,8 +30,10 @@ test('share safety accepts clean text and rejects forbidden long-dash output', a
   assert.equal(result.status, 0, result.stdout + result.stderr);
 
   const forbiddenDash = String['from' + 'CodePoint'](0x2000 + 0x14);
+  const forbiddenEnDash = String['from' + 'CodePoint'](0x2000 + 0x13);
   const slash = String['from' + 'CharCode'](90 + 2);
   await writeFile(path.join(directory, 'README.md'), `# Unsafe${forbiddenDash}repository\n`);
+  await writeFile(path.join(directory, 'en-dash.md'), `# Unsafe${forbiddenEnDash}repository\n`);
   await writeFile(path.join(directory, 'named.html'), ['<p>&', 'mdash;</p>'].join(''));
   await writeFile(path.join(directory, 'named-no-semicolon.html'), ['<p>&', 'mdash </p>'].join(''));
   await writeFile(path.join(directory, 'numeric.html'), ['<p>&#', '8212;</p>'].join(''));
@@ -51,14 +53,14 @@ test('share safety accepts clean text and rejects forbidden long-dash output', a
   result = run(process.execPath, ['scripts/check-share-safety.mjs'], directory);
   assert.equal(result.status, 1);
   assert.match(result.stderr, /forbidden long-dash output/);
-  for (const file of ['named.html', 'named-no-semicolon.html', 'numeric.html', 'hex.html', 'numeric-no-semicolon.html', 'escaped.js', 'escaped.json', 'escaped.yaml', 'content.css', 'variable.css', 'style.html', 'code-point.js', 'char-code.js', 'code-point-add.js', 'char-code-add.js']) assert.match(result.stderr, new RegExp(file));
+  for (const file of ['en-dash.md', 'named.html', 'named-no-semicolon.html', 'numeric.html', 'hex.html', 'numeric-no-semicolon.html', 'escaped.js', 'escaped.json', 'escaped.yaml', 'content.css', 'variable.css', 'style.html', 'code-point.js', 'char-code.js', 'code-point-add.js', 'char-code-add.js']) assert.match(result.stderr, new RegExp(file));
 });
 
 test('share safety handles Git history larger than the Node default buffer', async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'wingman-share-history-'));
   await mkdir(path.join(directory, 'scripts'), { recursive: true });
   await writeFile(path.join(directory, 'scripts', 'check-share-safety.mjs'), await readFile(path.join(root, 'scripts', 'check-share-safety.mjs')));
-  await writeFile(path.join(directory, 'package.json'), `${JSON.stringify({ name: 'share-history-test', private: true, files: [] }, null, 2)}\n`);
+  await writeFile(path.join(directory, 'package.json'), `${JSON.stringify({ name: 'wingmanpm-product-designer', version: '1.0.0', files: [] }, null, 2)}\n`);
   await writeFile(path.join(directory, 'README.md'), '# Safe history fixture\n');
   assert.equal(run('git', ['init', '-b', 'main'], directory).status, 0);
   await commit(directory, 'initial safe fixture');
@@ -76,5 +78,5 @@ test('share safety handles Git history larger than the Node default buffer', asy
 
   const result = run(process.execPath, ['scripts/check-share-safety.mjs'], directory);
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /Share-safety check passed/);
+  assert.match(result.stdout, /Release-safety check passed/);
 });

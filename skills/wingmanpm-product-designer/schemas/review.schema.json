@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Qewler/wingmanpm-product-designer/main/skills/wingmanpm-product-designer/schemas/review.schema.json",
+  "title": "WingmanPM Product Designer visual review evidence",
+  "type": "object",
+  "required": ["status", "viewports", "checks"],
+  "properties": {
+    "status": { "enum": ["pending", "reviewed"] },
+    "reviewer": { "type": ["string", "null"] },
+    "reviewedAt": { "type": ["string", "null"], "format": "date-time" },
+    "sourceHash": { "type": ["string", "null"], "pattern": "^[a-fA-F0-9]{64}$" },
+    "viewports": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "integer", "minimum": 320 },
+      "allOf": [
+        { "contains": { "const": 390 } },
+        { "contains": { "const": 768 } },
+        { "contains": { "const": 1280 } },
+        { "contains": { "const": 1440 } }
+      ]
+    },
+    "checks": {
+      "type": "object",
+      "required": ["keyboard", "zoom200", "reducedMotion", "longContent", "light", "dark", "axe", "responsiveStates", "structureUnique", "dropdownContrast"],
+      "properties": {
+        "keyboard": { "type": "boolean" },
+        "zoom200": { "type": "boolean" },
+        "reducedMotion": { "type": "boolean" },
+        "longContent": { "type": "boolean" },
+        "light": { "type": "boolean" },
+        "dark": { "type": "boolean" },
+        "axe": { "type": "boolean" },
+        "responsiveStates": { "type": "boolean" },
+        "structureUnique": { "type": "boolean" },
+        "dropdownContrast": { "type": "boolean" },
+        "tableDensity": { "type": "boolean" },
+        "tableColumns": { "type": "boolean" },
+        "tablePagination": { "type": "boolean" },
+        "tableExpansion": { "type": "boolean" },
+        "tableBulk": { "type": "boolean" },
+        "tableEditing": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "notes": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "reviewed" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "reviewer": { "type": "string", "minLength": 2 },
+          "reviewedAt": { "type": "string", "format": "date-time" },
+          "sourceHash": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
+        },
+        "required": ["reviewer", "reviewedAt", "sourceHash"]
+      }
+    }
+  ],
+  "additionalProperties": false
+}

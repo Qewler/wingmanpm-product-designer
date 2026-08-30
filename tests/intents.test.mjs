@@ -10,7 +10,7 @@ import {
   normalizeAlias,
   resolveIntent,
   resolveRequest
-} from '../src/intents.mjs';
+} from '../skills/wingmanpm-product-designer/src/intents.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -102,22 +102,37 @@ test('review is read-only unless fix is explicit', () => {
   assert.equal(fixed.fix, true);
 });
 
+test('review keeps QA ownership and adds one explicit target reference', () => {
+  const aiReview = resolveRequest('audit the AI approval flow');
+  assert.equal(aiReview.kind, 'direct');
+  assert.equal(aiReview.intent, 'review');
+  assert.equal(aiReview.readOnly, true);
+  assert.equal(aiReview.reference, 'references/qa.md#read-only-reviews');
+  assert.deepEqual(aiReview.supportingReferences, ['references/ai-ui.md']);
+
+  const genericReview = resolveRequest('audit billing settings');
+  assert.equal(genericReview.kind, 'direct');
+  assert.equal(genericReview.readOnly, true);
+  assert.deepEqual(genericReview.supportingReferences, []);
+});
+
 test('command registry carries progressive references and source citations', async () => {
-  const registry = JSON.parse(await readFile(path.join(root, 'registry', 'commands.json'), 'utf8'));
-  const schema = JSON.parse(await readFile(path.join(root, 'schemas', 'commands.schema.json'), 'utf8'));
+  const skillRoot = path.join(root, 'skills', 'wingmanpm-product-designer');
+  const registry = JSON.parse(await readFile(path.join(skillRoot, 'registry', 'commands.json'), 'utf8'));
+  const schema = JSON.parse(await readFile(path.join(skillRoot, 'schemas', 'commands.schema.json'), 'utf8'));
   const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
   const packageLock = JSON.parse(await readFile(path.join(root, 'package-lock.json'), 'utf8'));
-  const skill = await readFile(path.join(root, 'SKILL.md'), 'utf8');
-  assert.equal(registry.version, '0.2.0-private.2');
+  const skill = await readFile(path.join(skillRoot, 'SKILL.md'), 'utf8');
+  assert.equal(registry.version, '1.0.0');
   assert.equal(packageJson.version, registry.version);
   assert.equal(packageLock.version, registry.version);
   assert.equal(packageLock.packages[''].version, registry.version);
-  assert.match(skill, /version: 0\.2\.0-private\.2/);
+  assert.match(skill, /version: 1\.0\.0/);
   assert.equal(registry.intents.length, 18);
   assert.ok(registry.sources.every(({ url }) => url.startsWith('https://')));
   assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
   for (const command of registry.intents) {
     const [relative] = command.reference.split('#');
-    await readFile(path.join(root, relative), 'utf8');
+    await readFile(path.join(skillRoot, relative), 'utf8');
   }
 });

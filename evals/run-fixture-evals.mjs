@@ -6,16 +6,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const skillRoot = path.join(root, 'skills', 'wingmanpm-product-designer');
 const fixture = path.join(root, 'fixtures', 'neutral-saas');
 const benchmarks = JSON.parse(await readFile(path.join(root, 'evals', 'benchmarks.json'), 'utf8')).benchmarks;
-const referenceFiles = (await readdir(path.join(root, 'references')))
+const referenceFiles = (await readdir(path.join(skillRoot, 'references')))
   .filter((name) => name.endsWith('.md'))
   .sort()
-  .map((name) => path.join(root, 'references', name));
+  .map((name) => path.join(skillRoot, 'references', name));
 const contract = [
-  await readFile(path.join(root, 'SKILL.md'), 'utf8'),
+  await readFile(path.join(skillRoot, 'SKILL.md'), 'utf8'),
   ...(await Promise.all(referenceFiles.map((file) => readFile(file, 'utf8')))),
-  await readFile(path.join(root, 'registry', 'commands.json'), 'utf8'),
+  await readFile(path.join(skillRoot, 'registry', 'commands.json'), 'utf8'),
   await readFile(path.join(fixture, 'design-system', 'PRODUCT.md'), 'utf8'),
   await readFile(path.join(fixture, 'design-system', 'DESIGN.md'), 'utf8'),
   await readFile(path.join(fixture, 'design-system', 'COMPONENTS.md'), 'utf8'),
@@ -36,6 +37,7 @@ const run = (...args) => spawnSync(process.execPath, [cli, ...args], { encoding:
 
 try {
   await cp(fixture, migratedFixture, { recursive: true });
+  await rm(path.join(migratedFixture, '.wingmanpm-design', 'browser-evidence.json'), { force: true });
 
   const firstUpgrade = run('upgrade', '--project', migratedFixture);
   assert.equal(firstUpgrade.status, 0, firstUpgrade.stdout + firstUpgrade.stderr);

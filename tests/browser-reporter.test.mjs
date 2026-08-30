@@ -4,8 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import WingmanBrowserReporter, { BROWSER_AUDIT_ATTACHMENT, CANONICAL_BROWSER_AUDIT_TITLE } from '../src/browser-reporter.mjs';
-import { hashReviewSources, validateBrowserEvidence } from '../src/checker.mjs';
+import WingmanBrowserReporter, { BROWSER_AUDIT_ATTACHMENT, CANONICAL_BROWSER_AUDIT_TITLE } from '../skills/wingmanpm-product-designer/src/browser-reporter.mjs';
+import { hashReviewSources, validateBrowserEvidence } from '../skills/wingmanpm-product-designer/src/checker.mjs';
 
 async function project() {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'wingman-browser-reporter-'));
@@ -102,7 +102,7 @@ test('reporter removes stale pass evidence at start and records a failed full ru
 });
 
 test('canonical browser source keeps delayed, visible-text, X-icon, and active-option guards', async () => {
-  const source = await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'templates', 'project', 'tests', 'wingman-design', 'visual.spec.ts'), 'utf8');
+  const source = await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'skills', 'wingmanpm-product-designer', 'templates', 'project', 'tests', 'wingman-design', 'visual.spec.ts'), 'utf8');
   assert.match(source, /visibleText\(heading\)/);
   assert.match(source, /const explicitX[\s\S]*if \(!marked && !named && !explicitX\)/);
   assert.match(source, /activeByFocus[\s\S]*no visible keyboard-active option/);

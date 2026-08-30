@@ -1,0 +1,26 @@
+{
+  "checkedAt": "2026-08-31",
+  "fixture": "fixtures/neutral-saas",
+  "concept": {
+    "company": "Tamarack Renewables",
+    "product": "Tamarack FieldOps",
+    "disclosure": "Concept demo"
+  },
+  "results": {
+    "behavioralContracts": { "passed": 14, "failed": 0 },
+    "storybookBuild": "passed",
+    "browserTests": { "passed": 20, "failed": 0, "skipped": 0 },
+    "stories": 7,
+    "themes": ["light", "dark"],
+    "viewports": [390, 768, 1280, 1440],
+    "structureUnique": true,
+    "dropdownContrast": true,
+    "visualReview": "passed"
+  },
+  "reproduce": [
+    "npm run eval:fixtures",
+    "npm run test:fixture:storybook",
+    "Run the all-profile browser job defined in .github/workflows/ci.yml"
+  ],
+  "notes": "All evidence comes from the committed public fixture. No external repository or redacted source is required."
+}

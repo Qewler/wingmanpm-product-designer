@@ -1,0 +1,22 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "wingmanpm-product-designer",
+  "version": "1.0.0",
+  "description": "Product design judgment for coding agents building accessible, responsive digital products.",
+  "author": {
+    "name": "Julius / Qewler",
+    "url": "https://github.com/Qewler"
+  },
+  "homepage": "https://github.com/Qewler/wingmanpm-product-designer#readme",
+  "repository": "https://github.com/Qewler/wingmanpm-product-designer",
+  "license": "Apache-2.0",
+  "keywords": [
+    "product-design",
+    "ui",
+    "ux",
+    "frontend",
+    "accessibility",
+    "design-systems",
+    "agent-skill"
+  ]
+}

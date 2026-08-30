@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const failures = [];
 const forbiddenDash = String['from' + 'CodePoint'](0x2000 + 0x14);
+const forbiddenEnDash = String['from' + 'CodePoint'](0x2000 + 0x13);
 const DEFAULT_GIT_MAX_BUFFER = 64 * 1024 * 1024;
 
 function git(args, options = {}) {
@@ -23,13 +24,13 @@ function escapeRegex(value) {
 }
 
 const htmlDashPatterns = [
-  new RegExp(['&', 'mdash(?:;|(?=[^0-9a-z]|$))'].join(''), 'i'),
-  new RegExp(['&#', '8212(?:;|(?=[^0-9]|$))'].join('')),
-  new RegExp(['&#', 'x0*2014(?:;|(?=[^0-9a-f]|$))'].join(''), 'i')
+  new RegExp(['&', '(?:m|n)dash(?:;|(?=[^0-9a-z]|$))'].join(''), 'i'),
+  new RegExp(['&#', '821[12](?:;|(?=[^0-9]|$))'].join('')),
+  new RegExp(['&#', 'x0*201[34](?:;|(?=[^0-9a-f]|$))'].join(''), 'i')
 ];
 const slashCharacter = String['from' + 'CharCode'](90 + 2);
-const unicodeDashPattern = new RegExp(escapeRegex(slashCharacter) + 'u(?:0{0,4}2014|\\{0*2014\\})', 'i');
-const cssDashPattern = new RegExp(escapeRegex(slashCharacter) + '0*2014(?:\\s|(?=[^0-9a-f]|$))', 'i');
+const unicodeDashPattern = new RegExp(escapeRegex(slashCharacter) + 'u(?:0{0,4}201[34]|\\{0*201[34]\\})', 'i');
+const cssDashPattern = new RegExp(escapeRegex(slashCharacter) + '0*201[34](?:\\s|(?=[^0-9a-f]|$))', 'i');
 
 function additiveInteger(value) {
   let expression = value.replace(/\s+/g, '');
@@ -52,7 +53,10 @@ function containsConstructedDash(content) {
     'String', '\\s*\\.\\s*', 'from', '(?:CodePoint|CharCode)',
     '\\s*\\(\\s*([0-9a-fx_+\\-\\s()]+)\\s*\\)'
   ].join(''), 'gi');
-  return [...content.matchAll(pattern)].some((match) => additiveInteger(match[1]) === 0x2000 + 0x14);
+  return [...content.matchAll(pattern)].some((match) => {
+    const value = additiveInteger(match[1]);
+    return value === 0x2000 + 0x14 || value === 0x2000 + 0x13;
+  });
 }
 
 function forbiddenRenderedDash(relative, content) {
@@ -75,7 +79,20 @@ const localPathPatterns = [
 const secretPatterns = [
   new RegExp(['sk', '-', '[A-Za-z0-9_-]{20,}'].join('')),
   new RegExp(['CLERK', '_SECRET', '_KEY', '\\s*='].join('')),
-  new RegExp(['BEGIN ', '(?:RSA |EC |OPENSSH )?', 'PRIVATE KEY'].join(''))
+  new RegExp(['BEGIN ', '(?:RSA |EC |OPENSSH )?', 'PRIVATE KEY'].join('')),
+  /github_pat_[A-Za-z0-9_]{20,}/,
+  /gh[pousr]_[A-Za-z0-9]{20,}/,
+  /glpat-[A-Za-z0-9_-]{20,}/,
+  /xox[baprs]-[A-Za-z0-9-]{20,}/,
+  /npm_[A-Za-z0-9]{20,}/,
+  /AKIA[0-9A-Z]{16}/,
+  /(?:OPENAI|ANTHROPIC|CURSOR|NPM)_API_KEY\s*=/
+];
+const privateProductPatterns = [
+  new RegExp(['WingmanPM', 'Pure'].join('_'), 'i'),
+  new RegExp(['WingmanPM', 'Lead', 'Hunter'].join('_'), 'i'),
+  new RegExp(['WingmanPM', 'frontend'].join('_'), 'i'),
+  new RegExp(['Pornstars', 'Database'].join('_'), 'i')
 ];
 
 const tracked = git(['ls-files', '-z']).split('\0').filter(Boolean);
@@ -87,11 +104,13 @@ for (const relative of tracked) {
   if (parts.at(-1) === '.DS_Store' || parts.at(-1)?.startsWith('._') || parts.at(-1)?.startsWith('.env')) {
     failures.push(`${relative}: local environment or OS file is tracked`);
   }
+  if (['.npmrc', '.pypirc', 'credentials', 'credentials.json'].includes(parts.at(-1))) failures.push(`${relative}: credential configuration is tracked`);
   const buffer = await readFile(path.join(root, relative));
   const content = buffer.toString('utf8');
   if (localPathPatterns.some((pattern) => pattern.test(content))) failures.push(`${relative}: contains an absolute local path`);
   if (secretPatterns.some((pattern) => pattern.test(content))) failures.push(`${relative}: contains a secret-shaped value`);
-  if (content.includes(forbiddenDash)) failures.push(`${relative}: contains forbidden long-dash output`);
+  if (privateProductPatterns.some((pattern) => pattern.test(content))) failures.push(`${relative}: contains a private product or repository reference`);
+  if (content.includes(forbiddenDash) || content.includes(forbiddenEnDash)) failures.push(`${relative}: contains forbidden long-dash output`);
   if (forbiddenRenderedDash(relative, content)) failures.push(`${relative}: contains an encoded forbidden long-dash output`);
 
   if (relative.endsWith('.png')) {
@@ -125,9 +144,12 @@ for (const relative of ignoredFiles) failures.push(`${relative}: ignored local a
 const history = git(['log', '-p', '--all', '--no-ext-diff', '--format=fuller']);
 if (localPathPatterns.some((pattern) => pattern.test(history))) failures.push('Git history contains an absolute local path');
 if (secretPatterns.some((pattern) => pattern.test(history))) failures.push('Git history contains a secret-shaped value');
+if (privateProductPatterns.some((pattern) => pattern.test(history))) failures.push('Git history contains a private product or repository reference');
 
 const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
-if (packageJson.private !== true) failures.push('package.json must stay private during version one');
+if (packageJson.name !== 'wingmanpm-product-designer') failures.push('package.json must use the public package name');
+if (packageJson.version !== '1.0.0') failures.push('package.json must use the public v1 version');
+if (packageJson.private !== undefined) failures.push('package.json must not set private for the public release');
 for (const excluded of ['evals', 'fixtures', 'tests']) {
   if ((packageJson.files ?? []).some((entry) => entry.replace(/\/$/, '') === excluded)) failures.push(`npm package allowlist includes ${excluded}`);
 }
@@ -166,4 +188,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Share-safety check passed: ${tracked.length} tracked files, no local paths, secret shapes, forbidden long-dash output, metadata, generated artifacts, or private-release drift.`);
+console.log(`Release-safety check passed: ${tracked.length} tracked files, no local paths, secret shapes, private product references, forbidden long-dash output, metadata, generated artifacts, or public-release drift.`);

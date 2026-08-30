@@ -1,0 +1,51 @@
+{
+  "name": "wingmanpm-product-designer",
+  "version": "1.0.0",
+  "description": "Product design judgment for coding agents building accessible, responsive digital products.",
+  "author": {
+    "name": "Julius / Qewler",
+    "url": "https://github.com/Qewler"
+  },
+  "homepage": "https://github.com/Qewler/wingmanpm-product-designer#readme",
+  "repository": "https://github.com/Qewler/wingmanpm-product-designer",
+  "license": "Apache-2.0",
+  "keywords": [
+    "product-design",
+    "ui",
+    "ux",
+    "frontend",
+    "accessibility",
+    "design-systems",
+    "agent-skill"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "WingmanPM Product Designer",
+    "shortDescription": "Design better products with coding agents.",
+    "longDescription": "Give Codex product design judgment for real shipping work. The skill inspects existing product truth, chooses the right level of change, and guides responsive interface design, design systems, data tables, AI flows, onboarding, navigation, marketing surfaces, accessibility, browser QA, and evidence-backed handoff. It preserves business logic and project ownership while requiring keyboard support, reduced motion, complete states, and human review for consequential AI actions. Support: https://github.com/Qewler/wingmanpm-product-designer/issues",
+    "developerName": "Julius / Qewler",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/Qewler/wingmanpm-product-designer",
+    "privacyPolicyURL": "https://github.com/Qewler/wingmanpm-product-designer/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/Qewler/wingmanpm-product-designer/blob/main/TERMS.md",
+    "defaultPrompt": [
+      "Design and build a responsive dashboard for this product",
+      "Review this interface and explain the highest-impact fixes",
+      "Polish this flow without changing its product behavior"
+    ],
+    "brandColor": "#1842B4",
+    "composerIcon": "./assets/plugin-icon.png",
+    "logo": "./assets/plugin-logo.png",
+    "logoDark": "./assets/plugin-logo-dark.png",
+    "screenshots": [
+      "./assets/plugin-screenshot-workspace.png",
+      "./assets/plugin-screenshot-ai.png",
+      "./assets/plugin-screenshot-marketing.png"
+    ]
+  }
+}

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { hashReviewSources } from '../src/checker.mjs';
+import { hashReviewSources } from '../skills/wingmanpm-product-designer/src/checker.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(root, 'bin', 'wingman-design.mjs');
@@ -67,7 +67,7 @@ test('fresh init records v2 ownership, runtime assets, clean checks, and a clean
   const manifest = await json(path.join(directory, '.wingmanpm-design', 'manifest.json'));
   assert.equal(config.schemaVersion, 2);
   assert.equal(manifest.schemaVersion, 2);
-  assert.equal(manifest.version, '0.2.0-private.2');
+  assert.equal(manifest.version, '1.0.0');
   assert.equal(manifest.entries.find(({ path: entry }) => entry === 'design-system/tables/README.md')?.ownership, 'user');
   assert.equal(manifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/table-inventory.json')?.ownership, 'observed');
   assert.equal(manifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/browser-evidence.json')?.ownership, 'observed');
@@ -190,7 +190,7 @@ test('no-change upgrade preserves valid reviewed proof bytes and mtimes', async 
   assert.equal(run(['init', '--project', directory]).status, 0);
   await writePassedBrowserEvidence(directory);
   const recorded = run([
-    'check', '--record-review', '--project', directory, '--reviewer', 'Julius',
+    'check', '--record-review', '--project', directory, '--reviewer', 'Morgan Lee',
     '--confirm', baseChecks.join(',')
   ]);
   assert.equal(recorded.status, 0, recorded.stdout + recorded.stderr);
@@ -326,14 +326,14 @@ test('review confirmations adapt to work and editable table contracts', async ()
   assert.notEqual(generatedInventory.status, 'legacy');
 
   const withoutTable = run([
-    'check', '--record-review', '--project', directory, '--reviewer', 'Julius',
+    'check', '--record-review', '--project', directory, '--reviewer', 'Morgan Lee',
     '--confirm', [...baseChecks, ...tableChecks].join(',')
   ]);
   assert.equal(withoutTable.status, 1);
   assert.match(withoutTable.stderr, /tableEditing/);
 
   const withoutEvidence = run([
-    'check', '--record-review', '--project', directory, '--reviewer', 'Julius',
+    'check', '--record-review', '--project', directory, '--reviewer', 'Morgan Lee',
     '--confirm', [...baseChecks, ...tableChecks, 'tableEditing'].join(',')
   ]);
   assert.equal(withoutEvidence.status, 1);
@@ -352,7 +352,7 @@ test('review confirmations adapt to work and editable table contracts', async ()
   }, null, 2)}\n`);
 
   const complete = run([
-    'check', '--record-review', '--project', directory, '--reviewer', 'Julius',
+    'check', '--record-review', '--project', directory, '--reviewer', 'Morgan Lee',
     '--confirm', [...baseChecks, ...tableChecks, 'tableEditing'].join(',')
   ]);
   assert.equal(complete.status, 0, complete.stdout + complete.stderr);
@@ -429,9 +429,9 @@ test('project uninstall preserves table dependencies only while preserved table 
 });
 
 test('runtime registry covers active checker rules and resolves deterministic and table IDs', async () => {
-  const checker = await readFile(path.join(root, 'src', 'checker.mjs'), 'utf8');
+  const checker = await readFile(path.join(root, 'skills', 'wingmanpm-product-designer', 'src', 'checker.mjs'), 'utf8');
   const active = new Set(checker.match(/WPD(?:[0-9]{3}|-EXCEPTION)/g));
-  const registered = new Set((await json(path.join(root, 'registry', 'rules.json'))).entries.map(({ id }) => id));
+  const registered = new Set((await json(path.join(root, 'skills', 'wingmanpm-product-designer', 'registry', 'rules.json'))).entries.map(({ id }) => id));
   assert.deepEqual([...active].filter((id) => !registered.has(id)), []);
   for (const ruleId of ['WPD005', 'WPD018']) {
     const result = run(['search', ruleId]);

@@ -1,0 +1,173 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag. It must match package.json, for example v1.0.0.
+        required: true
+        type: string
+        default: v1.0.0
+      publish_npm:
+        description: Stage npm publishing after all release gates pass.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  full-validation:
+    name: Full validation
+    uses: ./.github/workflows/ci.yml
+
+  build-release:
+    name: Build release artifacts
+    needs: full-validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      tag: ${{ steps.metadata.outputs.tag }}
+      version: ${{ steps.metadata.outputs.version }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Confirm release tag and package version
+        id: metadata
+        shell: bash
+        env:
+          REQUESTED_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          package_version="$(node -p "require('./package.json').version")"
+          expected_tag="v${package_version}"
+          if [ "$REQUESTED_TAG" != "$expected_tag" ]; then
+            echo "Release tag $REQUESTED_TAG does not match package version $package_version." >&2
+            exit 1
+          fi
+          echo "tag=$expected_tag" >> "$GITHUB_OUTPUT"
+          echo "version=$package_version" >> "$GITHUB_OUTPUT"
+
+      - name: Install package metadata
+        run: npm ci --ignore-scripts
+
+      - name: Recheck release metadata
+        run: npm run validate:release
+
+      - name: Build npm archive
+        run: npm pack --json --ignore-scripts > npm-pack.json
+
+      - name: Build portable release archives
+        run: npm run release:bundle
+
+      - name: Verify release asset set
+        shell: bash
+        env:
+          VERSION: ${{ steps.metadata.outputs.version }}
+        run: |
+          node -e "const fs = require('node:fs'); const result = JSON.parse(fs.readFileSync('npm-pack.json', 'utf8')); const expected = 'wingmanpm-product-designer-' + process.env.VERSION + '.tgz'; if (result.length !== 1 || result[0].filename !== expected || !fs.existsSync(expected)) throw new Error('Unexpected npm archive output');"
+          mv "wingmanpm-product-designer-${VERSION}.tgz" dist/
+          (
+            cd dist
+            sha256sum "wingmanpm-product-designer-${VERSION}.tgz" >> SHA256SUMS
+            sha256sum --check SHA256SUMS
+          )
+          test -f "dist/wingmanpm-product-designer-${VERSION}-agent-plugin.zip"
+          test -f "dist/wingmanpm-product-designer-${VERSION}-codex-plugin.zip"
+          test -f "dist/wingmanpm-product-designer-${VERSION}-openai-skills.zip"
+          test -f dist/SHA256SUMS
+
+      - name: Upload staged release assets
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-assets-${{ steps.metadata.outputs.version }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
+
+  github-release:
+    name: Publish GitHub Release
+    needs: build-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download staged release assets
+        uses: actions/download-artifact@v7
+        with:
+          name: release-assets-${{ needs.build-release.outputs.version }}
+          path: release-assets
+
+      - name: Create or refresh GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.build-release.outputs.tag }}
+          RELEASE_VERSION: ${{ needs.build-release.outputs.version }}
+        run: |
+          mapfile -t assets < <(find release-assets -type f -print | sort)
+          if [ "${#assets[@]}" -ne 5 ]; then
+            echo "Expected 5 release assets, found ${#assets[@]}." >&2
+            exit 1
+          fi
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$RELEASE_TAG" "${assets[@]}" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "WingmanPM Product Designer ${RELEASE_VERSION}" \
+              --generate-notes
+          fi
+
+  stage-publish-npm:
+    name: Stage npm with trusted publishing
+    needs: [build-release, github-release]
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.publish_npm &&
+      vars.WINGMANPM_ENABLE_NPM_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Set up Node.js for npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Download staged release assets
+        uses: actions/download-artifact@v7
+        with:
+          name: release-assets-${{ needs.build-release.outputs.version }}
+          path: release-assets
+
+      - name: Stage verified npm archive
+        shell: bash
+        env:
+          VERSION: ${{ needs.build-release.outputs.version }}
+        run: npm stage publish "release-assets/wingmanpm-product-designer-${VERSION}.tgz" --access public

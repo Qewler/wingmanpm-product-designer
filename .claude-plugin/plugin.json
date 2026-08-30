@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "wingmanpm-product-designer",
+  "displayName": "WingmanPM Product Designer",
+  "version": "1.0.0",
+  "description": "Product design judgment for coding agents building accessible, responsive digital products.",
+  "author": {
+    "name": "Julius / Qewler",
+    "url": "https://github.com/Qewler"
+  },
+  "homepage": "https://github.com/Qewler/wingmanpm-product-designer#readme",
+  "repository": "https://github.com/Qewler/wingmanpm-product-designer",
+  "license": "Apache-2.0",
+  "keywords": [
+    "product-design",
+    "ui",
+    "ux",
+    "frontend",
+    "accessibility",
+    "design-systems",
+    "agent-skill"
+  ],
+  "metadata": {
+    "privacyPolicy": "https://github.com/Qewler/wingmanpm-product-designer/blob/main/PRIVACY.md",
+    "termsOfService": "https://github.com/Qewler/wingmanpm-product-designer/blob/main/TERMS.md",
+    "support": "https://github.com/Qewler/wingmanpm-product-designer/issues"
+  }
+}
