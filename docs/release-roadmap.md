@@ -9,10 +9,9 @@ and dark themes, and visual review pass.
 
 The release remains gated until:
 
-- Hosted CI confirms the already-green local package and manifest checks on
-  Node.js 20, 22, and 24 plus Linux, macOS, and Windows.
-- Codex, Claude Code, and Cursor each pass the same 14 decision cases and one
-  isolated design implementation.
+- Cursor receives explicit consent for the two public-payload model calls and
+  passes the same 14 decision cases plus one isolated design implementation.
+- Claude Code remains recorded as user-waived rather than passed.
 - The final history, secret, local-path, package-content, and image-metadata
   scans pass.
 

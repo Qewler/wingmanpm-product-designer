@@ -18,6 +18,8 @@ results. Separate confirmed defects from design preference.
 3. Chromium browser review covers 390, 768, 1280, and 1440 CSS pixels.
 4. Keyboard-only use, visible focus, 200% zoom, reduced motion, long content,
    light, dark, loading, empty, error, and permission paths were exercised.
+   Modal and overlay checks cover every close path and return focus to the
+   invoking control after Escape, Cancel, close, and successful completion.
 5. Axe has no serious or critical issue in the changed surfaces.
 6. Visual comparison has explicit reviewer evidence; unexpected baselines were
    not silently replaced.

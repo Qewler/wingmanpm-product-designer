@@ -12,20 +12,27 @@
       "status": "passed",
       "scenarios": 14,
       "result": "evals/results/codex.json",
-      "note": "The read-only command decision benchmark passes 14/14. This result alone does not open the cross-agent, browser, or npm release gates."
+      "implementation": "passed",
+      "implementationCalls": 3,
+      "note": "The read-only decision benchmark passes 14/14. The isolated transparent AI review build passes 21/21 static checks and live browser proof after two focused repair iterations."
     },
     "claude-code": {
-      "status": "blocked-auth",
+      "status": "waived-by-user",
       "version": "2.1.251",
       "scenarios": 0,
-      "reason": "Authentication was unavailable, so the benchmark was not run."
+      "reason": "The user chose to continue without the Claude Code behavior and implementation runs. Plugin structure still passes strict validation."
     },
     "cursor": {
-      "status": "blocked-auth",
+      "status": "blocked-consent",
       "version": "3.17.12",
+      "cliVersion": "2026.01.28-fd13201",
       "scenarios": 0,
-      "reason": "Authentication was unavailable, so the benchmark was not run."
+      "reason": "Cursor is authenticated, but no model call was made because explicit consent to send the public skill and evaluation inputs to Cursor is still pending."
     }
   },
-  "nextGate": "Complete the final package and all-profile CI gates, then authenticate Claude Code and Cursor and run the same 14-scenario benchmark plus one isolated design implementation in each. npm publication remains blocked until those checks pass."
+  "hostedCi": {
+    "status": "passed",
+    "run": "https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33340951433"
+  },
+  "nextGate": "Get explicit user consent for the two Cursor model calls, then run the 14-scenario benchmark and one isolated implementation. The Claude Code run is user-waived. npm publication also needs npm sign-in."
 }

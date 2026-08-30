@@ -12,11 +12,14 @@ the browser, cross-agent, npm, or publication gates.
 
 Current host record:
 
-- Codex: command benchmark passed 14/14.
-- Claude Code 2.1.251: blocked by authentication; not run.
-- Cursor 3.17.12: blocked by authentication; not run.
+- Codex: command benchmark passed 14/14. The isolated implementation passed
+  21/21 static checks and live browser proof after two focused repair iterations.
+- Claude Code 2.1.251: live behavior and implementation runs were waived by the
+  user. Strict plugin validation passed.
+- Cursor 3.17.12: authenticated, but the two model calls await explicit consent
+  to send the public skill and evaluation inputs to Cursor.
 
-The cross-agent and npm gates remain closed.
+The Cursor and npm gates remain closed.
 
 All repository evaluation evidence comes from the committed public fixture.
 `public-fixture-validation.json` records the exact commands and results needed

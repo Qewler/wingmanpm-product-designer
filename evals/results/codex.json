@@ -98,5 +98,22 @@
       "proof": "Require evidence that the existing grid dependency and shared components remain in place, no parallel table engine is installed, and every story, browser test, and review path declared by the integration contract exists and is current.",
       "risk": "Dependency-name-only detection can miss capable project-owned grids, and a preservation decision is incomplete without valid evidence paths."
     }
-  ]
+  ],
+  "implementation": {
+    "status": "passed",
+    "model": "gpt-5.6-sol",
+    "reasoning": "high",
+    "cliVersion": "0.151.0",
+    "implementationCalls": 3,
+    "result": "A standalone transparent AI review flow passed 21 of 21 static checks and live browser review after two focused repair iterations.",
+    "browserProof": [
+      "390 pixel layout has no horizontal overflow",
+      "dark theme and reduced motion are active",
+      "approval stays disabled until explicit confirmation",
+      "Escape closes the dialog and returns focus to its trigger",
+      "successful approval enters the approved state and moves focus to its title",
+      "console and page error lists are empty"
+    ],
+    "promotion": "No maker promotion or publisher URL appeared in the generated product files or model output."
+  }
 }

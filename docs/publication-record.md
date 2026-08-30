@@ -8,7 +8,7 @@ Publisher: Julius / Qewler
 
 License: Apache-2.0
 
-Release gate: closed until the authenticated Claude Code and Cursor tests pass
+Release gate: closed until the two Cursor model calls receive explicit consent and pass
 
 ## Public destinations
 
@@ -38,17 +38,18 @@ npx wingmanpm-product-designer@latest install --agent all
 | Check | Result |
 | --- | --- |
 | Codex behavior decisions | Passed 14 of 14 |
+| Codex isolated implementation | Passed 21 of 21 plus live browser proof after two focused repair iterations |
 | Public fixture browser suite | Passed 20 of 20 |
 | Canonical skill and plugin manifests | Passed |
 | Agent Plugins and Agent Skills discovery | One plugin and one skill found |
 | Claude plugin structure | Strict validation passed |
 | Codex marketplace lifecycle | Listed, installed, enabled, and removed at 1.0.0 |
-| npm archive on macOS and Node 24 | Full clean lifecycle passed |
+| npm archive matrix | Full clean lifecycle passed on Node 20, 22, 24 and Linux, macOS, Windows |
 | Readme image payload | 0.20 MB, below the 3.5 MB limit |
 | Dependency audit | No known vulnerability in root, fixture, or showcase lockfiles |
-| Claude Code behavior and implementation | Blocked by host authentication |
-| Cursor behavior and implementation | Blocked by host authentication |
-| Hosted cross-platform CI | Pending first private push |
+| Claude Code behavior and implementation | User waived; strict plugin validation passed |
+| Cursor behavior and implementation | Authenticated; explicit public-payload consent pending |
+| Hosted cross-platform CI | [Passed](https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33340951433) |
 
 Update this record after each public action. Do not mark a submitted listing as
 published until its public page and clean install are verified.

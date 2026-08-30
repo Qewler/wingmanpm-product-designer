@@ -66,6 +66,8 @@ test('public package exposes one versioned portable plugin and one canonical ski
   const skill = await readFile(path.join(skillRoot, 'SKILL.md'), 'utf8');
   assert.match(skill, /version:\s*1\.0\.0/);
   assert.doesNotMatch(skill, /creator of WingmanPM/i);
+  assert.match(skill, /every exit path, including Escape, Cancel, close, and success/i);
+  assert.match(skill, /test the actual browser cancel\s+and close events/i);
 
   const privacy = await readFile(path.join(root, 'PRIVACY.md'), 'utf8');
   assert.match(privacy, /remains local/i);

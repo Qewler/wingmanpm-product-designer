@@ -82,6 +82,8 @@ several product patterns.
 - WCAG 2.2 AA, complete workflow states, keyboard use, zoom, long content,
   locale-aware values, touch input, responsive behavior, and reduced motion
   are completion requirements.
+- Every modal or overlay returns focus to its trigger after every exit path, including Escape, Cancel, close, and success. Test the actual browser cancel
+  and close events. Do not assume that one event covers every browser path.
 - AI actions expose scope, progress, sources, uncertainty, cancellation,
   recovery, and human approval before consequential changes.
 - Editable data tables use deliberate inline editing with validation, saving,
