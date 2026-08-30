@@ -1,6 +1,6 @@
 # WingmanPM Product Designer
 
-Private `0.2.0-private.1` development build of a portable Agent Skill for
+Private `0.2.0-private.2` development build of a portable Agent Skill for
 designing and shipping high-quality SaaS product interfaces.
 
 Created by [Julius (@Qewler)](https://github.com/Qewler), creator of
@@ -133,6 +133,15 @@ Table enforcement adds:
 - `WPD020`: reorder, resize, full-value, or grid behavior lacks an accessible
   alternative.
 
+Three global rules apply to generated code, UI copy, documents, stories,
+templates, and handoff text:
+
+- `WPD021`: the forbidden long dash or a render equivalent is present;
+- `WPD022`: a surface repeats heading structure, shell landmarks, or dialog
+  close controls;
+- `WPD023`: a dropdown lacks executable light and dark contrast and behavior
+  evidence.
+
 The checker does not pretend to measure beauty with source-code patterns.
 Subjective quality is proven by browser evidence and review; the hook enforces
 that the evidence exists and is current.
@@ -143,7 +152,7 @@ record it explicitly:
 ```bash
 wingman-design check --project /path/to/project \
   --record-review --reviewer "Reviewer name" \
-  --confirm keyboard,zoom200,reducedMotion,longContent,light,dark,axe,responsiveStates
+  --confirm keyboard,zoom200,reducedMotion,longContent,light,dark,axe,responsiveStates,structureUnique,dropdownContrast
 ```
 
 The source-linked rule registry is searchable:

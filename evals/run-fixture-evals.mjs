@@ -45,7 +45,7 @@ try {
     '--project', migratedFixture,
     '--record-review',
     '--reviewer', 'Deterministic fixture migration evaluation',
-    '--confirm', 'keyboard,zoom200,reducedMotion,longContent,light,dark,axe,responsiveStates',
+    '--confirm', 'keyboard,zoom200,reducedMotion,longContent,light,dark,axe,responsiveStates,structureUnique,dropdownContrast',
     '--notes', 'Deterministic fixture evidence only; not a browser sign-off.'
   );
   assert.equal(review.status, 0, review.stdout + review.stderr);

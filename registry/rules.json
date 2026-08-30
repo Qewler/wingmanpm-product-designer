@@ -234,6 +234,30 @@
       "sourceType": "W3C WCAG understanding document"
     },
     {
+      "id": "WPD021",
+      "domain": "content",
+      "title": "Produced text avoids the forbidden long dash",
+      "summary": "Generated UI, copy, documents, stories, templates, and handoffs cannot contain the character or an HTML, JavaScript, or CSS form that renders it.",
+      "source": "https://html.spec.whatwg.org/multipage/named-characters.html",
+      "sourceType": "WHATWG HTML standard"
+    },
+    {
+      "id": "WPD022",
+      "domain": "structure",
+      "title": "Visible surface structure is unique",
+      "summary": "Each rendered surface keeps heading level and text pairs unique, each app shell has at most one top-level banner and contentinfo landmark, and each visible dialog has at most one icon-only close control.",
+      "source": "https://www.w3.org/WAI/WCAG22/Understanding/headings-and-labels.html",
+      "sourceType": "W3C WCAG understanding document"
+    },
+    {
+      "id": "WPD023",
+      "domain": "accessibility",
+      "title": "Dropdown text remains legible in both themes",
+      "summary": "Selects, comboboxes, listboxes, and enabled option states need executable light and dark proof of at least 4.5:1 text contrast plus complete popup behavior.",
+      "source": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+      "sourceType": "W3C WCAG understanding document"
+    },
+    {
       "id": "WPD-EXCEPTION",
       "domain": "governance",
       "title": "Exceptions are scoped, approved, and dated",

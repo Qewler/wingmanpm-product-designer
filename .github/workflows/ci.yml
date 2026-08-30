@@ -93,6 +93,8 @@ jobs:
 
       - name: Run one Chromium suite for all profiles
         working-directory: fixtures/neutral-saas
+        env:
+          WINGMAN_SKIP_SCREENSHOTS: '1'
         run: |
           npm run design:test:visual -- \
             tests/wingman-design/visual.spec.ts \

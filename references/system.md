@@ -49,7 +49,7 @@ and a warning against literal imitation.
 ## 5. Show three directions
 
 Create three responsive, coded first-view concepts with the same honest
-content. Vary composition, hierarchy, density, and expression—not only color.
+content. Vary composition, hierarchy, density, and expression, not only color.
 Each direction must work at 390 and 1280 CSS pixels and state:
 
 - the product idea it reinforces;
@@ -66,8 +66,18 @@ project-owned primitives, the responsive app shell, and Storybook evidence.
 Compose light first, then compose dark independently. Do not make dark by
 inverting light values.
 
+Set `color-scheme: light dark` on the document or active theme root. Give each
+rendered surface root a stable marker when the application can mount more than
+one surface. This lets the global browser gate isolate headings, landmarks,
+dialogs, and dropdowns without testing hidden or inactive roots.
+
 ## 7. Verify in loops
 
 Run deterministic checks, Storybook interaction tests, browser review, and
 visual comparison. Fix blocking findings and rerun. Baseline updates require an
 identified reviewer and a recorded reason.
+
+Always run WPD021 through WPD023 on generated code, UI copy, documents, stories,
+templates, and final handoff text. The global Playwright gate must load every
+Storybook story from `/index.json` in light and dark. Confirm `structureUnique`
+and `dropdownContrast` only after that executable evidence passes.

@@ -6,15 +6,18 @@ import { fileURLToPath } from 'node:url';
 const REQUIRED_STATES = ['loading', 'empty', 'partial', 'error', 'success', 'disabled', 'permission', 'offline', 'responsive'];
 const REQUIRED_TABLE_STATES = ['loading', 'empty', 'no-results', 'partial', 'stale', 'error', 'permission', 'offline', 'saving', 'success'];
 const REQUIRED_VIEWPORTS = [390, 768, 1280, 1440];
-const REQUIRED_REVIEW_CHECKS = ['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates'];
+const REQUIRED_REVIEW_CHECKS = ['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates', 'structureUnique', 'dropdownContrast'];
 const OPTIONAL_TABLE_REVIEW_CHECKS = ['tableDensity', 'tableColumns', 'tablePagination', 'tableExpansion', 'tableBulk', 'tableEditing'];
 const TABLE_PROFILES = new Set(['static', 'work', 'editable']);
+const NON_EXEMPTIBLE_RULES = new Set(['WPD021', 'WPD022', 'WPD023']);
 const TABLE_CAPABILITIES = ['visibility', 'reorder', 'resize', 'expansion', 'selection', 'bulkActions', 'inlineEditing', 'virtualization'];
 const TABLE_PREFERENCE_KEYS = ['density', 'columnOrder', 'columnVisibility', 'columnWidths'];
 const TABLE_TRANSIENT_KEYS = ['selection', 'drafts', 'errors', 'activeEditing'];
-const TEXT_EXTENSIONS = new Set(['.css', '.html', '.js', '.jsx', '.md', '.mjs', '.scss', '.ts', '.tsx']);
+const TEXT_EXTENSIONS = new Set(['.cjs', '.css', '.html', '.js', '.jsx', '.md', '.mdx', '.mjs', '.scss', '.ts', '.tsx']);
 const REVIEW_EXTENSIONS = new Set([...TEXT_EXTENSIONS, '.json']);
-const IGNORE = new Set(['.git', '.next', 'build', 'coverage', 'dist', 'node_modules', 'storybook-static', 'runtime']);
+const POLICY_TEXT_EXTENSIONS = new Set([...TEXT_EXTENSIONS, '.json', '.txt', '.yaml', '.yml']);
+const IGNORE = new Set(['.cache', '.git', '.next', '.turbo', 'build', 'coverage', 'dist', 'node_modules', 'out', 'storybook-static', 'runtime', 'vendor']);
+const LOCKFILES = new Set(['bun.lock', 'bun.lockb', 'npm-shrinkwrap.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock']);
 const DEFAULT_SCAN_ROOTS = ['src', 'app', 'pages', 'components', 'stories', 'design-system/examples'];
 
 async function exists(target) {
@@ -131,6 +134,7 @@ export function validateExceptions(value, { today = new Date().toISOString().sli
     const keys = ['ruleId', 'target', 'reason', 'approver', 'reviewDate'];
     output.push(...additionalProperties(entry, keys, base));
     if (typeof entry.ruleId !== 'string' || !/^WPD(?:\d{3}|-EXCEPTION)$/.test(entry.ruleId)) output.push(issue(`${base}.ruleId`, 'Must be a WingmanPM rule ID such as WPD005.'));
+    else if (NON_EXEMPTIBLE_RULES.has(entry.ruleId)) output.push(issue(`${base}.ruleId`, `${entry.ruleId} is a global hard rule and cannot be excepted.`));
     if (!validProjectPath(entry.target) && entry.target !== '*' && entry.target !== '**') output.push(issue(`${base}.target`, 'Must be a non-empty project-relative target or glob.'));
     if (typeof entry.reason !== 'string' || entry.reason.trim().length < 12) output.push(issue(`${base}.reason`, 'Must explain the exception in at least 12 characters.'));
     if (typeof entry.approver !== 'string' || entry.approver.trim().length < 2) output.push(issue(`${base}.approver`, 'Must name the approver.'));
@@ -357,11 +361,101 @@ function sha256Text(value) {
 function baselineCounts(findings) {
   const counts = {};
   for (const finding of findings) {
-    if (finding.ruleId === 'WPD011' || finding.ruleId === 'WPD016' || finding.ruleId === 'WPD-EXCEPTION') continue;
+    if (['WPD011', 'WPD016', 'WPD021', 'WPD022', 'WPD023', 'WPD-EXCEPTION'].includes(finding.ruleId)) continue;
     const key = findingKey(finding);
     counts[key] = (counts[key] ?? 0) + 1;
   }
   return counts;
+}
+
+function stripMarkdownFences(content) {
+  const lines = content.split('\n');
+  let fence = null;
+  return lines.map((line) => {
+    const marker = line.match(/^\s*(`{3,}|~{3,})/);
+    if (marker && !fence) {
+      fence = marker[1][0];
+      return ' '.repeat(line.length);
+    }
+    if (marker && fence === marker[1][0]) {
+      fence = null;
+      return ' '.repeat(line.length);
+    }
+    return fence ? ' '.repeat(line.length) : line;
+  }).join('\n');
+}
+
+function normalizedLabel(value) {
+  return value.normalize('NFKC').replace(/\s+/g, ' ').trim().toLocaleLowerCase();
+}
+
+function forbiddenDashMatches(content, extension) {
+  const matches = [];
+  const literal = String.fromCodePoint(0x2014);
+  for (let index = content.indexOf(literal); index >= 0; index = content.indexOf(literal, index + literal.length)) {
+    matches.push({ index, kind: 'literal punctuation' });
+  }
+
+  const searchable = ['.md', '.mdx'].includes(extension) ? stripMarkdownFences(content) : content;
+  const patterns = [
+    { regex: new RegExp(['&', 'mdash;'].join(''), 'gi'), kind: 'named HTML render equivalent' },
+    { regex: new RegExp(['&#', '8212;'].join(''), 'g'), kind: 'numeric HTML render equivalent' },
+    { regex: new RegExp(['&#', 'x0*2014;'].join(''), 'gi'), kind: 'hex HTML render equivalent' }
+  ];
+  if (['.cjs', '.js', '.jsx', '.mjs', '.ts', '.tsx'].includes(extension)) {
+    patterns.push({
+      regex: new RegExp('\\\\' + 'u(?:0{0,4}2014|\\{0*2014\\})', 'gi'),
+      kind: 'JavaScript Unicode render escape'
+    });
+  }
+  if (['.cjs', '.css', '.js', '.jsx', '.mjs', '.scss', '.ts', '.tsx'].includes(extension)) {
+    patterns.push({
+      regex: new RegExp('content\\s*:\\s*([\'\"])[^\'\"\\n]*\\\\' + '0*2014(?:\\s|[^0-9a-f])', 'gi'),
+      kind: 'CSS content render escape'
+    });
+  }
+  for (const pattern of patterns) {
+    for (const match of searchable.matchAll(pattern.regex)) matches.push({ index: match.index, kind: pattern.kind });
+  }
+  return matches.sort((a, b) => a.index - b.index);
+}
+
+function duplicateMarkdownHeadings(content) {
+  const searchable = stripMarkdownFences(content);
+  const seen = new Set();
+  const duplicates = [];
+  for (const match of searchable.matchAll(/^(#{1,6})[ \t]+(.+?)[ \t]*#*[ \t]*$/gm)) {
+    const text = normalizedLabel(match[2]);
+    if (!text) continue;
+    const key = `${match[1].length}\u001f${text}`;
+    if (seen.has(key)) duplicates.push({ index: match.index, level: match[1].length, text: match[2].trim() });
+    else seen.add(key);
+  }
+  return duplicates;
+}
+
+function duplicateHtmlHeadings(content) {
+  const seen = new Set();
+  const duplicates = [];
+  for (const match of content.matchAll(/<h([1-6])\b(?![^>]*(?:\bhidden\b|\binert\b|aria-hidden\s*=\s*["']true["']))[^>]*>\s*([^<{][^<{}]*?)\s*<\/h\1\s*>/gi)) {
+    const text = normalizedLabel(match[2].replace(/&nbsp;/gi, ' '));
+    if (!text) continue;
+    const key = `${match[1]}\u001f${text}`;
+    if (seen.has(key)) duplicates.push({ index: match.index, level: Number(match[1]), text: match[2].trim() });
+    else seen.add(key);
+  }
+  return duplicates;
+}
+
+function dropdownSource(content) {
+  return /<select\b|\brole\s*=\s*\{?\s*["'](?:combobox|listbox)\b|<(?:[A-Z][A-Za-z0-9.]*)?(?:Select|Combobox|Listbox)\b/.test(content);
+}
+
+function executableRuleEvidence(corpus, ruleId) {
+  if (!corpus.includes(ruleId) || !/\btest\s*\(/.test(corpus) || !/\bexpect\s*\(/.test(corpus)) return false;
+  if (ruleId === 'WPD022') return /auditVisibleStructure/.test(corpus) && /structureViolations/.test(corpus);
+  if (ruleId === 'WPD023') return /auditDropdownContrast/.test(corpus) && /candidate/i.test(corpus);
+  return true;
 }
 
 export function createLegacyBaseline(findings) {
@@ -608,6 +702,49 @@ export async function runChecks(root, options = {}) {
   const sourceContents = new Map();
   for (const file of sourceFiles) sourceContents.set(file, await readFile(file, 'utf8'));
   const sourceCorpus = [...sourceContents.values()].join('\n');
+  const browserEvidenceFiles = await filesInRoots(root, ['tests/wingman-design'], TEXT_EXTENSIONS);
+  let browserEvidenceCorpus = '';
+  for (const file of browserEvidenceFiles) browserEvidenceCorpus += `\n${await readFile(file, 'utf8')}`;
+
+  const policyFiles = (await files(root, POLICY_TEXT_EXTENSIONS))
+    .filter((file) => !LOCKFILES.has(path.basename(file)));
+  for (const file of policyFiles) {
+    const content = sourceContents.get(file) ?? await readFile(file, 'utf8');
+    const extension = path.extname(file).toLowerCase();
+    for (const match of forbiddenDashMatches(content, extension)) {
+      add(findings, root, 'block', 'WPD021', file, `Replace the ${match.kind}; WingmanPM output cannot render this punctuation.`, lineOf(content, match.index));
+    }
+    if (['.md', '.mdx'].includes(extension)) {
+      for (const duplicate of duplicateMarkdownHeadings(content)) {
+        add(findings, root, 'block', 'WPD022', file, `Repeated level ${duplicate.level} heading: ${duplicate.text}.`, lineOf(content, duplicate.index));
+      }
+    } else if (extension === '.html') {
+      for (const duplicate of duplicateHtmlHeadings(content)) {
+        add(findings, root, 'block', 'WPD022', file, `Repeated visible h${duplicate.level} heading: ${duplicate.text}.`, lineOf(content, duplicate.index));
+      }
+    }
+  }
+
+  const productUiFiles = [...sourceContents.entries()].filter(([file]) => {
+    const relative = path.relative(root, file).split(path.sep).join('/');
+    return ['.html', '.jsx', '.tsx'].includes(path.extname(file))
+      && !/(^|\/)(?:tests?|__tests__|fixtures)(\/|$)|\.(?:test|spec)\.[^.]+$/.test(relative);
+  });
+  if (productUiFiles.length && !executableRuleEvidence(browserEvidenceCorpus, 'WPD022')) {
+    add(findings, root, 'block', 'WPD022', null, 'Executable browser evidence for unique visible headings, shell landmarks, and dialog close controls is missing.');
+  }
+  const dropdownFiles = productUiFiles.filter(([, content]) => dropdownSource(content));
+  if (dropdownFiles.length) {
+    const dropdownEvidenceComplete = executableRuleEvidence(browserEvidenceCorpus, 'WPD023')
+      && /\blight\b/i.test(browserEvidenceCorpus)
+      && /\bdark\b/i.test(browserEvidenceCorpus)
+      && /4\.5/.test(browserEvidenceCorpus)
+      && /Escape/.test(browserEvidenceCorpus)
+      && /candidate/i.test(browserEvidenceCorpus);
+    if (!dropdownEvidenceComplete) {
+      add(findings, root, 'block', 'WPD023', dropdownFiles[0][0], 'Dropdowns require executable light and dark browser evidence for nonzero candidates, 4.5:1 text contrast, controlled options, and Escape close.');
+    }
+  }
   for (const contractFile of await tableContractFiles(root)) {
     const document = await readJsonDocument(contractFile);
     if (document.error) {
@@ -793,9 +930,9 @@ export async function runChecks(root, options = {}) {
       add(findings, root, 'block', 'WPD016', baselineFile, 'Preserve mode declares a legacy baseline, but baseline.json is missing.');
     }
   }
-  const withBaselineValidation = findings.filter((finding) => !validExceptions.some((exception) =>
-    exception.ruleId === finding.ruleId && globMatch(exception.target, finding.file)
-  ));
+  const withBaselineValidation = findings.filter((finding) => NON_EXEMPTIBLE_RULES.has(finding.ruleId)
+    || !validExceptions.some((exception) => exception.ruleId === finding.ruleId && globMatch(exception.target, finding.file))
+  );
   const remainingBaseline = { ...(baseline?.counts ?? {}) };
   let baselined = 0;
   const filtered = withBaselineValidation.filter((finding) => {

@@ -18,7 +18,7 @@ const SRC_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 const SKILL_NAME = 'wingmanpm-product-designer';
 const POINTER_LABEL = SKILL_NAME;
 const PROJECT_MANIFEST = '.wingmanpm-design/manifest.json';
-const VERSION = '0.2.0-private.1';
+const VERSION = '0.2.0-private.2';
 const PROJECT_SCHEMA_VERSION = 2;
 const DEFAULT_SCAN_ROOTS = ['src', 'app', 'pages', 'components', 'stories', 'design-system/examples'];
 
@@ -38,7 +38,7 @@ Usage:
   wingman-design search TERMS [--domain NAME] [--json]
 
 Required review confirmation list:
-  keyboard,zoom200,reducedMotion,longContent,light,dark,axe,responsiveStates
+  keyboard,zoom200,reducedMotion,longContent,light,dark,axe,responsiveStates,structureUnique,dropdownContrast
   Work tables add: tableDensity,tableColumns,tablePagination,tableExpansion,tableBulk
   Editable tables add: tableEditing
 `;
@@ -628,7 +628,7 @@ async function upgradeProject(flags) {
 
 async function recordReview(root, flags) {
   const reviewer = typeof flags.reviewer === 'string' ? flags.reviewer.trim() : '';
-  const required = ['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates'];
+  const required = ['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates', 'structureUnique', 'dropdownContrast'];
   const contracts = await tableContracts(root);
   if (contracts.some(({ contract }) => ['work', 'editable'].includes(contract?.profile))) {
     required.push('tableDensity', 'tableColumns', 'tablePagination', 'tableExpansion', 'tableBulk');

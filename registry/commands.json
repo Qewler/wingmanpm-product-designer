@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/commands.schema.json",
-  "version": "0.2.0-private.1",
+  "version": "0.2.0-private.2",
   "sources": [
     {
       "id": "agent-skills",

@@ -32,14 +32,17 @@ async function initializedProject() {
   await writeFile(path.join(directory, 'design-system', 'tokens', 'tailwind.preset.mjs'), 'export default {};\n');
   await writeFile(path.join(directory, 'design-system', 'tokens', 'shadcn.css'), ':root {}\n');
   await writeFile(path.join(directory, 'src', 'stories', 'WingmanProduct.stories.tsx'), 'export const Example = {};\n');
-  await writeFile(path.join(directory, 'tests', 'wingman-design', 'visual.spec.ts'), 'export const visualEvidence = true;\n');
+  await writeFile(path.join(directory, 'tests', 'wingman-design', 'visual.spec.ts'), `
+test('WPD022 structure audit', async () => { const structureViolations = await auditVisibleStructure(); expect(structureViolations).toEqual([]); });
+test('WPD023 dropdown contrast in light and dark', async () => { const candidates = await auditDropdownContrast(4.5); expect(candidates).toBeGreaterThan(0); await press('Escape'); });
+`);
   await writeFile(path.join(directory, '.wingmanpm-design', 'config.json'), `${JSON.stringify({ ...validConfig(), goldenStack: false, aiSurfaces: false })}\n`);
   await writeFile(path.join(directory, '.wingmanpm-design', 'exceptions.json'), '{"exceptions":[]}\n');
   await writeFile(path.join(directory, '.wingmanpm-design', 'review.json'), `${JSON.stringify({
     status: 'pending', reviewer: null, reviewedAt: null, sourceHash: null,
     viewports: [390, 768, 1280, 1440],
     checks: {
-      ...Object.fromEntries(['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates'].map((key) => [key, false])),
+      ...Object.fromEntries(['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates', 'structureUnique', 'dropdownContrast'].map((key) => [key, false])),
       tableDensity: false,
       tableColumns: false,
       tablePagination: false,
@@ -118,11 +121,17 @@ test('dependency-free validators accept schema v2 and expose v1 as a migration w
   assert.equal(validateExceptions({ exceptions: [{
     ruleId: 'WPD020', target: 'src/table.tsx', reason: 'Temporary safe migration.', approver: 'Julius', reviewDate: '2026-08-29'
   }] }, { today: '2026-08-30' })[0].path, '$.exceptions[0].reviewDate');
+  for (const ruleId of ['WPD021', 'WPD022', 'WPD023']) {
+    const hardRule = validateExceptions({ exceptions: [{
+      ruleId, target: 'src/example.tsx', reason: 'Attempted global bypass.', approver: 'Julius', reviewDate: '2099-12-31'
+    }] }, { today: '2026-08-30' });
+    assert.ok(hardRule.some((entry) => entry.path === '$.exceptions[0].ruleId' && /cannot be excepted/.test(entry.message)));
+  }
   assert.deepEqual(validateReview({
     status: 'pending', reviewer: null, reviewedAt: null, sourceHash: null,
     viewports: [390, 768, 1280, 1440],
     checks: {
-      ...Object.fromEntries(['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates'].map((key) => [key, false])),
+      ...Object.fromEntries(['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates', 'structureUnique', 'dropdownContrast'].map((key) => [key, false])),
       tableDensity: true,
       tableColumns: true,
       tablePagination: true,
@@ -132,6 +141,13 @@ test('dependency-free validators accept schema v2 and expose v1 as a migration w
     },
     notes: 'Pending direct review.'
   }), []);
+  const missingGlobalChecks = validateReview({
+    status: 'pending', reviewer: null, reviewedAt: null, sourceHash: null,
+    viewports: [390, 768, 1280, 1440],
+    checks: Object.fromEntries(['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates'].map((key) => [key, false]))
+  });
+  assert.ok(missingGlobalChecks.some((entry) => entry.path === '$.checks.structureUnique'));
+  assert.ok(missingGlobalChecks.some((entry) => entry.path === '$.checks.dropdownContrast'));
 });
 
 test('table contract validator separates structural and interaction paths', () => {
@@ -252,7 +268,7 @@ test('WPD019 blocks missing evidence and stale visual review evidence', async ()
   contract.evidence.stories = ['src/stories/WingmanProduct.stories.tsx'];
   await writeFile(path.join(tables, 'orders.json'), `${JSON.stringify(contract, null, 2)}\n`);
   const sourceHash = await hashReviewSources(directory);
-  const checks = Object.fromEntries(['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates'].map((key) => [key, true]));
+  const checks = Object.fromEntries(['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates', 'structureUnique', 'dropdownContrast'].map((key) => [key, true]));
   await writeFile(path.join(directory, '.wingmanpm-design', 'review.json'), `${JSON.stringify({
     status: 'reviewed', reviewer: 'Julius', reviewedAt: new Date().toISOString(), sourceHash,
     viewports: [390, 768, 1280, 1440], checks, notes: 'Reviewed table evidence.'
@@ -339,4 +355,86 @@ test('schema files remain parseable and make config v2 authoritative', async () 
   for (const method of ['drag', 'move-buttons', 'pointer', 'keyboard-separator', 'width-presets']) {
     assert.match(interactionRequirements, new RegExp(`"const":"${method}"`));
   }
+});
+
+test('WPD021 blocks every render-equivalent dash form and allows the shorter dash', async () => {
+  const directory = await initializedProject();
+  const slash = String.fromCharCode(92);
+  const cases = [
+    ['literal.md', `A${String.fromCodePoint(0x2014)}B`],
+    ['named.html', ['A&', 'mdash;B'].join('')],
+    ['decimal.html', ['A&#', '8212;B'].join('')],
+    ['hex.html', ['A&#', 'x2014;B'].join('')],
+    ['escaped.ts', `export const value = "${slash}${'u2014'}";`],
+    ['content.css', `p::after { content: "${slash}${'2014 ' }"; }`],
+    ['.wingmanpm-design/manifest.json', JSON.stringify({ entries: [{ path: `copy${String.fromCodePoint(0x2014)}file.md`, ownership: 'user' }] })]
+  ];
+  for (const [name, content] of cases) await writeFile(path.join(directory, name), `${content}\n`);
+  await writeFile(path.join(directory, 'allowed.md'), `A${String.fromCodePoint(0x2013)}B\n`);
+  await writeFile(path.join(directory, 'encoded-example.md'), ['```html', ['&', 'mdash;'].join(''), '```', ''].join('\n'));
+
+  const report = await runChecks(directory, { allowPendingReview: true });
+  for (const [name] of cases) {
+    assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === name), name);
+  }
+  assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === 'allowed.md'), false);
+  assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === 'encoded-example.md'), false);
+
+  await writeFile(path.join(directory, '.wingmanpm-design', 'exceptions.json'), `${JSON.stringify({ exceptions: [{
+    ruleId: 'WPD021', target: 'literal.md', reason: 'Attempted global bypass.', approver: 'Julius', reviewDate: '2099-12-31'
+  }] })}\n`);
+  const bypass = await runChecks(directory, { allowPendingReview: true });
+  assert.ok(bypass.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === 'literal.md'));
+  assert.ok(bypass.findings.some((entry) => entry.ruleId === 'WPD-EXCEPTION' && /cannot be excepted/.test(entry.message)));
+});
+
+test('WPD022 blocks repeated normalized headings but ignores hidden HTML and fenced Markdown', async () => {
+  const directory = await initializedProject();
+  await writeFile(path.join(directory, 'guide.md'), [
+    '# Guide',
+    '## Settings',
+    `## ${'Ｓｅｔｔｉｎｇｓ'}`,
+    '```md',
+    '## Settings',
+    '```',
+    '## Billing'
+  ].join('\n'));
+  await writeFile(path.join(directory, 'page.html'), [
+    '<h2>Profile</h2>',
+    '<h2 hidden>Profile</h2>',
+    '<h3>Access</h3>',
+    '<h3> access </h3>'
+  ].join('\n'));
+  const report = await runChecks(directory, { allowPendingReview: true });
+  assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD022' && entry.file === 'guide.md' && /Repeated level 2/.test(entry.message)));
+  assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD022' && entry.file === 'page.html' && /Access/i.test(entry.message)));
+  assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD022' && entry.file === 'page.html' && /Profile/.test(entry.message)), false);
+});
+
+test('WPD023 requires executable dropdown proof in light and dark', async () => {
+  const directory = await initializedProject();
+  await writeFile(path.join(directory, 'src', 'Dropdown.tsx'), 'export const Dropdown = () => <select aria-label="Status"><option>Open</option></select>;\n');
+  await writeFile(path.join(directory, 'tests', 'wingman-design', 'visual.spec.ts'), 'test("visual", async () => { expect(true).toBe(true); });\n');
+  let report = await runChecks(directory, { allowPendingReview: true });
+  assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD023' && entry.file === 'src/Dropdown.tsx'));
+
+  await writeFile(path.join(directory, 'tests', 'wingman-design', 'visual.spec.ts'), `
+test('WPD022 structure', async () => { const structureViolations = await auditVisibleStructure(); expect(structureViolations).toEqual([]); });
+test('WPD023 light and dark dropdown contrast', async () => { const candidates = await auditDropdownContrast(4.5); expect(candidates).toBeGreaterThan(0); await press('Escape'); });
+`);
+  report = await runChecks(directory, { allowPendingReview: true });
+  assert.equal(report.findings.some((entry) => entry.ruleId === 'WPD023'), false);
+});
+
+test('WPD023 includes generated Wingman component sources', async () => {
+  const directory = await initializedProject();
+  const runtime = path.join(directory, 'src', 'components', 'wingman-design', 'data-table');
+  await mkdir(runtime, { recursive: true });
+  await writeFile(path.join(runtime, 'DataTable.tsx'), 'export const Density = () => <select aria-label="Density"><option>Dense</option></select>;\n');
+  await writeFile(path.join(directory, 'tests', 'wingman-design', 'visual.spec.ts'), `
+test('WPD022 structure', async () => { const structureViolations = await auditVisibleStructure(); expect(structureViolations).toEqual([]); });
+`);
+  const report = await runChecks(directory, { allowPendingReview: true });
+  assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD023'
+    && entry.file === 'src/components/wingman-design/data-table/DataTable.tsx'));
 });

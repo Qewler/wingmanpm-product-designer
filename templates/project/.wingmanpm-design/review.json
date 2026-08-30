@@ -12,7 +12,9 @@
     "light": false,
     "dark": false,
     "axe": false,
-    "responsiveStates": false
+    "responsiveStates": false,
+    "structureUnique": false,
+    "dropdownContrast": false
   },
   "notes": "Record only after direct visual and interaction review."
 }

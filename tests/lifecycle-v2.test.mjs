@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(root, 'bin', 'wingman-design.mjs');
-const baseChecks = ['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates'];
+const baseChecks = ['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates', 'structureUnique', 'dropdownContrast'];
 const tableChecks = ['tableDensity', 'tableColumns', 'tablePagination', 'tableExpansion', 'tableBulk'];
 
 function run(args, cwd = root) {
@@ -58,7 +58,7 @@ test('fresh init records v2 ownership, runtime assets, clean checks, and a clean
   const manifest = await json(path.join(directory, '.wingmanpm-design', 'manifest.json'));
   assert.equal(config.schemaVersion, 2);
   assert.equal(manifest.schemaVersion, 2);
-  assert.equal(manifest.version, '0.2.0-private.1');
+  assert.equal(manifest.version, '0.2.0-private.2');
   assert.equal(manifest.entries.find(({ path: entry }) => entry === 'design-system/tables/README.md')?.ownership, 'user');
   assert.equal(manifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/table-inventory.json')?.ownership, 'observed');
 
@@ -271,6 +271,8 @@ test('review confirmations adapt to work and editable table contracts', async ()
   const review = await json(path.join(directory, '.wingmanpm-design', 'review.json'));
   assert.equal(review.checks.tableDensity, true);
   assert.equal(review.checks.tableEditing, true);
+  assert.equal(review.checks.structureUnique, true);
+  assert.equal(review.checks.dropdownContrast, true);
 });
 
 test('project uninstall preserves table dependencies only while preserved table consumers remain', async () => {

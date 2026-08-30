@@ -1,15 +1,15 @@
 # Compatibility and current evidence
 
-This private `0.2.0-private.1` build was tested on 2026-08-30 with Node.js
+This private `0.2.0-private.2` build was tested on 2026-08-30 with Node.js
 24.18.0 and npm 11.16.
 
 | Check | Tool or version | Current evidence |
 | --- | --- | --- |
-| Repository tests | Node.js 24.18.0 | 53/53 passed |
+| Repository tests | Node.js 24.18.0 | 58/58 passed |
 | Command benchmark | Codex | 14/14 decision scenarios pass |
 | Generated TypeScript | TypeScript 7.0.2 | Strict generated-fixture TSC passed |
 | Story inventory | Storybook 10.5.10 | Build passed with 52 stories: 14 static, 19 work, and 19 editable |
-| Browser proof | Playwright 1.62.1 | Local Chromium passed 64/64, with 0 failed and 0 skipped, in 26.2 seconds across generated static, work, and editable fixtures |
+| Browser proof | Playwright 1.62.1 | Local Chromium passed 84/84, with 0 failed and 0 skipped, in 1.2 minutes across the global suite and generated static, work, and editable fixtures |
 | Builder | Vite 8.0.16 | Pinned for the checked-in Storybook configuration |
 
 ## Agent command interface
@@ -64,7 +64,11 @@ own required visual-review confirmations.
 CI uses Node 24 to upgrade the committed neutral v1 fixture and scaffold static,
 work, and editable tables. It then installs the declared dependencies and
 Chromium, builds Storybook once, and runs one Playwright Chromium suite across
-all profiles. This all-profile CI job is the browser execution gate.
+all profiles. The full semantic, accessibility, structure, contrast, and table
+suite runs on Linux. `WINGMAN_SKIP_SCREENSHOTS=1` disables only the four
+cross-OS pixel screenshot assertions. Reviewed local baselines remain unchanged
+and are never replaced automatically. This all-profile CI job is the repeatable
+browser release gate.
 
 The fixture uses `@storybook/react-vite`. Vite remains pinned because a newer
 Vite 8 build previously reproduced a React default-export failure in the

@@ -22,6 +22,29 @@ results. Separate confirmed defects from design preference.
 6. Visual comparison has explicit reviewer evidence; unexpected baselines were
    not silently replaced.
 
+## Global hard rules
+
+Run these rules for every skill-produced UI, copy, document, story, template,
+and handoff before completion:
+
+- `WPD021` blocks the forbidden long dash and each HTML, JavaScript, or CSS
+  form that renders it. Use a comma, colon, period, or shorter dash that fits
+  the sentence.
+- `WPD022` blocks repeated visible headings with the same level and text in one
+  surface, repeated top-level banner or contentinfo landmarks in one app shell,
+  and more than one icon-only close control in one visible dialog. Markdown
+  uses the same normalized heading rule outside fenced code.
+- `WPD023` requires executable light and dark browser checks whenever a select,
+  combobox, or listbox exists. Test enabled current values and options at 4.5:1
+  text contrast or better, require a nonzero candidate count, and confirm that
+  custom popups close with Escape.
+
+Resolve transparent backgrounds through their ancestors. Treat gradients or
+unresolved colors as failures. Set `color-scheme: light dark` on the document
+or theme root so native controls use the intended platform palette. Browser
+evidence must enumerate every Storybook story from its runtime index. It must
+not rely on a fixed story list.
+
 ## Exceptions
 
 A bypass is valid only when `.wingmanpm-design/exceptions.json` contains:
@@ -34,6 +57,9 @@ A bypass is valid only when `.wingmanpm-design/exceptions.json` contains:
 
 An exception is visible debt, not deletion of the rule. `doctor` reports invalid
 and expired entries.
+
+WPD021, WPD022, and WPD023 are global hard rules. They cannot be excepted or
+absorbed into a legacy baseline.
 
 ## Completion
 

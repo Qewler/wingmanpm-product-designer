@@ -69,7 +69,9 @@ test('static, work, and editable plans produce valid distinct contracts and sour
     assert.doesNotMatch(story + browser, /\{\{[A-Z_]+\}\}/);
     assert.ok(browser.includes('Przykład \\(dane testowe\\)'), 'localized regexes must preserve literal parentheses');
     assert.match(browser, /tableSelectContrast/);
-    assert.match(browser, /closest\('\.wpd-data-table'\)/);
+    assert.match(browser, /analyzeWithAxe/);
+    assert.match(browser, /Axe is already running/);
+    assert.match(browser, /closest\('\.wpd-data-table, \.wpd-static-table'\)/);
     assert.match(browser, /ratio >= 4\.5/);
     if (profile === 'static') {
       assert.doesNotMatch(browser, /At least one visible enabled table select must be checked/);

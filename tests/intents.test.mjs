@@ -28,7 +28,8 @@ test('registry exposes all 18 unique SaaS intent families and aliases', () => {
 
 test('normalizer handles case, punctuation, Unicode width, and whitespace', () => {
   assert.equal(normalizeAlias('  DATA---TABLE!!!  '), 'data table');
-  assert.equal(normalizeAlias('ＡＩ—ＵＩ'), 'ai ui');
+  const wideAlias = `ＡＩ${String.fromCodePoint(0x2014)}ＵＩ`;
+  assert.equal(normalizeAlias(wideAlias), 'ai ui');
   assert.equal(resolveIntent('  DaTa---TaBlE!!  ')?.intent, 'data-table');
   assert.equal(resolveIntent('PRODUCTION_ready')?.intent, 'harden');
 });
@@ -104,7 +105,14 @@ test('review is read-only unless fix is explicit', () => {
 test('command registry carries progressive references and source citations', async () => {
   const registry = JSON.parse(await readFile(path.join(root, 'registry', 'commands.json'), 'utf8'));
   const schema = JSON.parse(await readFile(path.join(root, 'schemas', 'commands.schema.json'), 'utf8'));
-  assert.equal(registry.version, '0.2.0-private.1');
+  const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
+  const packageLock = JSON.parse(await readFile(path.join(root, 'package-lock.json'), 'utf8'));
+  const skill = await readFile(path.join(root, 'SKILL.md'), 'utf8');
+  assert.equal(registry.version, '0.2.0-private.2');
+  assert.equal(packageJson.version, registry.version);
+  assert.equal(packageLock.version, registry.version);
+  assert.equal(packageLock.packages[''].version, registry.version);
+  assert.match(skill, /version: 0\.2\.0-private\.2/);
   assert.equal(registry.intents.length, 18);
   assert.ok(registry.sources.every(({ url }) => url.startsWith('https://')));
   assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');

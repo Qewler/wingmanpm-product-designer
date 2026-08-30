@@ -22,7 +22,7 @@
     },
     "checks": {
       "type": "object",
-      "required": ["keyboard", "zoom200", "reducedMotion", "longContent", "light", "dark", "axe", "responsiveStates"],
+      "required": ["keyboard", "zoom200", "reducedMotion", "longContent", "light", "dark", "axe", "responsiveStates", "structureUnique", "dropdownContrast"],
       "properties": {
         "keyboard": { "type": "boolean" },
         "zoom200": { "type": "boolean" },
@@ -32,6 +32,8 @@
         "dark": { "type": "boolean" },
         "axe": { "type": "boolean" },
         "responsiveStates": { "type": "boolean" },
+        "structureUnique": { "type": "boolean" },
+        "dropdownContrast": { "type": "boolean" },
         "tableDensity": { "type": "boolean" },
         "tableColumns": { "type": "boolean" },
         "tablePagination": { "type": "boolean" },

@@ -4,7 +4,7 @@ description: Design, build, redesign, review, polish, and verify responsive SaaS
 license: Apache-2.0
 metadata:
   author: Julius (@Qewler), creator of WingmanPM
-  version: 0.2.0-private.1
+  version: 0.2.0-private.2
 ---
 
 # WingmanPM Product Designer
@@ -83,12 +83,22 @@ several product patterns.
 - Editable data tables use deliberate inline editing with validation, saving,
   permission, conflict, offline, cancellation, and recovery states.
 - Invented data is realistic and visibly labeled `Sample` or `Mock`.
+- Apply WPD021 through WPD023 to every skill-produced UI, copy, document,
+  story, template, and handoff before completion. Do not produce the forbidden
+  long dash or a render equivalent. Keep visible headings and shell landmarks
+  unique per surface, and keep one icon-only close control per dialog. Test
+  every dropdown in light and dark with at least 4.5:1 text contrast, real
+  option states, and Escape close behavior.
 
 ## Verify and hand off
 
 Run the project's `design:check`, relevant Storybook checks, browser review, and
 visual comparison. Fix blocking findings and repeat until clean. Never replace
 an unexpected visual baseline without explicit review.
+
+The WPD021 check is deterministic. WPD022 and WPD023 also require executable
+browser proof across every Storybook story and a fresh review with
+`structureUnique` and `dropdownContrast` confirmed.
 
 For reviews, use a `Before | After | Why` table backed by screenshots, DOM
 evidence, exact code, or test results. A completed implementation reports the

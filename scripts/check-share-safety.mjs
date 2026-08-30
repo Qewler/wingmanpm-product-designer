@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const failures = [];
+const forbiddenDash = String.fromCodePoint(0x2014);
 
 function git(args, options = {}) {
   return execFileSync('git', args, { cwd: root, encoding: options.encoding ?? 'utf8' });
@@ -14,6 +15,21 @@ function git(args, options = {}) {
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+const htmlDashPatterns = [
+  new RegExp(['&', 'mdash;'].join(''), 'i'),
+  new RegExp(['&#', '8212;'].join('')),
+  new RegExp(['&#', 'x0*2014;'].join(''), 'i')
+];
+const unicodeDashPattern = new RegExp(escapeRegex(String.fromCharCode(92)) + 'u(?:0{0,4}2014|\\{0*2014\\})', 'i');
+const cssDashPattern = new RegExp('content\\s*:\\s*([\'\"])[^\'\"\\n]*' + escapeRegex(String.fromCharCode(92)) + '0*2014(?:\\s|[^0-9a-f])', 'i');
+
+function forbiddenRenderedDash(relative, content) {
+  if (htmlDashPatterns.some((pattern) => pattern.test(content))) return true;
+  const extension = path.extname(relative).toLowerCase();
+  if (['.cjs', '.js', '.jsx', '.mjs', '.ts', '.tsx'].includes(extension) && unicodeDashPattern.test(content)) return true;
+  return ['.cjs', '.css', '.js', '.jsx', '.mjs', '.scss', '.ts', '.tsx'].includes(extension) && cssDashPattern.test(content);
 }
 
 const slash = escapeRegex(path.posix.sep);
@@ -44,6 +60,8 @@ for (const relative of tracked) {
   const content = buffer.toString('utf8');
   if (localPathPatterns.some((pattern) => pattern.test(content))) failures.push(`${relative}: contains an absolute local path`);
   if (secretPatterns.some((pattern) => pattern.test(content))) failures.push(`${relative}: contains a secret-shaped value`);
+  if (content.includes(forbiddenDash)) failures.push(`${relative}: contains forbidden long-dash output`);
+  if (forbiddenRenderedDash(relative, content)) failures.push(`${relative}: contains an encoded forbidden long-dash output`);
 
   if (relative.endsWith('.png')) {
     let offset = 8;
@@ -117,4 +135,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Share-safety check passed: ${tracked.length} tracked files, no local paths, secret shapes, metadata, generated artifacts, or private-release drift.`);
+console.log(`Share-safety check passed: ${tracked.length} tracked files, no local paths, secret shapes, forbidden long-dash output, metadata, generated artifacts, or private-release drift.`);

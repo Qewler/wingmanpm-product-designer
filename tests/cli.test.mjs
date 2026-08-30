@@ -120,6 +120,10 @@ test('preserve mode baselines old findings but blocks a new regression', async (
   await writeFile(target, 'export const Legacy = () => <div className="transition-all">Legacy</div>;\n');
   const initialized = run(['init', '--project', directory, '--mode', 'preserve'], root);
   assert.equal(initialized.status, 0, initialized.stderr);
+  await mkdir(path.join(directory, 'tests', 'wingman-design'), { recursive: true });
+  await writeFile(path.join(directory, 'tests', 'wingman-design', 'visual.spec.ts'), `
+test('WPD022 structure audit', async () => { const structureViolations = await auditVisibleStructure(); expect(structureViolations).toEqual([]); });
+`);
   const clean = run(['check', '--project', directory, '--allow-pending-review'], root);
   assert.equal(clean.status, 0, clean.stdout + clean.stderr);
   assert.match(clean.stdout, /1 legacy/);

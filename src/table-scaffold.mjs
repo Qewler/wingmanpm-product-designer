@@ -726,6 +726,18 @@ import type { Page } from '@playwright/test';
 
 const story = '/iframe.html?id=${storyId}&viewMode=story';
 
+async function analyzeWithAxe(page: Page) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await new AxeBuilder({ page }).analyze();
+    } catch (error) {
+      if (!String(error).includes('Axe is already running') || attempt === 2) throw error;
+      await page.waitForTimeout(100);
+    }
+  }
+  throw new Error('Axe analysis did not complete.');
+}
+
 async function tableSelectContrast(page: Page) {
   return page.locator('[data-wingman-table-id="${tableId}"]').evaluate((table) => {
     type Color = { red: number; green: number; blue: number; alpha: number };
@@ -751,8 +763,8 @@ async function tableSelectContrast(page: Page) {
       const backgroundLuminance = luminance(background);
       return (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) / (Math.min(foregroundLuminance, backgroundLuminance) + 0.05);
     };
-    const root = table.closest('.wpd-data-table');
-    if (!root) return { selectCount: 0, candidateCount: 0, failures: [{ label: 'table root', reason: 'missing .wpd-data-table boundary' }] };
+    const root = table.closest('.wpd-data-table, .wpd-static-table');
+    if (!root) return { selectCount: 0, candidateCount: 0, failures: [{ label: 'table root', reason: 'missing Wingman table boundary' }] };
     const documentBackground = parseColor(getComputedStyle(document.body).backgroundColor) ?? { red: 255, green: 255, blue: 255, alpha: 1 };
     const selects = Array.from(root.querySelectorAll('select')).filter((select) => {
       const style = getComputedStyle(select);
@@ -790,7 +802,7 @@ for (const width of [390, 768, 1280, 1440]) {
       await page.goto(story + '&globals=theme:' + theme);
       await expect(page.locator('[data-wingman-table-id="${tableId}"][data-wingman-table-profile="${profile}"]')).toBeVisible();
       expect(await page.evaluate(() => document.body.scrollWidth <= window.innerWidth)).toBe(true);
-      const results = await new AxeBuilder({ page }).analyze();
+      const results = await analyzeWithAxe(page);
       expect(results.violations.filter((item) => ['serious', 'critical'].includes(item.impact ?? ''))).toEqual([]);
       const selectContrast = await tableSelectContrast(page);
       expect(selectContrast.failures, 'Every table select and option must meet WCAG AA text contrast.').toEqual([]);
