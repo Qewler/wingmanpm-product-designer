@@ -80,6 +80,7 @@ test('static, work, and editable plans produce valid distinct contracts and sour
       assert.match(browser, /Static tables must stay free of operational selects/);
       assert.match(browser, /selectContrast\.candidateCount\)\.toBe\(0\)/);
       assert.doesNotMatch(browser, /wpd-column-manager-panel/);
+      assert.doesNotMatch(browser, /test\.setTimeout\(90_000\)/);
       assert.doesNotMatch(story, /ThousandRowResize/);
       assert.doesNotMatch(browser, /1,000-row resize reports a warning/);
       assert.match(browser, /static profile omits operational controls/);
@@ -90,6 +91,7 @@ test('static, work, and editable plans produce valid distinct contracts and sour
       assert.match(browser, /wpd-column-manager-panel/);
       assert.match(browser, /wpd-table-pagination/);
       assert.match(browser, /wpd-column-width-preset/);
+      assert.match(browser, /test\.setTimeout\(90_000\)/);
       assert.match(story, /ThousandRowResize/);
       assert.match(browser, /1,000-row resize reports a warning/);
       assert.match(wrapper.content, profile === 'editable' ? /WingmanEditableTableProps/ : /WingmanWorkTableProps/);

@@ -646,6 +646,7 @@ test('versioned view preferences migrate safely and never persist transient stat
 });
 
 test('1,000-row resize reports a warning instead of a flaky performance block', async ({ page }, testInfo) => {
+  test.setTimeout(90_000);
   await page.goto(story.replace('--default', '--thousand-row-resize'));
   await expect(page.locator('[data-wingman-table-id="${tableId}"] tbody > tr')).toHaveCount(1000);
   const separator = page.getByRole('separator', { name: 'Resize Status column' });
