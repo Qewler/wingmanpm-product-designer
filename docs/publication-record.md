@@ -8,18 +8,19 @@ Publisher: Julius / Qewler
 
 License: Apache-2.0
 
-Release gate: open; Claude Code and Cursor live tests are user-deferred
+Release status: public v1 released; Claude Code and Cursor live behavior tests remain explicitly deferred
 
 ## Public destinations
 
 | Destination | URL | State |
 | --- | --- | --- |
-| GitHub | <https://github.com/Qewler/wingmanpm-product-designer> | Private release candidate |
-| npm | <https://www.npmjs.com/package/wingmanpm-product-designer> | Not published |
-| skills.sh | Listing URL pending discovery after the repository is public | Not triggered |
-| OpenAI | Review URL assigned after submission | Ad-free archive validated; not submitted |
-| Claude community marketplace | Listing URL assigned after submission | Manifest validated; not submitted |
-| Cursor Marketplace | Listing URL assigned after submission | Root Agent Plugin ready; not submitted |
+| GitHub | <https://github.com/Qewler/wingmanpm-product-designer/releases/tag/v1.0.0> | Public release `v1.0.0` |
+| npm | <https://www.npmjs.com/package/wingmanpm-product-designer> | Public package `1.0.0` |
+| skills.sh | <https://www.skills.sh/qewler/wingmanpm-product-designer/wingmanpm-product-designer> | Live listing |
+| Codex | <https://github.com/Qewler/wingmanpm-product-designer> | Clean public install passed |
+| Claude Code | <https://github.com/Qewler/wingmanpm-product-designer> | Clean public install passed; community marketplace review pending |
+| Cursor Marketplace | Public listing URL assigned after approval | Submitted; review pending |
+| OpenAI | Submission available after developer identity verification | Ad-free archive ready; identity verification is the only blocker |
 
 ## Install commands
 
@@ -33,7 +34,7 @@ claude plugin install wingmanpm-product-designer@wingmanpm
 npx wingmanpm-product-designer@latest install --agent all
 ```
 
-## Verified release-candidate proof
+## Verified public-release proof
 
 | Check | Result |
 | --- | --- |
@@ -43,13 +44,17 @@ npx wingmanpm-product-designer@latest install --agent all
 | Canonical skill and plugin manifests | Passed |
 | Agent Plugins and Agent Skills discovery | One plugin and one skill found |
 | Claude plugin structure | Strict validation passed |
-| Codex marketplace lifecycle | Listed, installed, enabled, and removed at 1.0.0 |
+| Codex public install lifecycle | Installed cleanly from the public repository at 1.0.0 |
+| Claude Code public install lifecycle | Installed cleanly from the public repository at 1.0.0 |
 | npm archive matrix | Full clean lifecycle passed on Node 20, 22, 24 and Linux, macOS, Windows |
+| npm trusted publishing | Configured as a guarded stage-only workflow; it cannot run without the explicit manual input and repository variable |
 | Readme image payload | 0.20 MB, below the 3.5 MB limit |
 | Dependency audit | No known vulnerability in root, fixture, or showcase lockfiles |
-| Claude Code behavior and implementation | Deferred by user until after publication; strict plugin validation passed |
-| Cursor behavior and implementation | Deferred by user until after publication; authenticated CLI confirmed |
-| Hosted cross-platform CI | [Passed](https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33340951433) |
+| Claude Code behavior and implementation | Deferred by user; not marked passed |
+| Cursor behavior and implementation | Deferred by user; not marked passed |
+| Final release workflow | [Passed](https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33345388217) |
 
-Update this record after each public action. Do not mark a submitted listing as
-published until its public page and clean install are verified.
+Claude community marketplace and Cursor Marketplace are submitted but remain
+pending until their public listings are approved and verified. OpenAI remains
+blocked only by developer identity verification. Do not mark a reviewed channel
+as published until its public page and clean install are verified.

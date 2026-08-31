@@ -1,6 +1,6 @@
 # Compatibility and current evidence
 
-The `1.0.0` release candidate was checked on 2026-08-31 with Node.js 24.18.0
+Version `1.0.0` was released and checked on 2026-08-31 with Node.js 24.18.0
 and npm 11.16.0. Public evidence comes only from the committed Tamarack
 FieldOps fixture, which is always marked `Concept demo`.
 
@@ -16,8 +16,8 @@ FieldOps fixture, which is always marked `Concept demo`.
 | Structure and contrast | WPD022 and WPD023 passed across every base story in both themes |
 | Design check | 0 blocks; one expected version-1 migration warning |
 | npm archive | Clean lifecycle passed on Node 20, 22, 24 and Linux, macOS, Windows for install, repeat install, init, upgrade, changed-file protection, and uninstall |
-| Codex marketplace | Local release candidate listed, installed at 1.0.0, enabled, and removed cleanly |
-| Hosted CI | [Full private release matrix passed](https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33340951433) |
+| Codex marketplace | Public marketplace listed, installed at 1.0.0, enabled, and verified cleanly |
+| Hosted CI | [Final release matrix passed](https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33345388217) |
 
 The machine-readable record is
 [`evals/results/public-fixture-validation.json`](../evals/results/public-fixture-validation.json).
@@ -48,10 +48,10 @@ read-only unless the user asks for changes or supplies `--fix`.
 - Framework-neutral projects receive semantic HTML and CSS references.
 - Node.js 20, 22, and 24 are the release CI targets.
 
-## Publication gate
+## Publication status
 
-The public fixture, package layout, archives, hosted matrix, and Codex behavior
-proof are green. The user explicitly deferred the Claude Code and Cursor live
-runs until after publication, so they are not release blockers and are not
-reported as passes. Reviewed directories stay listed as `submitted` until their
-public pages are visible.
+Public version `1.0.0`, its npm package, release archives, and skills.sh listing
+are live. The Claude community and Cursor marketplace submissions are pending
+review. OpenAI submission is blocked only by developer identity verification.
+The user explicitly deferred the Claude Code and Cursor live runs, so they are
+not reported as passes.

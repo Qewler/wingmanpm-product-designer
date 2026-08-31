@@ -1,6 +1,6 @@
 {
   "checkedAt": "2026-08-31",
-  "releaseGate": "open-with-user-waivers",
+  "releaseGate": "public-v1-released",
   "publicFixture": {
     "status": "passed",
     "result": "evals/results/public-fixture-validation.json",
@@ -32,7 +32,40 @@
   },
   "hostedCi": {
     "status": "passed",
-    "run": "https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33340951433"
+    "run": "https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33345388217",
+    "kind": "final-release-workflow"
   },
-  "nextGate": "Publication is authorized with the Claude Code and Cursor live checks explicitly deferred. Complete the clean release scan, public repository release, npm publication, and directory submissions."
+  "publication": {
+    "github": {
+      "status": "published",
+      "release": "https://github.com/Qewler/wingmanpm-product-designer/releases/tag/v1.0.0"
+    },
+    "npm": {
+      "status": "published",
+      "package": "https://www.npmjs.com/package/wingmanpm-product-designer"
+    },
+    "skillsSh": {
+      "status": "live",
+      "listing": "https://www.skills.sh/qewler/wingmanpm-product-designer/wingmanpm-product-designer"
+    },
+    "codex": {
+      "status": "clean-public-install-passed"
+    },
+    "claudeCode": {
+      "status": "clean-public-install-passed",
+      "communityMarketplace": "submitted-pending-review"
+    },
+    "cursorMarketplace": {
+      "status": "submitted-pending-review"
+    },
+    "openai": {
+      "status": "blocked",
+      "archive": "ad-free-ready",
+      "onlyBlocker": "developer-identity-verification"
+    },
+    "npmTrustedPublishing": {
+      "status": "configured-stage-only"
+    }
+  },
+  "nextGate": "Public v1 is released. Await Claude community marketplace and Cursor Marketplace review, complete OpenAI developer identity verification, and run the explicitly deferred Claude Code and Cursor live behavior checks."
 }

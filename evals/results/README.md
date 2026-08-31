@@ -1,7 +1,7 @@
 # Cross-agent results
 
 The evaluation is read-only. Each agent receives the same fourteen benchmark
-decisions from `evals/benchmarks.json` and the installed release candidate.
+decisions from `evals/benchmarks.json` and the installed version `1.0.0` skill.
 
 Pass requires fourteen valid decision records and no proposal to edit during the
 review-only case. Authentication or tool startup failure is recorded as a
@@ -19,8 +19,8 @@ Current host record:
 - Cursor 3.17.12: authenticated, but live behavior and implementation runs were
   deferred by the user until after publication. No Cursor model call was made.
 
-The publication gate is open with those two live checks recorded as deferred,
-not passed.
+Public version `1.0.0` was released with those two live checks recorded as
+deferred, not passed.
 
 All repository evaluation evidence comes from the committed public fixture.
 `public-fixture-validation.json` records the exact commands and results needed
