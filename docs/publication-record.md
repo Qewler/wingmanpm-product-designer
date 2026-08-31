@@ -8,7 +8,7 @@ Publisher: Julius / Qewler
 
 License: Apache-2.0
 
-Release gate: closed until the two Cursor model calls receive explicit consent and pass
+Release gate: open; Claude Code and Cursor live tests are user-deferred
 
 ## Public destinations
 
@@ -47,8 +47,8 @@ npx wingmanpm-product-designer@latest install --agent all
 | npm archive matrix | Full clean lifecycle passed on Node 20, 22, 24 and Linux, macOS, Windows |
 | Readme image payload | 0.20 MB, below the 3.5 MB limit |
 | Dependency audit | No known vulnerability in root, fixture, or showcase lockfiles |
-| Claude Code behavior and implementation | User waived; strict plugin validation passed |
-| Cursor behavior and implementation | Authenticated; explicit public-payload consent pending |
+| Claude Code behavior and implementation | Deferred by user until after publication; strict plugin validation passed |
+| Cursor behavior and implementation | Deferred by user until after publication; authenticated CLI confirmed |
 | Hosted cross-platform CI | [Passed](https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33340951433) |
 
 Update this record after each public action. Do not mark a submitted listing as

@@ -1,6 +1,6 @@
 {
   "checkedAt": "2026-08-31",
-  "releaseGate": "closed",
+  "releaseGate": "open-with-user-waivers",
   "publicFixture": {
     "status": "passed",
     "result": "evals/results/public-fixture-validation.json",
@@ -17,22 +17,22 @@
       "note": "The read-only decision benchmark passes 14/14. The isolated transparent AI review build passes 21/21 static checks and live browser proof after two focused repair iterations."
     },
     "claude-code": {
-      "status": "waived-by-user",
+      "status": "deferred-by-user",
       "version": "2.1.251",
       "scenarios": 0,
-      "reason": "The user chose to continue without the Claude Code behavior and implementation runs. Plugin structure still passes strict validation."
+      "reason": "The user chose to publish now and run the Claude Code behavior and implementation checks later. Plugin structure still passes strict validation."
     },
     "cursor": {
-      "status": "blocked-consent",
+      "status": "deferred-by-user",
       "version": "3.17.12",
       "cliVersion": "2026.01.28-fd13201",
       "scenarios": 0,
-      "reason": "Cursor is authenticated, but no model call was made because explicit consent to send the public skill and evaluation inputs to Cursor is still pending."
+      "reason": "The user chose to publish now and run the authenticated Cursor behavior and implementation checks later. No Cursor model call was made."
     }
   },
   "hostedCi": {
     "status": "passed",
     "run": "https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33340951433"
   },
-  "nextGate": "Get explicit user consent for the two Cursor model calls, then run the 14-scenario benchmark and one isolated implementation. The Claude Code run is user-waived. npm publication also needs npm sign-in."
+  "nextGate": "Publication is authorized with the Claude Code and Cursor live checks explicitly deferred. Complete the clean release scan, public repository release, npm publication, and directory submissions."
 }

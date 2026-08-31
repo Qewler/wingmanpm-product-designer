@@ -14,12 +14,13 @@ Current host record:
 
 - Codex: command benchmark passed 14/14. The isolated implementation passed
   21/21 static checks and live browser proof after two focused repair iterations.
-- Claude Code 2.1.251: live behavior and implementation runs were waived by the
-  user. Strict plugin validation passed.
-- Cursor 3.17.12: authenticated, but the two model calls await explicit consent
-  to send the public skill and evaluation inputs to Cursor.
+- Claude Code 2.1.251: live behavior and implementation runs were deferred by
+  the user until after publication. Strict plugin validation passed.
+- Cursor 3.17.12: authenticated, but live behavior and implementation runs were
+  deferred by the user until after publication. No Cursor model call was made.
 
-The Cursor and npm gates remain closed.
+The publication gate is open with those two live checks recorded as deferred,
+not passed.
 
 All repository evaluation evidence comes from the committed public fixture.
 `public-fixture-validation.json` records the exact commands and results needed

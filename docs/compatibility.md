@@ -29,8 +29,8 @@ All supported hosts use the same skill and 18 command families.
 | Host | Explicit form | Current host benchmark |
 | --- | --- | --- |
 | Codex | `$wingmanpm-product-designer <intent> [target]` | Passed 14 of 14 plus isolated build |
-| Claude Code | `/wingmanpm-product-designer <intent> [target]` | User waived live run; strict plugin validation passed |
-| Cursor | `/wingmanpm-product-designer <intent> [target]` | Authenticated; public-payload consent pending |
+| Claude Code | `/wingmanpm-product-designer <intent> [target]` | Live run deferred by user; strict plugin validation passed |
+| Cursor | `/wingmanpm-product-designer <intent> [target]` | Live run deferred by user; authenticated CLI confirmed |
 
 Explicit invocations and requests with a selected `refine`, `elevate`, or
 `reimagine` level act directly. Free-form requests for `beautiful`, `stunning`,
@@ -51,7 +51,7 @@ read-only unless the user asks for changes or supplies `--fix`.
 ## Publication gate
 
 The public fixture, package layout, archives, hosted matrix, and Codex behavior
-proof are green. The user waived the Claude Code live run. Publication remains
-blocked on explicit consent and completion of the two Cursor model calls.
-Reviewed directories stay listed as `submitted` until their public pages are
-visible.
+proof are green. The user explicitly deferred the Claude Code and Cursor live
+runs until after publication, so they are not release blockers and are not
+reported as passes. Reviewed directories stay listed as `submitted` until their
+public pages are visible.
