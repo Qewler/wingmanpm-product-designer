@@ -29,6 +29,19 @@ async function openStory(page: Page, story: string, theme: 'light' | 'dark') {
   await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
 }
 
+async function analyzeAccessibility(page: Page) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await new AxeBuilder({ page }).analyze();
+    } catch (error) {
+      const concurrentRun = error instanceof Error && error.message.includes('Axe is already running');
+      if (!concurrentRun || attempt === 2) throw error;
+      await page.waitForTimeout(250 * (attempt + 1));
+    }
+  }
+  throw new Error('Accessibility analysis retry loop ended unexpectedly.');
+}
+
 async function auditVisibleStructure(page: Page) {
   return page.evaluate(() => {
     const normalize = (value: string | null | undefined) => (value ?? '')
@@ -286,7 +299,7 @@ for (const width of viewports) {
     await page.goto('/iframe.html?id=concept-demo-tamarack-fieldops--responsive-shell&viewMode=story');
     await expect(page.locator('#storybook-root')).toBeVisible();
     expect(await page.evaluate(() => document.body.scrollWidth <= window.innerWidth)).toBe(true);
-    const results = await new AxeBuilder({ page }).analyze();
+    const results = await analyzeAccessibility(page);
     expect(results.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact ?? ''))).toEqual([]);
     if (!skipScreenshots) await expect(page).toHaveScreenshot(`responsive-shell-${width}.png`);
   });
@@ -313,7 +326,7 @@ for (const story of focusedStories) {
     test(`axe contract: ${story} · ${theme}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await openStory(page, `concept-demo-tamarack-fieldops--${story}`, theme);
-      const results = await new AxeBuilder({ page }).analyze();
+      const results = await analyzeAccessibility(page);
       expect(results.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact ?? ''))).toEqual([]);
     });
   }

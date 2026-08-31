@@ -109,4 +109,9 @@ test('canonical browser source keeps delayed, visible-text, X-icon, and active-o
   assert.match(source, /waitForTimeout\(300\)/);
   assert.match(source, /const portalFallbackRoot = roots\[0\]/);
   assert.match(source, /return root === portalFallbackRoot/);
+  assert.match(source, /async function analyzeAccessibility/);
+  assert.match(source, /attempt < 3/);
+  assert.match(source, /Axe is already running/);
+  assert.match(source, /waitForTimeout\(250 \* \(attempt \+ 1\)\)/);
+  assert.equal((source.match(/new AxeBuilder\(\{ page \}\)\.analyze\(\)/g) ?? []).length, 1);
 });
