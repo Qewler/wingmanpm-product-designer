@@ -112,7 +112,7 @@ jobs:
 
     steps:
       - name: Download staged release assets
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: release-assets-${{ needs.build-release.outputs.version }}
           path: release-assets
@@ -161,7 +161,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Download staged release assets
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: release-assets-${{ needs.build-release.outputs.version }}
           path: release-assets
