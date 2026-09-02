@@ -634,11 +634,13 @@ test('versioned view preferences migrate safely and never persist transient stat
   await page.getByLabel('Status width preset').selectOption('wide');
   await page.locator('.wpd-column-manager > summary').click();
   await page.getByRole('checkbox', { name: /^Select row sample-1$/ }).check();
-  await expect.poll(() => page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? '{}').density, storageKey)).toBe('dense');
+  await expect.poll(() => page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? '{}'), storageKey)).toMatchObject({
+    density: 'dense',
+    columnOrder: ['name', 'owner', 'status'],
+    columnVisibility: { owner: false },
+    columnWidths: { status: 220 }
+  });
   const saved = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? '{}'), storageKey);
-  expect(saved.columnOrder).toEqual(['name', 'owner', 'status']);
-  expect(saved.columnVisibility.owner).toBe(false);
-  expect(saved.columnWidths.status).toBe(220);
   for (const transient of ['selection', 'drafts', 'errors', 'activeEditing']) expect(saved).not.toHaveProperty(transient);
   await page.reload();
   await expect(page.locator('.wpd-data-table')).toHaveAttribute('data-density', 'dense');
