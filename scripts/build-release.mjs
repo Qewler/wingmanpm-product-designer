@@ -10,7 +10,8 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 const version = packageJson.version;
-const dist = path.join(root, 'dist');
+// Optional output directory keeps release artifacts outside a share-ready checkout.
+const dist = path.resolve(process.argv[2] ?? path.join(root, 'dist'));
 const baseName = `wingmanpm-product-designer-${version}`;
 
 const bundles = [
