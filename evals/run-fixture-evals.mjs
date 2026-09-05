@@ -9,26 +9,26 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const skillRoot = path.join(root, 'skills', 'wingmanpm-product-designer');
 const fixture = path.join(root, 'fixtures', 'neutral-saas');
 const benchmarks = JSON.parse(await readFile(path.join(root, 'evals', 'benchmarks.json'), 'utf8')).benchmarks;
-const referenceFiles = (await readdir(path.join(skillRoot, 'references')))
-  .filter((name) => name.endsWith('.md'))
-  .sort()
-  .map((name) => path.join(skillRoot, 'references', name));
-const contract = [
-  await readFile(path.join(skillRoot, 'SKILL.md'), 'utf8'),
-  ...(await Promise.all(referenceFiles.map((file) => readFile(file, 'utf8')))),
-  await readFile(path.join(skillRoot, 'registry', 'commands.json'), 'utf8'),
-  await readFile(path.join(fixture, 'design-system', 'PRODUCT.md'), 'utf8'),
-  await readFile(path.join(fixture, 'design-system', 'DESIGN.md'), 'utf8'),
-  await readFile(path.join(fixture, 'design-system', 'COMPONENTS.md'), 'utf8'),
-  await readFile(path.join(fixture, 'src', 'stories', 'WingmanProduct.stories.tsx'), 'utf8')
-].join('\n').toLowerCase();
-
-for (const benchmark of benchmarks) {
-  const matches = benchmark.mustMention.filter((term) => contract.includes(term.toLowerCase()));
-  const missing = benchmark.mustMention.filter((term) => !matches.includes(term));
-  assert.deepEqual(missing, [], `${benchmark.id} is missing contract evidence: ${missing.join(', ')}`);
-  console.log(`PASS ${benchmark.id}: ${matches.join(', ')}`);
+// Execute request resolution, rather than searching all documents for words.
+const { resolveRequest } = await import('../skills/wingmanpm-product-designer/src/intents.mjs');
+const cases = [
+  ['greenfield', 'design-system', 'design-system'], ['preserve', 'polish src/App.tsx', 'polish'],
+  ['card-wall', 'layout dashboard', 'layout'], ['dense-data', 'data-table orders', 'data-table'],
+  ['transparent-ai', 'ai-flow review', 'ai-flow'], ['review-only', 'audit settings', 'review'],
+  ['motion', 'motion panel', 'motion'], ['marketing', 'design-system pricing', 'design-system'],
+  ['ambiguous-polish', 'make it beautiful', 'polish'], ['explicit-intent', 'standout', 'standout'],
+  ['static-table', 'table report', 'data-table'], ['work-table', 'table work', 'data-table'],
+  ['editable-table', 'table editable', 'data-table'], ['preserve-grid', 'review data table', 'review']
+];
+for (const [id, request, intent] of cases) {
+  const resolved = resolveRequest(request);
+  assert.equal(resolved.intent, intent, id);
+  assert.equal(resolved.kind, 'direct', id);
+  if (intent === 'review') assert.equal(resolved.readOnly, true, id);
+  console.log(`PASS runtime routing ${id}`);
 }
+assert.equal(resolveRequest('polish src/My UI/BillingPage.tsx').target, 'src/My UI/BillingPage.tsx');
+assert.equal(resolveRequest('explore AI review').stage, 'explore');
 
 const cli = path.join(root, 'bin', 'wingman-design.mjs');
 const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), 'wingman-fixture-eval-'));
@@ -54,7 +54,7 @@ try {
   assert.equal(afterSecondUpgrade.status, 1, afterSecondUpgrade.stdout + afterSecondUpgrade.stderr);
   assert.match(afterSecondUpgrade.stdout, /WPD022[\s\S]*Machine-written browser evidence is missing/);
 
-  console.log(`Fixture evaluation passed: ${benchmarks.length} behavioral contracts; migrated fixture kept the browser evidence gate through an idempotent upgrade.`);
+  console.log(`Fixture evaluation passed: ${cases.length} runtime routing checks; migrated fixture kept the browser evidence gate through an idempotent upgrade.`);
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true });
 }

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { verifyBundle } from '../skills/wingmanpm-product-designer/src/update.mjs';
 
 import { access, readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -6,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const skillRoot = path.join(root, 'skills', 'wingmanpm-product-designer');
-const expectedVersion = '1.0.0';
+const expectedVersion = '1.1.0';
 const wingmanDomain = ['https://wingman', '.pm'].join('');
 const privateRepositoryName = ['WingmanPM', 'Pure'].join('_');
 const localSchemaHost = ['wingmanpm', 'local'].join('.');
@@ -50,6 +51,12 @@ const claude = await json('.claude-plugin/plugin.json');
 const claudeMarketplace = await json('.claude-plugin/marketplace.json');
 const codexMarketplace = await json('.agents/plugins/marketplace.json');
 const commands = await json('skills/wingmanpm-product-designer/registry/commands.json');
+
+for (const [name, manifest] of [['package.json', packageJson], ['plugin.json', portable], ['.codex-plugin/plugin.json', codex], ['.claude-plugin/plugin.json', claude]]) {
+  requireValue(manifest.author?.name === 'Wingman.PM / Qewler', `${name}: publisher display name drifted`);
+}
+requireValue(codex.interface?.developerName === 'Wingman.PM / Qewler', 'Codex developer display name drifted');
+requireValue(claudeMarketplace.owner?.name === 'Wingman.PM / Qewler' && claudeMarketplace.plugins?.[0]?.author?.name === 'Wingman.PM / Qewler', 'Claude marketplace publisher name drifted');
 
 requireValue(packageJson.name === 'wingmanpm-product-designer', 'package.json: public package name is not set');
 requireValue(packageJson.version === expectedVersion, `package.json: version must be ${expectedVersion}`);
@@ -148,6 +155,9 @@ for (const asset of [interfaceManifest.composerIcon, interfaceManifest.logo, int
   requireValue(asset.startsWith('./'), `.codex-plugin/plugin.json: asset path must start with ./: ${asset}`);
   requireValue(await exists(path.join(root, asset)), `.codex-plugin/plugin.json: asset is missing: ${asset}`);
 }
+
+const bundle = await verifyBundle(skillRoot);
+requireValue(bundle.clean, `Portable bundle manifest is stale or missing; run npm run bundle:manifest. ${bundle.changed?.join(', ') ?? bundle.reason ?? ''}`);
 
 if (failures.length) {
   console.error(`Release validation failed (${failures.length}):`);

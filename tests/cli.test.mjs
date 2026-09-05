@@ -47,7 +47,7 @@ test('help lists the five lifecycle commands', () => {
   for (const command of ['install', 'init', 'check', 'doctor', 'uninstall']) assert.match(result.stdout, new RegExp(command));
 });
 
-test('commands exposes the 18 intent families as text and JSON', () => {
+test('commands exposes the 19 intent families as text and JSON', () => {
   const textResult = run(['commands'], root);
   assert.equal(textResult.status, 0, textResult.stderr);
   assert.match(textResult.stdout, /polish \/ beautiful/);
@@ -57,18 +57,18 @@ test('commands exposes the 18 intent families as text and JSON', () => {
   const jsonResult = run(['commands', '--json'], root);
   assert.equal(jsonResult.status, 0, jsonResult.stderr);
   const commands = JSON.parse(jsonResult.stdout);
-  assert.equal(commands.length, 18);
+  assert.equal(commands.length, 19);
   assert.equal(commands.find(({ id }) => id === 'standout').aliases[0], 'stunning');
 });
 
-test('explain distinguishes vague pickers, explicit commands, and read-only reviews', () => {
+test('explain resolves bounded defaults, explicit commands, and read-only reviews', () => {
   const vague = run(['explain', 'make it stunning', '--json'], root);
   assert.equal(vague.status, 0, vague.stderr);
   const picker = JSON.parse(vague.stdout);
-  assert.equal(picker.kind, 'picker');
+  assert.equal(picker.kind, 'direct');
   assert.equal(picker.intent, 'standout');
-  assert.equal(picker.recommendedLevel, 'elevate');
-  assert.deepEqual(picker.options.map(({ id }) => id), ['refine', 'elevate', 'reimagine']);
+  assert.equal(picker.level, 'elevate');
+  assert.equal(picker.stage, 'build');
 
   const explicit = run(['explain', 'stunning', '--explicit', '--level', 'reimagine', '--json'], root);
   assert.equal(explicit.status, 0, explicit.stderr);
@@ -104,7 +104,7 @@ test('init creates a complete golden-stack contract and is idempotent', async ()
   ]) assert.equal(await readFile(path.join(directory, relative), 'utf8').then(() => true), true, relative);
   assert.match(await readFile(path.join(directory, 'AGENTS.md'), 'utf8'), /Existing instructions stay[\s\S]*wingmanpm-product-designer:start/);
   const initializedPackage = JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
-  assert.equal(initializedPackage.scripts['design:doctor'], 'npx --yes wingmanpm-product-designer@1.0.0 doctor --project .');
+  assert.equal(initializedPackage.scripts['design:doctor'], 'npx --yes wingmanpm-product-designer@1.1.0 doctor --project .');
   await appendFile(path.join(directory, 'design-system', 'PRODUCT.md'), '\nUser-owned fact.\n');
   const second = run(['init', '--project', directory], root);
   assert.equal(second.status, 0, second.stderr);
@@ -113,6 +113,41 @@ test('init creates a complete golden-stack contract and is idempotent', async ()
   const check = run(['check', '--project', directory, '--allow-pending-review'], root);
   assert.equal(check.status, 0, check.stdout + check.stderr);
   assert.match(check.stdout, /0 block/);
+});
+
+test('init supplies imported icons when absent and preserves an existing dependency', async () => {
+  for (const existing of [null, '^1.37.0']) {
+    const directory = await project();
+    const packageFile = path.join(directory, 'package.json');
+    const packageJson = JSON.parse(await readFile(packageFile, 'utf8'));
+    delete packageJson.dependencies['lucide-react'];
+    if (existing) packageJson.devDependencies = { 'lucide-react': existing };
+    await writeFile(packageFile, JSON.stringify(packageJson));
+    const result = run(['init', '--project', directory], root);
+    assert.equal(result.status, 0, result.stderr);
+    const installed = JSON.parse(await readFile(packageFile, 'utf8'));
+    const manifest = JSON.parse(await readFile(path.join(directory, '.wingmanpm-design/manifest.json'), 'utf8'));
+    if (existing) {
+      assert.equal(installed.devDependencies['lucide-react'], existing);
+      assert.equal(installed.dependencies['lucide-react'], undefined);
+      assert.equal(manifest.packageDependencies.some(({ key }) => key === 'lucide-react'), false);
+    } else {
+      assert.ok(installed.dependencies['lucide-react']);
+      assert.ok(manifest.packageDependencies.some(({ section, key, value }) =>
+        section === 'dependencies' && key === 'lucide-react' && value === installed.dependencies[key]));
+    }
+  }
+});
+
+test('copied checker runs through a symlinked project path instead of returning a false pass', async () => {
+  const directory = await project({ neutral: true });
+  assert.equal(run(['init', '--project', directory], root).status, 0);
+  const parent = await mkdtemp(path.join(os.tmpdir(), 'wingman-linked-check-'));
+  const linked = path.join(parent, 'project');
+  await symlink(directory, linked, process.platform === 'win32' ? 'junction' : 'dir');
+  const result = spawnSync(process.execPath, [path.join(linked, '.wingmanpm-design/runtime/checker.mjs'), '--project', linked, '--json'], { encoding: 'utf8' });
+  assert.equal(result.status, 1, result.stderr);
+  assert.ok(JSON.parse(result.stdout).counts.block > 0);
 });
 
 test('init emits a public renewable-operations concept instead of product-specific examples', async () => {
@@ -201,14 +236,14 @@ test('WPD022 structure audit', async () => { const structureViolations = await a
   assert.match(blocked.stdout, /WPD005/);
 });
 
-test('check blocks a deterministic violation and accepts a scoped dated exception', async () => {
+test('check warns on a taste heuristic and accepts a scoped dated exception', async () => {
   const directory = await project();
   assert.equal(run(['init', '--project', directory], root).status, 0);
   const target = path.join(directory, 'src', 'components', 'wingman-design', 'Violation.tsx');
   await writeFile(target, 'export const Bad = () => <div className="transition-all">Bad</div>;\n');
   await writePassedBrowserEvidence(directory);
   const blocked = run(['check', '--project', directory, '--allow-pending-review'], root);
-  assert.equal(blocked.status, 1);
+  assert.equal(blocked.status, 0);
   assert.match(blocked.stdout, /WPD005/);
   await writeFile(path.join(directory, '.wingmanpm-design', 'exceptions.json'), `${JSON.stringify({
     exceptions: [{
@@ -304,7 +339,7 @@ test('project-scoped all-agent install is portable, complete, repeatable, and sa
 
   for (const destination of destinations) {
     const manifest = JSON.parse(await readFile(path.join(destination, '.wingman-install.json'), 'utf8'));
-    assert.match(manifest.source, /^wingmanpm-product-designer@1\.0\.0$/);
+    assert.match(manifest.source, /^wingmanpm-product-designer@1\.1\.0$/);
     assert.equal(path.isAbsolute(manifest.source), false);
     assert.equal(JSON.stringify(manifest).includes(root), false);
     assert.equal(JSON.stringify(manifest).includes(directory), false);

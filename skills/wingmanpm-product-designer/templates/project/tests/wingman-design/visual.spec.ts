@@ -1,6 +1,8 @@
+import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
+const designPolicy = JSON.parse(readFileSync('.wingmanpm-design/config.json', 'utf8')).policy ?? {};
 const viewports = [390, 768, 1280, 1440];
 const focusedStories = [
   'responsive-shell',
@@ -43,7 +45,7 @@ async function analyzeAccessibility(page: Page) {
 }
 
 async function auditVisibleStructure(page: Page) {
-  return page.evaluate(() => {
+  return page.evaluate((strictHeadings) => {
     const normalize = (value: string | null | undefined) => (value ?? '')
       .normalize('NFKC').replace(/\s+/g, ' ').trim().toLocaleLowerCase();
     const visible = (element: Element) => {
@@ -87,7 +89,7 @@ async function auditVisibleStructure(page: Page) {
         if (!text) continue;
         const level = heading.tagName.match(/^H([1-6])$/)?.[1] ?? heading.getAttribute('aria-level');
         const key = `h${level}:${text}`;
-        if (headings.has(key)) violations.push(`duplicate heading ${key}`);
+        if (strictHeadings && headings.has(key)) violations.push(`duplicate heading ${key}`);
         headings.add(key);
       }
 
@@ -148,7 +150,7 @@ async function auditVisibleStructure(page: Page) {
       }
     }
     return violations;
-  });
+  }, designPolicy.uniqueHeadings === 'block');
 }
 
 async function exerciseCustomComboboxes(page: Page) {

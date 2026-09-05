@@ -14,7 +14,8 @@
       "result": "evals/results/codex.json",
       "implementation": "passed",
       "implementationCalls": 3,
-      "note": "The read-only decision benchmark passes 14/14. The isolated transparent AI review build passes 21/21 static checks and live browser proof after two focused repair iterations."
+      "note": "The read-only decision benchmark passes 14/14. The isolated transparent AI review build passes 21/21 static checks and live browser proof after two focused repair iterations.",
+      "decisionBenchmarkMethod": "legacy word-match; not accepted by the current behavioral validator"
     },
     "claude-code": {
       "status": "deferred-by-user",
@@ -67,5 +68,10 @@
       "status": "configured-stage-only"
     }
   },
-  "nextGate": "Public v1 is released. Await Claude community marketplace and Cursor Marketplace review, complete OpenAI developer identity verification, and run the explicitly deferred Claude Code and Cursor live behavior checks."
+  "nextGate": "Public v1 is released. Await Claude community marketplace and Cursor Marketplace review, complete OpenAI developer identity verification, and run the explicitly deferred Claude Code and Cursor live behavior checks.",
+  "currentBehaviorEvaluation": {
+    "method": "observed execution and file snapshots",
+    "modelRuns": "not rerun",
+    "qualityComparison": "not scored"
+  }
 }

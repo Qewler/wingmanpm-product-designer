@@ -1,25 +1,56 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Observed execution record, not a design quality score",
   "type": "object",
-  "required": ["results"],
+  "required": [
+    "schemaVersion",
+    "kind",
+    "scenario",
+    "command",
+    "readOnly",
+    "before",
+    "after",
+    "exitCode"
+  ],
   "properties": {
-    "results": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "kind": {
+      "const": "observed-execution"
+    },
+    "scenario": {
+      "type": "string"
+    },
+    "command": {
       "type": "array",
-      "minItems": 14,
-      "maxItems": 14,
+      "minItems": 1,
       "items": {
-        "type": "object",
-        "required": ["id", "classification", "decision", "proof", "risk"],
-        "properties": {
-          "id": { "type": "string" },
-          "classification": { "type": "string" },
-          "decision": { "type": "string" },
-          "proof": { "type": "string" },
-          "risk": { "type": "string" }
-        },
-        "additionalProperties": false
+        "type": "string"
       }
+    },
+    "readOnly": {
+      "type": "boolean"
+    },
+    "before": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    },
+    "after": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    },
+    "exitCode": {
+      "type": [
+        "integer",
+        "null"
+      ]
     }
-  },
-  "additionalProperties": false
+  }
 }

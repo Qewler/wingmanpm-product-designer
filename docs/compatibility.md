@@ -6,7 +6,7 @@ FieldOps fixture, which is always marked `Concept demo`.
 
 | Check | Current evidence |
 | --- | --- |
-| Command benchmark | Codex passed 14 of 14 routing and judgment cases |
+| Command benchmark | Historical Codex text contract matched 14 of 14; this is not a behavioral quality score |
 | Isolated Codex implementation | Passed 21 of 21 static checks plus responsive, theme, reduced-motion, approval, focus-return, and browser-error proof after two focused repair iterations |
 | Fixture migration | Public version-1 fixture upgrade stayed idempotent and kept the browser-evidence gate active |
 | Storybook | Static build passed for all 7 base stories |
@@ -24,17 +24,17 @@ The machine-readable record is
 
 ## Agent interface
 
-All supported hosts use the same skill and 18 command families.
+The unreleased working version uses one skill and 19 command families, including `explore`. The released v1 evidence below remains historical.
 
 | Host | Explicit form | Current host benchmark |
 | --- | --- | --- |
-| Codex | `$wingmanpm-product-designer <intent> [target]` | Passed 14 of 14 plus isolated build |
+| Codex | `$wingmanpm-product-designer <intent> [target]` | Historical text contract plus isolated build |
 | Claude Code | `/wingmanpm-product-designer <intent> [target]` | Live run deferred by user; strict plugin validation passed |
 | Cursor | `/wingmanpm-product-designer <intent> [target]` | Live run deferred by user; authenticated CLI confirmed |
 
-Explicit invocations and requests with a selected `refine`, `elevate`, or
-`reimagine` level act directly. Free-form requests for `beautiful`, `stunning`,
-or `pimp it up` first show the three-level choice. `review` and `audit` remain
+Explicit invocations and ordinary refinement requests act within their bounded
+scope. `explore` and unresolved `reimagine` requests show visual directions
+before a replacement is built. `review` and `audit` remain
 read-only unless the user asks for changes or supplies `--fix`.
 
 ## Project compatibility

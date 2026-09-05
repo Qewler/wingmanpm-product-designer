@@ -1,3 +1,8 @@
+import { updateSkill } from './update.mjs';
+import { readContext } from './context.mjs';
+import { createExploration, inspectExploration, chooseExploration, serveExploration } from './explore.mjs';
+import { checkStage, runProof } from './stages.mjs';
+import { evidencePlan } from './evidence.mjs';
 import { cp, lstat, mkdir, readFile, readdir, rm, rmdir, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -20,7 +25,7 @@ const SKILL_NAME = 'wingmanpm-product-designer';
 const POINTER_LABEL = SKILL_NAME;
 const PROJECT_MANIFEST = '.wingmanpm-design/manifest.json';
 const BROWSER_EVIDENCE = '.wingmanpm-design/browser-evidence.json';
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const PROJECT_SCHEMA_VERSION = 2;
 const DEFAULT_SCAN_ROOTS = ['src', 'app', 'pages', 'components', 'stories', 'design-system/examples'];
 
@@ -32,7 +37,13 @@ Usage:
   wingman-design init [--project PATH] [--mode new-system|preserve] [--dry-run]
   wingman-design upgrade [--project PATH] [--dry-run]
   wingman-design add data-table [--project PATH] [--profile static|work|editable] [--id TABLE_ID] [--dry-run]
-  wingman-design check [--project PATH] [--json] [--allow-pending-review]
+  wingman-design update [--auto|--check|--enable|--disable] [--force]
+  wingman-design context [--no-update] [--project PATH] [--target PATH] [--request TEXT] [--json]
+  wingman-design explore create --spec FILE [--project PATH]
+  wingman-design explore serve|inspect --id ID [--project PATH]
+  wingman-design explore choose --id ID --option ID --reason TEXT [--project PATH]
+  wingman-design proof --target PATH [--command-file FILE] [--project PATH]
+  wingman-design check [--stage explore|build|ship] [--target PATH] [--id ID] [--project PATH] [--json] [--allow-pending-review]
   wingman-design check --record-review --reviewer NAME --confirm CHECKS [--project PATH]
   wingman-design doctor [--project PATH] [--json]
   wingman-design uninstall [--project PATH] [--agent all|codex|claude|cursor] [--scope user|project] [--dry-run]
@@ -97,6 +108,7 @@ async function runtimeAssets({ includePlaywright = false } = {}) {
     .sort()
     .map((name) => ({ source: path.join(SRC_ROOT, 'schemas', name), relative: `.wingmanpm-design/runtime/schemas/${name}` }));
   return [
+    { source: path.join(SRC_ROOT, 'src', 'evidence.mjs'), relative: '.wingmanpm-design/runtime/evidence.mjs' },
     { source: path.join(SRC_ROOT, 'src', 'checker.mjs'), relative: '.wingmanpm-design/runtime/checker.mjs' },
     { source: path.join(SRC_ROOT, 'src', 'browser-reporter.mjs'), relative: '.wingmanpm-design/runtime/browser-reporter.mjs' },
     { source: path.join(SRC_ROOT, 'registry', 'rules.json'), relative: '.wingmanpm-design/runtime/rules.json' },
@@ -481,6 +493,12 @@ async function initProject(flags) {
         }
       }
       if (detected.goldenStack) {
+        packageJson.dependencies ??= {};
+        if (!('lucide-react' in packageJson.dependencies) && !('lucide-react' in (packageJson.devDependencies ?? {}))) {
+          const value = '^1.41.0';
+          packageJson.dependencies['lucide-react'] = value;
+          manifest.packageDependencies.push({ section: 'dependencies', key: 'lucide-react', value });
+        }
         packageJson.devDependencies ??= {};
         const designDependencies = {
           storybook: '^10.5.10',
@@ -717,10 +735,12 @@ async function recordReview(root, flags) {
 
 async function checkProject(flags) {
   const root = validateRoot(flags.project ?? process.cwd());
+  if (flags['record-review'] && flags.stage && flags.stage !== 'ship') throw new Error('Review recording requires the ship stage.');
   if (flags['record-review']) await recordReview(root, flags);
-  const report = await runChecks(root, { allowPendingReview: Boolean(flags['allow-pending-review']) });
+  const report = await checkStage(root, { stage: flags.stage ?? 'ship', target: flags.target, id: flags.id, allowPendingReview: Boolean(flags['allow-pending-review']) });
   logJsonOrText(report, Boolean(flags.json), (value) => [
     ...value.findings.map((finding) => `${finding.severity.toUpperCase()} ${finding.ruleId} ${finding.file}:${finding.line} ${finding.message}`),
+    ...(value.pending ? [`Stage: ${value.stage}; ${value.status}; not release proof. Pending: ${value.pending.join('; ')}`] : []),
     `WingmanPM design check: ${value.counts.block} block, ${value.counts.warn} warn, ${value.counts.excepted} excepted, ${value.counts.baselined} legacy.`
   ].join('\n'));
   if (report.counts.block) process.exitCode = 1;
@@ -927,7 +947,7 @@ async function installSkill(flags) {
   const roots = installRoots(scope, flags.project);
   const agents = selectedAgents(flags.agent);
   const sourceEntries = [
-    'SKILL.md', 'LICENSE', 'NOTICE', 'agents', 'bin', 'references', 'registry',
+    'SKILL.md', 'LICENSE', 'NOTICE', 'bundle-manifest.json', 'agents', 'bin', 'references', 'registry',
     'schemas', 'scripts', 'src', 'templates'
   ];
   const results = [];
@@ -1122,6 +1142,7 @@ function explainCommand(positional, flags) {
   if (!phrase) throw new Error('Explain needs an intent or phrase.');
   const result = resolveRequest(phrase, {
     explicit: Boolean(flags.explicit),
+    target: typeof flags.target === 'string' ? flags.target : undefined,
     level: typeof flags.level === 'string' ? flags.level : undefined,
     fix: Boolean(flags.fix)
   });
@@ -1164,6 +1185,46 @@ export async function runCli(argv = process.argv.slice(2)) {
   if (!command || command === 'help' || flags.help) {
     console.log(help);
     return;
+  }
+  if (command === 'update') {
+    const result = await updateSkill(SRC_ROOT, { auto: Boolean(flags.auto), force: Boolean(flags.force), readOnly: Boolean(flags.check), enabled: flags.disable ? false : flags.enable ? true : undefined });
+    console.log(JSON.stringify(result)); return result;
+  }
+  if (command === 'context') {
+    const readOnly = Boolean(flags['no-update']) || (typeof flags.request === 'string' && resolveRequest(flags.request).readOnly === true);
+    const update = await updateSkill(SRC_ROOT, { auto: !readOnly, readOnly });
+    if (update.status === 'updated') { console.log(JSON.stringify({ update, next: 'Reload the SKILL.md at update.reload, then run context again from that installed directory.' })); return update; }
+    const value = await readContext(validateRoot(flags.project ?? process.cwd()), { target: flags.target, request: flags.request });
+    if (!['development', 'current', 'disabled'].includes(update.status)) value.update = update;
+    console.log(JSON.stringify(value)); return value;
+  }
+  if (command === 'proof') {
+    const root = validateRoot(flags.project ?? process.cwd());
+    if (typeof flags.target !== 'string') throw new Error('Proof needs --target.');
+    const value = flags['command-file']
+      ? await runProof(root, [flags.target], JSON.parse(await readFile(path.resolve(root, flags['command-file']), 'utf8')))
+      : await evidencePlan(root, [flags.target]);
+    const display = flags.json || value.kind === 'command-result' ? value : { scope: value.scope, targets: value.targets, sourceHash: value.sourceHash, files: value.files.length, stories: value.storyFiles.slice(0, 12), warnings: value.warnings.slice(0, 5), detail: 'Use --json for the full dependency manifest.' };
+    console.log(JSON.stringify(display, null, 2));
+    if (value.status === 'failed') process.exitCode = 1;
+    return value;
+  }
+  if (command === 'explore') {
+    const root = validateRoot(flags.project ?? process.cwd());
+    const action = positional.shift();
+    let value;
+    if (action === 'create') {
+      if (typeof flags.spec !== 'string') throw new Error('Explore create needs --spec FILE.');
+      value = await createExploration(root, JSON.parse(await readFile(path.resolve(root, flags.spec), 'utf8')));
+    } else if (action === 'inspect') value = await inspectExploration(root, flags.id);
+    else if (action === 'choose') value = await chooseExploration(root, flags.id, flags.option, flags.reason);
+    else if (action === 'serve') {
+      const port = flags.port === undefined ? 0 : Number(flags.port);
+      if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid preview port.');
+      const live = await serveExploration(root, flags.id, port);
+      value = { id: live.id, url: live.url, selection: 'saved locally; read with explore inspect' };
+    } else throw new Error('Explore supports create, inspect, choose, and serve.');
+    console.log(JSON.stringify(value, null, 2)); return value;
   }
   if (command === 'init') return initProject(flags);
   if (command === 'upgrade') return upgradeProject(flags);

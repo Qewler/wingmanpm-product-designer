@@ -10,13 +10,13 @@ Use cards only for real containment, elevation, comparison, or a self-contained
 action. A page made from equal rounded cards hides hierarchy. First try section
 rhythm, dividers, alignment, type, and whitespace.
 
-## Default character when no authority exists
+## Establish character from the task
 
-- Compact density with comfortable target sizes.
+- Choose density for the task and audience; keep comfortable target sizes.
 - Controlled corner softness: smaller radii for dense controls, larger radii
   only for meaningful containers or focal moments.
-- One brand accent plus semantic status and data colors.
-- One strong sans family; use mono or tabular figures for identifiers and data.
+- A product-specific palette with distinct status and data colors.
+- Type that fits the identity and reading task; aligned figures for data.
 - Clear selected, hover, focus, disabled, destructive, and pending states.
 - Project-owned components, even when they began from shadcn primitives.
 

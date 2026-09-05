@@ -135,7 +135,7 @@ test('dependency-free validators accept schema v2 and expose v1 as a migration w
   assert.deepEqual(validateConfig(validConfig()), []);
   assert.deepEqual(validateConfig(validConfig(1)), [{
     path: '$.schemaVersion',
-    message: 'Schema version 1 is supported only for migration; run npx --yes wingmanpm-product-designer@1.0.0 upgrade.',
+    message: 'Schema version 1 is supported only for migration; run the bundled wingman-design upgrade command.',
     severity: 'warn'
   }]);
   assert.match(validateConfig({ ...validConfig(), scanRoots: ['../private'] })[0].message, /safe project-relative/);
@@ -143,7 +143,7 @@ test('dependency-free validators accept schema v2 and expose v1 as a migration w
   assert.equal(validateExceptions({ exceptions: [{
     ruleId: 'WPD020', target: 'src/table.tsx', reason: 'Temporary safe migration.', approver: 'Morgan Lee', reviewDate: '2026-08-29'
   }] }, { today: '2026-08-30' })[0].path, '$.exceptions[0].reviewDate');
-  for (const ruleId of ['WPD021', 'WPD022', 'WPD023']) {
+  for (const ruleId of ['WPD022', 'WPD023']) {
     const hardRule = validateExceptions({ exceptions: [{
       ruleId, target: 'src/example.tsx', reason: 'Attempted global bypass.', approver: 'Morgan Lee', reviewDate: '2099-12-31'
     }] }, { today: '2026-08-30' });
@@ -393,7 +393,7 @@ test('schema files remain parseable and make config v2 authoritative', async () 
   }
 });
 
-test('WPD021 blocks every long-dash render form and allows the regular hyphen', async () => {
+test('WPD021 reports every long-dash render form and allows the regular hyphen', async () => {
   const directory = await initializedProject();
   const slash = String.fromCharCode(92);
   const cases = [
@@ -436,8 +436,8 @@ test('WPD021 blocks every long-dash render form and allows the regular hyphen', 
     ruleId: 'WPD021', target: 'literal.md', reason: 'Attempted global bypass.', approver: 'Morgan Lee', reviewDate: '2099-12-31'
   }] })}\n`);
   const bypass = await runChecks(directory, { allowPendingReview: true });
-  assert.ok(bypass.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === 'literal.md'));
-  assert.ok(bypass.findings.some((entry) => entry.ruleId === 'WPD-EXCEPTION' && /cannot be excepted/.test(entry.message)));
+  assert.equal(bypass.findings.some((entry) => entry.ruleId === 'WPD021' && entry.file === 'literal.md'), false);
+  assert.equal(bypass.findings.some((entry) => entry.ruleId === 'WPD-EXCEPTION'), false);
 });
 
 test('WPD022 blocks repeated normalized headings but ignores hidden HTML and fenced Markdown', async () => {
@@ -506,13 +506,12 @@ test('WPD022 structure', async () => { const structureViolations = await auditVi
     && entry.file === 'src/components/wingman-design/data-table/DataTable.tsx'));
 });
 
-test('legacy baselines reject and never absorb WPD021 through WPD023', async () => {
+test('legacy baselines reject accessibility evidence rules', async () => {
   const directory = await initializedProject();
   await writeFile(path.join(directory, 'hard.md'), `# Copy\n${forbiddenDashCharacter()}\n## Repeat\n## Repeat\n`);
   await writeFile(path.join(directory, 'src', 'HardDropdown.tsx'), 'export const Hard = () => <select><option>Open</option></select>;\n');
   const initial = await runChecks(directory, { allowPendingReview: true });
   const selected = [
-    initial.findings.find((entry) => entry.ruleId === 'WPD021' && entry.file === 'hard.md'),
     initial.findings.find((entry) => entry.ruleId === 'WPD022' && entry.file === 'hard.md'),
     initial.findings.find((entry) => entry.ruleId === 'WPD023')
   ];
@@ -523,7 +522,7 @@ test('legacy baselines reject and never absorb WPD021 through WPD023', async () 
   }, null, 2)}\n`);
   const report = await runChecks(directory, { allowPendingReview: true });
   assert.ok(report.findings.some((entry) => entry.ruleId === 'WPD016' && /global hard rules/.test(entry.message)));
-  for (const ruleId of ['WPD021', 'WPD022', 'WPD023']) assert.ok(report.findings.some((entry) => entry.ruleId === ruleId), ruleId);
+  for (const ruleId of ['WPD022', 'WPD023']) assert.ok(report.findings.some((entry) => entry.ruleId === ruleId), ruleId);
 });
 
 test('Vue, Svelte, and Astro surfaces receive safe literal structure and dropdown checks', async () => {

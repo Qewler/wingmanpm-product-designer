@@ -1,83 +1,33 @@
-# System and Direction Workflow
+# System and direction
 
-Use this workflow only for a new design system or a major redesign. For a
-narrow repair, preserve the current visual authority and make the smallest
-coherent change.
+For a new system or major redesign, inspect repository instructions, product
+facts, real tasks, working behavior, components, tokens, assets, and current UI.
+Preserve a coherent system for local work. Extend it for new capability. Replace
+its identity only when the user asks or authorizes that change.
 
-## 1. Establish authority
+Separate facts from assumptions in the product notes. State one design idea tied
+to the user's main object and decision. Define concrete layout, type, content,
+color, and interaction consequences. Do not start from a preset warm or compact
+look. The four axes, Expression, Density, Motion, and Warmth, are optional; if
+used, justify their values with visible choices.
 
-Inspect, in this order:
+Use a few public references only when they resolve a design question. Record the
+source and useful principle. Keep private names, data, screenshots, and unreleased
+features out of external queries. Preserve provenance for sourced assets.
 
-1. Repository instructions and product requirements.
-2. Existing routes, working behavior, analytics, and protected text.
-3. Tokens, shared components, Storybook, and representative screens.
-4. Brand assets, current production UI, and recent visual decisions.
+For unresolved direction, use [explore.md](explore.md). Two polished directions
+normally give a useful choice. Keep honest content and constraints identical;
+vary composition and interaction. Honor an explicit count or chosen direction.
+Do not require full shipping contracts or all-story browser checks for throwaway
+concepts. The user chooses before the full replacement is implemented.
 
-Write findings in `design-system/PRODUCT.md`. Separate facts from assumptions.
-Never replace business meaning with more attractive copy.
+Build the selected system from observed needs. Record PRODUCT.md, DESIGN.md,
+components, tokens, and relevant surface notes without duplicating them. Keep
+project-owned files editable. Compose each required theme deliberately; do not
+add dark mode to a light-only product during a narrow repair. Use stable surface
+markers when several roots can be rendered on one page.
 
-## 2. Choose preserve, extend, or redesign
-
-- **Preserve** when the system is coherent and the request is local.
-- **Extend** when a new workflow can use the current vocabulary.
-- **Redesign** only when the user asks, the current system cannot support the
-  work, or measured usability failures make local repair ineffective.
-
-Record protected elements and permitted changes before editing.
-
-## 3. Set four axes
-
-Record a justified integer from 1 to 10 for each axis:
-
-- **Expression:** quiet utility to distinctive visual voice.
-- **Density:** spacious browsing to compact expert work.
-- **Motion:** near-static feedback to explanatory choreography.
-- **Warmth:** neutral precision to humane softness.
-
-Each value must produce at least two concrete choices in layout, type, color,
-shape, or motion. If it does not, the axis is decorative and must be revised.
-
-## 4. Research safely
-
-Use a small set of live public references. Search with generic, sanitized terms
-such as the interface pattern and industry. Do not include private names, data,
-screenshots, code, or unreleased features in external queries.
-
-For each reference, record the source URL, date, relevant pattern, product fit,
-and a warning against literal imitation.
-
-## 5. Show three directions
-
-Create three responsive, coded first-view concepts with the same honest
-content. Vary composition, hierarchy, density, and expression, not only color.
-Each direction must work at 390 and 1280 CSS pixels and state:
-
-- the product idea it reinforces;
-- its four axes;
-- the main risk;
-- what is deliberately preserved.
-
-Do not implement the full system until the user chooses a direction.
-
-## 6. Build the contract
-
-After approval, complete `PRODUCT.md`, `DESIGN.md`, surface notes, tokens,
-project-owned primitives, the responsive app shell, and Storybook evidence.
-Compose light first, then compose dark independently. Do not make dark by
-inverting light values.
-
-Set `color-scheme: light dark` on the document or active theme root. Give each
-rendered surface root a stable marker when the application can mount more than
-one surface. This lets the global browser gate isolate headings, landmarks,
-dialogs, and dropdowns without testing hidden or inactive roots.
-
-## 7. Verify in loops
-
-Run deterministic checks, Storybook interaction tests, browser review, and
-visual comparison. Fix blocking findings and rerun. Baseline updates require an
-identified reviewer and a recorded reason.
-
-Always run WPD021 through WPD023 on generated code, UI copy, documents, stories,
-templates, and final handoff text. The global Playwright gate must load every
-Storybook story from `/index.json` in light and dark. Confirm `structureUnique`
-and `dropdownContrast` only after that executable evidence passes.
+Build the key workflow and its loading, empty, error, permission, and recovery
+states. Use [workflow.md](workflow.md) for focused evidence and [qa.md](qa.md)
+for shipping. Compare the result against the selected idea and the original
+brief, not just a checklist. Never silently replace a visual baseline.

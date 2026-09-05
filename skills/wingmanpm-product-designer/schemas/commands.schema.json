@@ -24,7 +24,7 @@
     },
     "intents": {
       "type": "array",
-      "minItems": 18,
+      "minItems": 19,
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/intent" }
     }

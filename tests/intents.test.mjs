@@ -14,14 +14,14 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-test('registry exposes all 18 unique SaaS intent families and aliases', () => {
+test('registry exposes all 19 unique SaaS intent families and aliases', () => {
   const expected = [
     'polish', 'standout', 'amplify', 'calm', 'simplify', 'layout',
     'typography', 'color', 'motion', 'responsive', 'harden', 'review',
-    'data-table', 'forms', 'onboarding', 'ai-flow', 'navigation', 'design-system'
+    'data-table', 'forms', 'onboarding', 'ai-flow', 'navigation', 'design-system', 'explore'
   ];
   assert.deepEqual(COMMANDS.map(({ id }) => id), expected);
-  assert.equal(new Set(COMMANDS.flatMap(({ id, aliases }) => [id, ...aliases]).map(normalizeAlias)).size, 36);
+  assert.equal(new Set(COMMANDS.flatMap(({ id, aliases }) => [id, ...aliases]).map(normalizeAlias)).size, 38);
   assert.deepEqual(COMMAND_LEVELS, ['refine', 'elevate', 'reimagine']);
   assert.equal(listCommands().length, expected.length);
 });
@@ -42,25 +42,25 @@ test('resolver uses exact aliases and never substring matches', () => {
   assert.equal(resolveRequest('this table is stunningly fast').kind, 'unknown');
 });
 
-test('free-form vague phrases require the three-level picker', () => {
+test('ordinary design phrases act at a bounded default level', () => {
   assert.equal(resolveIntent('make it beautiful')?.intent, 'polish');
   assert.equal(resolveIntent('make it stunning')?.intent, 'standout');
   const beautiful = resolveRequest('Please, make this beautiful!');
-  assert.equal(beautiful.kind, 'picker');
+  assert.equal(beautiful.kind, 'direct');
   assert.equal(beautiful.intent, 'polish');
-  assert.equal(beautiful.recommendedLevel, 'refine');
-  assert.deepEqual(beautiful.options.map(({ id }) => id), ['refine', 'elevate', 'reimagine']);
+  assert.equal(beautiful.level, 'refine');
+  assert.equal(beautiful.stage, 'build');
 
   const stunning = resolveRequest('Could you make the billing settings stunning?');
-  assert.equal(stunning.kind, 'picker');
+  assert.equal(stunning.kind, 'direct');
   assert.equal(stunning.intent, 'standout');
   assert.equal(stunning.target, 'the billing settings');
-  assert.equal(stunning.recommendedLevel, 'elevate');
+  assert.equal(stunning.level, 'elevate');
 
   const pimp = resolveRequest('PIMP IT UP!!!');
-  assert.equal(pimp.kind, 'picker');
+  assert.equal(pimp.kind, 'direct');
   assert.equal(pimp.intent, 'amplify');
-  assert.equal(pimp.recommendedLevel, 'elevate');
+  assert.equal(pimp.level, 'elevate');
 });
 
 test('explicit invocation and supplied level act directly', () => {
@@ -123,12 +123,12 @@ test('command registry carries progressive references and source citations', asy
   const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
   const packageLock = JSON.parse(await readFile(path.join(root, 'package-lock.json'), 'utf8'));
   const skill = await readFile(path.join(skillRoot, 'SKILL.md'), 'utf8');
-  assert.equal(registry.version, '1.0.0');
+  assert.equal(registry.version, '1.1.0');
   assert.equal(packageJson.version, registry.version);
   assert.equal(packageLock.version, registry.version);
   assert.equal(packageLock.packages[''].version, registry.version);
-  assert.match(skill, /version: 1\.0\.0/);
-  assert.equal(registry.intents.length, 18);
+  assert.match(skill, /version: 1\.1\.0/);
+  assert.equal(registry.intents.length, 19);
   assert.ok(registry.sources.every(({ url }) => url.startsWith('https://')));
   assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
   for (const command of registry.intents) {
