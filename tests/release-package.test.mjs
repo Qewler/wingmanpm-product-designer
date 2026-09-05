@@ -28,7 +28,7 @@ async function filesBelow(directory) {
 test('public package exposes one versioned portable plugin and one canonical skill', async () => {
   const packageJson = await json('package.json');
   assert.equal(packageJson.name, 'wingmanpm-product-designer');
-  assert.equal(packageJson.version, '1.0.0');
+  assert.equal(packageJson.version, '1.1.0');
   assert.equal(packageJson.private, undefined);
   assert.deepEqual(packageJson.bin, {
     'wingmanpm-product-designer': './bin/wingmanpm-product-designer.mjs',
@@ -53,20 +53,20 @@ test('public package exposes one versioned portable plugin and one canonical ski
   assert.equal(portable.$schema, 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json');
   for (const manifest of [portable, codex, claude]) {
     assert.equal(manifest.name, 'wingmanpm-product-designer');
-    assert.equal(manifest.version, '1.0.0');
+    assert.equal(manifest.version, '1.1.0');
     assert.equal('mcpServers' in manifest, false);
     assert.equal('apps' in manifest, false);
   }
   assert.equal(claudeMarketplace.name, 'wingmanpm');
-  assert.equal(claudeMarketplace.version, '1.0.0');
+  assert.equal(claudeMarketplace.version, '1.1.0');
   assert.equal(claudeMarketplace.plugins[0].source, './');
-  assert.equal(claudeMarketplace.plugins[0].version, '1.0.0');
+  assert.equal(claudeMarketplace.plugins[0].version, '1.1.0');
   assert.deepEqual(codexMarketplace.plugins[0].source, { source: 'local', path: './' });
 
   const skill = await readFile(path.join(skillRoot, 'SKILL.md'), 'utf8');
-  assert.match(skill, /version:\s*1\.0\.0/);
+  assert.match(skill, /version:\s*1\.1\.0/);
   assert.doesNotMatch(skill, /creator of WingmanPM/i);
-  assert.match(skill, /every exit path, including Escape, Cancel, close, and success/i);
+  assert.match(skill, /every exit path, including Escape, Cancel,\s+close, and success/i);
   assert.match(skill, /test the actual browser cancel\s+and close events/i);
 
   const privacy = await readFile(path.join(root, 'PRIVACY.md'), 'utf8');
@@ -104,7 +104,7 @@ test('branded npm installer shows the maker note once while the portable CLI sta
 
   result = spawnSync(process.execPath, [portable, '--version'], { cwd: root, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
-  assert.equal(result.stdout.trim(), '1.0.0');
+  assert.equal(result.stdout.trim(), '1.1.0');
 
   result = spawnSync(process.execPath, [portable, 'uninstall', '--scope', 'project', '--project', project, '--agent', 'all'], { cwd: root, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);

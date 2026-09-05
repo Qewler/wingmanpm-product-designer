@@ -1,9 +1,8 @@
 # Transformation Commands
 
-Use these commands to turn subjective language into bounded product work. Start
-by recording the current Expression, Density, Motion, and Warmth axes from 1 to
-10. State the target values and the visible choices each changed value causes.
-Do not change protected business meaning to make a screen look cleaner.
+Tie each transformation to the product task. Preserve protected business meaning.
+Use before/after axes only when they explain a real visual choice. Record concrete
+design changes rather than scores for their own sake.
 
 ## Intervention levels
 
@@ -11,9 +10,9 @@ Do not change protected business meaning to make a screen look cleaner.
   hierarchy, spacing, type, states, alignment, contrast, and inconsistency.
 - **Elevate:** include Refine, then add one product-specific signature moment
   that makes the main task clearer, faster, or more memorable.
-- **Reimagine:** reconsider composition and system direction. Produce three
-  responsive coded first views with honest content, product fit, four axes,
-  preserved elements, and risk. Require a user choice before continuing.
+- **Reimagine:** reconsider composition and system direction. Use [explore.md](explore.md) to compare two polished directions with the same
+  content and brand limits, then build the selected direction. Honor a supplied
+  count or prior user choice.
 
 The selected level is a ceiling, not a quota. Keep a smaller change when that
 fully solves the problem.
@@ -25,8 +24,10 @@ Default level: **Refine**.
 1. Find the three most visible sources of roughness in the requested surface.
 2. Repair rhythm, hierarchy, control states, type roles, icon alignment, color
    use, and responsive edges using the established system.
-3. Remove accidental inconsistency. Do not introduce a new visual thesis.
-4. Compare the result at representative desktop and mobile widths.
+3. Remove accidental inconsistency and [needless framing](anti-patterns.md).
+   For component behavior, use [components](components.md). Preserve the thesis.
+4. Apply [minimum craft](craft.md): measure text contrast and verify the mobile
+   replacement for every existing route and task action. Compare both widths.
 
 Success means the interface feels intentional while remaining recognizably the
 same product. Expression usually stays fixed; other axes change only when the
@@ -36,6 +37,7 @@ current execution contradicts its own contract.
 
 Default level: **Elevate**.
 
+Use [creative patterns](creative-patterns.md) to find a task-based signature.
 Complete the Polish pass, then identify the user's key object, decision, or
 transition. Create one earned signature moment there. It can be a distinctive
 composition, unusually clear data treatment, revealing interaction, purposeful
@@ -85,4 +87,4 @@ the user must remember more or recover hidden context.
 For every transformation, capture before and after evidence at the affected
 viewports. Verify focus, keyboard order, long content, loading, empty, error,
 permission, and reduced-motion behavior where relevant. Explain the result in
-terms of the task and axes, not subjective adjectives alone.
+terms of the task and observed changes, not subjective adjectives alone.

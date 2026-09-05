@@ -1,20 +1,20 @@
 {
   "name": "wingmanpm",
   "owner": {
-    "name": "Julius / Qewler",
+    "name": "Wingman.PM / Qewler",
     "url": "https://github.com/Qewler"
   },
   "description": "Product design skills for coding agents building polished, accessible digital products.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "plugins": [
     {
       "name": "wingmanpm-product-designer",
       "displayName": "WingmanPM Product Designer",
       "source": "./",
       "description": "Product design judgment for coding agents building accessible, responsive digital products.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
-        "name": "Julius / Qewler",
+        "name": "Wingman.PM / Qewler",
         "url": "https://github.com/Qewler"
       },
       "homepage": "https://github.com/Qewler/wingmanpm-product-designer#readme",

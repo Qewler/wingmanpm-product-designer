@@ -54,6 +54,10 @@ jobs:
         if: matrix.node == 24
         run: npm pack --dry-run --ignore-scripts
 
+      - name: Verify the complete skills.sh install and generated dependencies
+        if: matrix.node == 24
+        run: npm run test:skills-install -- --build --browser
+
   fixture-browser:
     name: Node 24 fixture browser
     runs-on: ubuntu-latest

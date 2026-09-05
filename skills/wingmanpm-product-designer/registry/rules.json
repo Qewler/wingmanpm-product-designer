@@ -103,7 +103,8 @@
       "title": "Implementation colors use tokens",
       "summary": "Production UI does not bypass the project token source with raw color literals.",
       "source": "https://github.com/Qewler/wingmanpm-product-designer/blob/main/skills/wingmanpm-product-designer/references/system.md",
-      "sourceType": "public project reference"
+      "sourceType": "public project reference",
+      "severity": "warn"
     },
     {
       "id": "WPD005",
@@ -111,7 +112,8 @@
       "title": "Transitions are scoped and responsive",
       "summary": "Interactive transitions name their properties and avoid routine ease-in arrivals or transition-all behavior.",
       "source": "https://developer.mozilla.org/en-US/docs/Web/CSS/transition",
-      "sourceType": "MDN platform reference"
+      "sourceType": "MDN platform reference",
+      "severity": "warn"
     },
     {
       "id": "WPD006",
@@ -141,9 +143,10 @@
       "id": "WPD009",
       "domain": "composition",
       "title": "Card repetition has purpose",
-      "summary": "Large equal-card grids must represent real containment or comparison instead of replacing page hierarchy.",
+      "summary": "Literal card counts are advisory. Judge hierarchy from the rendered surface and its task.",
       "source": "https://github.com/Qewler/wingmanpm-product-designer/blob/main/skills/wingmanpm-product-designer/references/product-ui.md",
-      "sourceType": "public project reference"
+      "sourceType": "public project reference",
+      "severity": "warn"
     },
     {
       "id": "WPD010",
@@ -237,15 +240,16 @@
       "id": "WPD021",
       "domain": "content",
       "title": "Produced text avoids the forbidden long dash",
-      "summary": "Generated UI, copy, documents, stories, templates, and handoffs cannot contain the character or an HTML, JavaScript, or CSS form that renders it.",
+      "summary": "Optional project punctuation policy: off, warn by default, or block.",
       "source": "https://html.spec.whatwg.org/multipage/named-characters.html",
-      "sourceType": "WHATWG HTML standard"
+      "sourceType": "WHATWG HTML standard",
+      "severity": "warn"
     },
     {
       "id": "WPD022",
       "domain": "structure",
       "title": "Visible surface structure is unique",
-      "summary": "Each rendered surface keeps heading level and text pairs unique, each app shell has at most one top-level banner and contentinfo landmark, and each visible dialog has at most one icon-only close control.",
+      "summary": "Shell and dialog structure require browser proof. Repeated heading text is a configurable project policy.",
       "source": "https://www.w3.org/WAI/WCAG22/Understanding/headings-and-labels.html",
       "sourceType": "W3C WCAG understanding document"
     },

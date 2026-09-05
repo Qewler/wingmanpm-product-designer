@@ -1,6 +1,6 @@
 # Privacy
 
-Effective date: August 31, 2026
+Version 1.1 update prepared: September 5, 2026
 
 WingmanPM Product Designer is a local, skills-only plugin. The plugin itself
 does not create an account, authenticate with a service, run an MCP server,
@@ -13,6 +13,33 @@ installation directory. The manifest records installed files, content hashes,
 and whether the one-time maker notice was shown. This state supports safe
 updates and removals. The manifest remains local until CLI uninstall removes
 it or the user removes it by manual deletion. It is never sent to the publisher.
+
+Exploration previews, user choices, source hashes, and review notes can also be
+stored under `.wingmanpm-design/explorations` in the target project. Measured
+command results and bounded local command logs are stored under
+`.wingmanpm-design/proofs`. These artifacts can contain the content the user
+chose to work on. They remain local unless the user or host shares them.
+
+Automatic update settings and cached public release metadata are stored in
+`.wingman-update.json` inside the installed skill. Replaced clean bundles are
+backed up in `.wingman-updates` beside the host's skills directory. Local edits
+are preserved instead of overwritten. Backups are not uploaded.
+
+## Update checks and previews
+
+On skill entry, writable use checks the official npm registry for the latest
+stable package, with a daily cache. A newer standalone bundle can be downloaded
+and verified automatically. These requests identify the public package and do
+not include product files, preview content, or source code. npm receives normal
+network request information. Native plugin managers can contact their own
+marketplace services to update the installed plugin.
+
+Use `update --disable` or `WINGMAN_DESIGN_AUTO_UPDATE=0` to disable automatic
+checks and updates. Read-only checks do not install files or write update state.
+
+A served comparison board listens on the local loopback address and serves only
+its selected preview artifacts. It saves choices locally and does not notify a
+model service or publish the previews.
 
 ## What the plugin can access
 

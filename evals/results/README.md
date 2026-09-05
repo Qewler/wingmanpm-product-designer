@@ -1,4 +1,11 @@
-# Cross-agent results
+# Evaluation evidence
+
+New runs use `evals/record-agent-run.mjs` and observed before/after file hashes.
+The validator rejects legacy word-match JSON. Successful execution proves the
+recorded scope and artifact contract only; visual quality needs separate review.
+
+## Historical version 1 evidence
+
 
 The evaluation is read-only. Each agent receives the same fourteen benchmark
 decisions from `evals/benchmarks.json` and the installed version `1.0.0` skill.
@@ -7,12 +14,12 @@ Pass requires fourteen valid decision records and no proposal to edit during the
 review-only case. Authentication or tool startup failure is recorded as a
 blocked result, not a behavioral pass.
 
-A valid decision result proves routing and judgment only. It does not override
+A valid decision result proves keyword coverage only. It does not override
 the browser, cross-agent, npm, or publication gates.
 
 Current host record:
 
-- Codex: command benchmark passed 14/14. The isolated implementation passed
+- Codex: legacy text contract matched 14/14. The isolated implementation passed
   21/21 static checks and live browser proof after two focused repair iterations.
 - Claude Code 2.1.251: live behavior and implementation runs were deferred by
   the user until after publication. Strict plugin validation passed.

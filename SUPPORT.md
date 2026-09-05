@@ -20,7 +20,7 @@ before attaching logs or files.
 
 ## Supported environments
 
-Version 1.0.0 targets current Codex, Claude Code, and Cursor releases, plus
+Version 1.1.0 targets current Codex, Claude Code, and Cursor releases, plus
 standards-compatible Agent Skills and Agent Plugins hosts. The command-line
 installer supports Node.js 20, 22, and 24 on macOS, Linux, and Windows.
 

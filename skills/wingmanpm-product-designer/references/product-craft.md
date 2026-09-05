@@ -5,8 +5,10 @@ product. Read [product-ui.md](product-ui.md) first when the request spans severa
 patterns. Preserve product meaning, data relationships, component contracts,
 and established brand authority.
 
-Record Expression, Density, Motion, and Warmth before and after the work. A
-single-dimension command should usually leave unrelated axes unchanged.
+Use Expression, Density, Motion, and Warmth only when they clarify the choice.
+A single-dimension command should preserve unrelated design decisions. Use
+[anti-patterns](anti-patterns.md) for excess copy, framing, generic composition,
+or unclear actions; [components](components.md) for component states and feel.
 
 ## `layout` / `reflow`
 
@@ -38,8 +40,8 @@ weight, line height, and placement rather than many font families.
 
 ## `color` / `colorize`
 
-Use one brand accent for identity and priority, semantic colors for state, and
-a deliberate palette for data. Color is supportive evidence, never the only
+Use the product palette for identity and priority, semantic colors for state,
+and a deliberate palette for data. Color is supportive evidence, never the only
 way to identify status or selection.
 
 - Map every value to an existing or approved token.
@@ -66,4 +68,4 @@ and coarse pointers.
 ## Proof
 
 Show the changed dimension at affected states and viewports. Run accessibility
-and interaction checks, then state which axes stayed fixed and why.
+and interaction checks, then state which design decisions stayed fixed and why.

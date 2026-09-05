@@ -58,3 +58,22 @@ Claude community marketplace and Cursor Marketplace are submitted but remain
 pending until their public listings are approved and verified. OpenAI remains
 blocked only by developer identity verification. Do not mark a reviewed channel
 as published until its public page and clean install are verified.
+
+## September 5 distribution check
+
+The public v1 record above is historical. On September 5, 2026:
+
+- Claude Console showed **Submitted and pending review**, submitted five days ago.
+- The plugin was absent from both Anthropic's official catalog (291 entries) and
+  community catalog (2,282 entries).
+- The local Claude install was enabled as
+  `wingmanpm-product-designer@wingmanpm`, version 1.0.0, from this repository's
+  own marketplace. This does not establish Anthropic catalog approval.
+- The working copy now uses **Wingman.PM / Qewler** as its publisher display name.
+  That metadata has not been published and does not yet change installed copies.
+
+The current status can be checked in
+[Claude Console submissions](https://platform.claude.com/plugins/submissions).
+The community catalog is a
+[reviewed, nightly-synced mirror](https://github.com/anthropics/claude-plugins-community).
+Do not send a duplicate submission while this one is pending.

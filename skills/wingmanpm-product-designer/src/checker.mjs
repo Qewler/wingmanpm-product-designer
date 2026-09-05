@@ -1,5 +1,6 @@
+import { evidencePlan } from './evidence.mjs';
 import { createHash } from 'node:crypto';
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readFile, readdir, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -9,7 +10,7 @@ const REQUIRED_VIEWPORTS = [390, 768, 1280, 1440];
 const REQUIRED_REVIEW_CHECKS = ['keyboard', 'zoom200', 'reducedMotion', 'longContent', 'light', 'dark', 'axe', 'responsiveStates', 'structureUnique', 'dropdownContrast'];
 const OPTIONAL_TABLE_REVIEW_CHECKS = ['tableDensity', 'tableColumns', 'tablePagination', 'tableExpansion', 'tableBulk', 'tableEditing'];
 const TABLE_PROFILES = new Set(['static', 'work', 'editable']);
-const NON_EXEMPTIBLE_RULES = new Set(['WPD021', 'WPD022', 'WPD023']);
+const NON_EXEMPTIBLE_RULES = new Set(['WPD022', 'WPD023']);
 const TABLE_CAPABILITIES = ['visibility', 'reorder', 'resize', 'expansion', 'selection', 'bulkActions', 'inlineEditing', 'virtualization'];
 const TABLE_PREFERENCE_KEYS = ['density', 'columnOrder', 'columnVisibility', 'columnWidths'];
 const TABLE_TRANSIENT_KEYS = ['selection', 'drafts', 'errors', 'activeEditing'];
@@ -88,9 +89,9 @@ function requireBooleanProperties(value, keys, pathname, output, optionalKeys = 
 export function validateConfig(value, { allowLegacy = true } = {}) {
   const output = [];
   if (!object(value)) return [issue('$', 'Config must be a JSON object.')];
-  const allowed = ['schemaVersion', 'systemMode', 'stack', 'goldenStack', 'requiresDarkTheme', 'aiSurfaces', 'legacyBaseline', 'scanRoots', 'viewports', 'visualEvidenceMaxAgeDays'];
+  const allowed = ['schemaVersion', 'systemMode', 'stack', 'goldenStack', 'requiresDarkTheme', 'aiSurfaces', 'legacyBaseline', 'scanRoots', 'viewports', 'visualEvidenceMaxAgeDays', 'policy'];
   output.push(...additionalProperties(value, allowed));
-  if (value.schemaVersion === 1 && allowLegacy) output.push(issue('$.schemaVersion', 'Schema version 1 is supported only for migration; run npx --yes wingmanpm-product-designer@1.0.0 upgrade.', 'warn'));
+  if (value.schemaVersion === 1 && allowLegacy) output.push(issue('$.schemaVersion', 'Schema version 1 is supported only for migration; run the bundled wingman-design upgrade command.', 'warn'));
   else if (value.schemaVersion !== 2) output.push(issue('$.schemaVersion', 'Must equal the current schema version 2.'));
   if (!['new-system', 'preserve'].includes(value.systemMode)) output.push(issue('$.systemMode', 'Must be new-system or preserve.'));
   if (typeof value.stack !== 'string' || value.stack.trim().length < 1) output.push(issue('$.stack', 'Must be a non-empty string.'));
@@ -115,6 +116,13 @@ export function validateConfig(value, { allowLegacy = true } = {}) {
   }
   if (value.visualEvidenceMaxAgeDays !== undefined && (!Number.isInteger(value.visualEvidenceMaxAgeDays) || value.visualEvidenceMaxAgeDays < 1 || value.visualEvidenceMaxAgeDays > 180)) {
     output.push(issue('$.visualEvidenceMaxAgeDays', 'Must be an integer from 1 to 180.'));
+  }
+  if (value.policy !== undefined) {
+    if (!object(value.policy)) output.push(issue('$.policy', 'Must be an object.'));
+    else {
+      output.push(...additionalProperties(value.policy, ['punctuation', 'uniqueHeadings'], '$.policy'));
+      for (const [key, mode] of Object.entries(value.policy)) if (!['off', 'warn', 'block'].includes(mode)) output.push(issue(`$.policy.${key}`, 'Must be off, warn, or block.'));
+    }
   }
   return output;
 }
@@ -547,38 +555,8 @@ export function createLegacyBaseline(findings) {
   };
 }
 
-export async function hashReviewSources(root) {
-  const hasher = createHash('sha256');
-  const configDocument = await readJsonDocument(path.join(root, '.wingmanpm-design', 'config.json'));
-  const config = object(configDocument.value) ? configDocument.value : {};
-  const configuredRoots = Array.isArray(config.scanRoots) && config.scanRoots.length > 0 && config.scanRoots.every(validProjectPath) ? config.scanRoots : DEFAULT_SCAN_ROOTS;
-  const candidates = new Set(await filesInRoots(
-    root,
-    [...configuredRoots, 'design-system', 'tests/wingman-design'],
-    REVIEW_EXTENSIONS
-  ));
-  for (const file of await files(root, TEXT_EXTENSIONS)) {
-    const relative = path.relative(root, file).split(path.sep).join('/');
-    if (!relative.startsWith('.wingmanpm-design/')) candidates.add(file);
-  }
-  for (const contractFile of await tableContractFiles(root)) {
-    candidates.add(contractFile);
-    const contractDocument = await readJsonDocument(contractFile);
-    if (!object(contractDocument.value)) continue;
-    for (const target of [
-      ...(contractDocument.value.evidence?.stories ?? []),
-      ...(contractDocument.value.evidence?.browserTests ?? [])
-    ]) {
-      if (!validProjectPath(target)) continue;
-      const evidenceFile = path.join(root, target);
-      if (await exists(evidenceFile) && REVIEW_EXTENSIONS.has(path.extname(evidenceFile).toLowerCase())) candidates.add(evidenceFile);
-    }
-  }
-  for (const file of [...candidates].sort()) {
-    hasher.update(path.relative(root, file));
-    hasher.update(await readFile(file));
-  }
-  return hasher.digest('hex');
+export async function hashReviewSources(root, options = {}) {
+  return (await evidencePlan(root, options.targets ?? [])).sourceHash;
 }
 
 function addValidationFindings(findings, root, ruleId, file, issues, defaultSeverity = 'block') {
@@ -723,7 +701,7 @@ export async function runChecks(root, options = {}) {
     const design = await readFile(designFile, 'utf8');
     for (const axis of ['Expression', 'Density', 'Motion', 'Warmth']) {
       const match = design.match(new RegExp(`\\|\\s*${axis}\\s*\\|\\s*(\\d+)\\s*\\|`, 'i'));
-      if (!match || Number(match[1]) < 1 || Number(match[1]) > 10) {
+      if (match && (Number(match[1]) < 1 || Number(match[1]) > 10)) {
         add(findings, root, 'block', 'WPD002', designFile, `${axis} must be a justified integer from 1 to 10.`);
       }
     }
@@ -797,16 +775,16 @@ export async function runChecks(root, options = {}) {
     const content = sourceContents.get(file) ?? await readFile(file, 'utf8');
     policyContents.set(file, content);
     const extension = path.extname(file).toLowerCase();
-    for (const match of forbiddenDashMatches(content, extension)) {
-      add(findings, root, 'block', 'WPD021', file, `Replace the ${match.kind}; WingmanPM output cannot render this punctuation.`, lineOf(content, match.index));
+    for (const match of config.policy?.punctuation === 'off' ? [] : forbiddenDashMatches(content, extension)) {
+      add(findings, root, config.policy?.punctuation ?? 'warn', 'WPD021', file, `Replace the ${match.kind}; WingmanPM output cannot render this punctuation.`, lineOf(content, match.index));
     }
     if (['.md', '.mdx'].includes(extension)) {
-      for (const duplicate of duplicateMarkdownHeadings(content)) {
-        add(findings, root, 'block', 'WPD022', file, `Repeated level ${duplicate.level} heading: ${duplicate.text}.`, lineOf(content, duplicate.index));
+      for (const duplicate of config.policy?.uniqueHeadings === 'off' ? [] : duplicateMarkdownHeadings(content)) {
+        add(findings, root, config.policy?.uniqueHeadings ?? 'warn', 'WPD022', file, `Repeated level ${duplicate.level} heading: ${duplicate.text}.`, lineOf(content, duplicate.index));
       }
     } else if (['.astro', '.html', '.svelte', '.vue'].includes(extension)) {
-      for (const duplicate of duplicateHtmlHeadings(content)) {
-        add(findings, root, 'block', 'WPD022', file, `Repeated visible h${duplicate.level} heading: ${duplicate.text}.`, lineOf(content, duplicate.index));
+      for (const duplicate of config.policy?.uniqueHeadings === 'off' ? [] : duplicateHtmlHeadings(content)) {
+        add(findings, root, config.policy?.uniqueHeadings ?? 'warn', 'WPD022', file, `Repeated visible h${duplicate.level} heading: ${duplicate.text}.`, lineOf(content, duplicate.index));
       }
     }
   }
@@ -932,8 +910,8 @@ export async function runChecks(root, options = {}) {
     if (/\b(transition|animation|@keyframes|gsap|useAnimate|motion\.)\b/.test(content)) hasMotion = true;
 
     const patterns = [
-      { rule: 'WPD005', severity: 'block', regex: /transition(?:-property)?\s*:\s*all\b|\btransition-all\b/g, message: 'Specify transition properties; transition-all is forbidden.' },
-      { rule: 'WPD005', severity: 'block', regex: /\bease-in\b(?!-out)/g, message: 'Routine interactive arrivals cannot use ease-in.' },
+      { rule: 'WPD005', severity: 'warn', regex: /transition(?:-property)?\s*:\s*all\b|\btransition-all\b/g, message: 'Specify transition properties; transition-all is forbidden.' },
+      { rule: 'WPD005', severity: 'warn', regex: /\bease-in\b(?!-out)/g, message: 'Routine interactive arrivals cannot use ease-in.' },
       { rule: 'WPD007', severity: 'block', regex: /\boutline-none\b(?![^\n]*focus-visible)/g, message: 'Removing the outline requires a visible focus replacement.' },
       { rule: 'WPD015', severity: 'block', regex: /\bh-screen\b|height\s*:\s*100vh\b/g, message: 'Use dynamic viewport or minimum-height behavior instead of a fixed 100vh app shell.' },
       { rule: 'WPD014', severity: 'warn', regex: /\bwill-change\b/g, message: 'Measure will-change use and remove it outside active motion.' },
@@ -978,7 +956,7 @@ export async function runChecks(root, options = {}) {
       }
       const cardCount = (content.match(/<(?:Card|article)\b/g) ?? []).length;
       if (cardCount >= 6 && /grid-cols-[23456]|repeat\([3-9]/.test(content)) {
-        add(findings, root, 'block', 'WPD009', file, 'Six or more equal card regions form a generic card wall. Record a catalog exception or redesign the hierarchy.');
+        add(findings, root, 'warn', 'WPD009', file, 'Six literal card or article tags may indicate repeated containment. Inspect the rendered hierarchy; source counts cannot judge composition.');
       } else if (cardCount >= 4) {
         add(findings, root, 'warn', 'WPD009', file, 'Four or more card regions need a clear containment or comparison purpose.');
       }
@@ -986,7 +964,7 @@ export async function runChecks(root, options = {}) {
 
     if (!relative.startsWith('design-system/tokens/') && !relative.includes('.stories.') && !isTestFile) {
       for (const match of content.matchAll(/#[0-9a-fA-F]{3,8}\b/g)) {
-        add(findings, root, 'block', 'WPD004', file, 'Raw color bypasses the design token source.', lineOf(content, match.index));
+        add(findings, root, 'warn', 'WPD004', file, 'Raw color bypasses the design token source.', lineOf(content, match.index));
       }
     }
 
@@ -1083,7 +1061,10 @@ function parse(argv) {
   return options;
 }
 
-const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+// Skills installers and macOS temporary directories can use symlinked paths.
+// Compare real paths so a direct invocation cannot silently skip every check.
+const invoked = process.argv[1]
+  && await realpath(process.argv[1]).catch(() => null) === await realpath(fileURLToPath(import.meta.url));
 if (invoked) {
   const options = parse(process.argv.slice(2));
   const report = await runChecks(options.project ?? process.cwd(), options);

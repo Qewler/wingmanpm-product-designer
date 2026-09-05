@@ -67,7 +67,7 @@ test('fresh init records v2 ownership, runtime assets, clean checks, and a clean
   const manifest = await json(path.join(directory, '.wingmanpm-design', 'manifest.json'));
   assert.equal(config.schemaVersion, 2);
   assert.equal(manifest.schemaVersion, 2);
-  assert.equal(manifest.version, '1.0.0');
+  assert.equal(manifest.version, '1.1.0');
   assert.equal(manifest.entries.find(({ path: entry }) => entry === 'design-system/tables/README.md')?.ownership, 'user');
   assert.equal(manifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/table-inventory.json')?.ownership, 'observed');
   assert.equal(manifest.entries.find(({ path: entry }) => entry === '.wingmanpm-design/browser-evidence.json')?.ownership, 'observed');

@@ -1,9 +1,9 @@
 {
   "name": "wingmanpm-product-designer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Product design judgment, production UI patterns, and verifiable quality gates for coding agents.",
   "author": {
-    "name": "Julius",
+    "name": "Wingman.PM / Qewler",
     "url": "https://github.com/Qewler"
   },
   "repository": {
@@ -45,14 +45,17 @@
     "test:fixture:storybook": "npm --prefix fixtures/neutral-saas run build-storybook",
     "test:fixture:browser": "npm --prefix fixtures/neutral-saas run design:test:visual",
     "test:showcase": "npm --prefix showcase run check",
+    "test:skills-install": "node ./scripts/smoke-skills-install.mjs",
     "validate:skill": "node ./scripts/validate-skill.mjs ./skills/wingmanpm-product-designer",
     "validate:release": "node ./scripts/validate-release.mjs",
     "eval:fixtures": "node ./evals/run-fixture-evals.mjs",
-    "eval:codex": "node ./evals/validate-agent-result.mjs ./evals/results/codex.json",
     "check:share": "node ./scripts/check-share-safety.mjs",
     "check:release": "node ./scripts/check-share-safety.mjs",
     "release:bundle": "npm run validate:release && node ./scripts/build-release.mjs",
-    "prepack": "npm run validate:release"
+    "prepack": "npm run validate:release",
+    "eval:record": "node ./evals/record-agent-run.mjs",
+    "eval:validate": "node ./evals/validate-agent-result.mjs",
+    "bundle:manifest": "node ./scripts/build-bundle-manifest.mjs"
   },
   "engines": {
     "node": ">=20"

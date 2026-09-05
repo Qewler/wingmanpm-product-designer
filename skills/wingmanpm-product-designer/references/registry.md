@@ -1,18 +1,13 @@
-# Registry and Deterministic Rules
+# Rule registry
 
-Use `npx --yes wingmanpm-product-designer@1.0.0 search <terms>` to find the small, source-linked reference
-registry. The registry is guidance, not copied implementation text.
+Use the bundled CLI `search <terms>` to read a small set of relevant, source-linked
+rules. Do not load the whole registry for routine design work. The public sources
+explain platform behavior and standards; product-taste rules are labeled as such.
 
-`npx --yes wingmanpm-product-designer@1.0.0 check` applies deterministic version-one rules. Blocking rules
-cover missing design contracts, invalid axes or tokens, theme gaps for new
-systems, missing state and Storybook contracts, keyboard and focus hazards,
-forbidden motion, raw color bypasses, generic card-wall composition, responsive
-hazards, mixed icon vocabulary, transparent AI requirements, and stale visual
-review evidence.
+`check --stage build --target <file>` reports focused source findings and pending
+proof. `check --stage ship` retains the full design, interaction, accessibility,
+and browser evidence gate. Source-level card, color, and motion heuristics are
+advisory. Project punctuation and heading policies are configurable.
 
-Performance findings warn. A warning still appears in the report and should be
-measured before release.
-
-The rule IDs and sources are in [registry/rules.json](../registry/rules.json).
-Source links explain the public standard or platform behavior behind a rule.
-The product-taste heuristics are explicitly labeled as WingmanPM rules.
+Rule IDs and sources are in [registry/rules.json](../registry/rules.json).
+See [qa.md](qa.md) for policy and [workflow.md](workflow.md) for scoped evidence.

@@ -1,9 +1,9 @@
 {
   "name": "wingmanpm-product-designer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Product design judgment for coding agents building accessible, responsive digital products.",
   "author": {
-    "name": "Julius / Qewler",
+    "name": "Wingman.PM / Qewler",
     "url": "https://github.com/Qewler"
   },
   "homepage": "https://github.com/Qewler/wingmanpm-product-designer#readme",
@@ -22,8 +22,8 @@
   "interface": {
     "displayName": "WingmanPM Product Designer",
     "shortDescription": "Design better products with coding agents.",
-    "longDescription": "Give Codex product design judgment for real shipping work. The skill inspects existing product truth, chooses the right level of change, and guides responsive interface design, design systems, data tables, AI flows, onboarding, navigation, marketing surfaces, accessibility, browser QA, and evidence-backed handoff. It preserves business logic and project ownership while requiring keyboard support, reduced motion, complete states, and human review for consequential AI actions. Support: https://github.com/Qewler/wingmanpm-product-designer/issues",
-    "developerName": "Julius / Qewler",
+    "longDescription": "Read product context, compare polished local design directions, and build the chosen interface. Includes a visual comparison board, saved choices, scoped checks, responsive UI patterns, accessible data tables, transparent AI flows, and browser evidence. Uses small on-demand references, preserves product facts and local edits, and checks for skill updates through the owning distribution channel. Support: https://github.com/Qewler/wingmanpm-product-designer/issues",
+    "developerName": "Wingman.PM / Qewler",
     "category": "Developer Tools",
     "capabilities": [
       "Interactive",
@@ -34,7 +34,7 @@
     "privacyPolicyURL": "https://github.com/Qewler/wingmanpm-product-designer/blob/main/PRIVACY.md",
     "termsOfServiceURL": "https://github.com/Qewler/wingmanpm-product-designer/blob/main/TERMS.md",
     "defaultPrompt": [
-      "Design and build a responsive dashboard for this product",
+      "Explore two polished directions for this product flow",
       "Review this interface and explain the highest-impact fixes",
       "Polish this flow without changing its product behavior"
     ],

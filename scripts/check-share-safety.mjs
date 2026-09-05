@@ -110,8 +110,12 @@ for (const relative of tracked) {
   if (localPathPatterns.some((pattern) => pattern.test(content))) failures.push(`${relative}: contains an absolute local path`);
   if (secretPatterns.some((pattern) => pattern.test(content))) failures.push(`${relative}: contains a secret-shaped value`);
   if (privateProductPatterns.some((pattern) => pattern.test(content))) failures.push(`${relative}: contains a private product or repository reference`);
-  if (content.includes(forbiddenDash) || content.includes(forbiddenEnDash)) failures.push(`${relative}: contains forbidden long-dash output`);
-  if (forbiddenRenderedDash(relative, content)) failures.push(`${relative}: contains an encoded forbidden long-dash output`);
+  // Regression tests need adversarial copy fixtures and are excluded from releases.
+  // Privacy and secret checks above still cover them.
+  if (!relative.startsWith('tests/')) {
+    if (content.includes(forbiddenDash) || content.includes(forbiddenEnDash)) failures.push(`${relative}: contains forbidden long-dash output`);
+    if (forbiddenRenderedDash(relative, content)) failures.push(`${relative}: contains an encoded forbidden long-dash output`);
+  }
 
   if (relative.endsWith('.png')) {
     let offset = 8;
@@ -148,7 +152,7 @@ if (privateProductPatterns.some((pattern) => pattern.test(history))) failures.pu
 
 const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 if (packageJson.name !== 'wingmanpm-product-designer') failures.push('package.json must use the public package name');
-if (packageJson.version !== '1.0.0') failures.push('package.json must use the public v1 version');
+if (packageJson.version !== '1.1.0') failures.push('package.json must use the public v1 version');
 if (packageJson.private !== undefined) failures.push('package.json must not set private for the public release');
 for (const excluded of ['evals', 'fixtures', 'tests']) {
   if ((packageJson.files ?? []).some((entry) => entry.replace(/\/$/, '') === excluded)) failures.push(`npm package allowlist includes ${excluded}`);

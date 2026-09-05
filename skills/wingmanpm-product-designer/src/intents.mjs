@@ -11,24 +11,6 @@ export const COMMANDS = Object.freeze(registry.intents.map((entry) => Object.fre
   verification: Object.freeze([...entry.verification])
 })));
 
-const PICKER_OPTIONS = Object.freeze([
-  Object.freeze({
-    id: 'refine',
-    label: 'Refine',
-    description: 'Preserve the direction and repair hierarchy, rhythm, states, and consistency.'
-  }),
-  Object.freeze({
-    id: 'elevate',
-    label: 'Elevate',
-    description: 'Refine the surface and add one useful product-specific signature moment.'
-  }),
-  Object.freeze({
-    id: 'reimagine',
-    label: 'Reimagine',
-    description: 'Create three responsive coded directions and wait for a choice before full implementation.'
-  })
-]);
-
 /**
  * Normalize an intent or request for exact comparison. Punctuation and symbol
  * runs become spaces, Unicode width variants are folded, and whitespace is
@@ -82,43 +64,53 @@ function normalizeLevel(value) {
   return COMMAND_LEVELS.includes(normalized) ? normalized : null;
 }
 
-function matchWrappedRequest(normalized) {
+// Retain raw character spans while normalizing only the command vocabulary.
+function normalizedWithOffsets(raw) {
+  const chars = [];
+  let offset = 0;
+  for (const char of raw) {
+    for (const normalized of char.normalize('NFKC').toLocaleLowerCase('en-US')) {
+      const output = /[\p{P}\p{S}\s]/u.test(normalized) ? ' ' : normalized;
+      for (const unit of output.split('')) chars.push({ char: unit, start: offset, end: offset + char.length });
+    }
+    offset += char.length;
+  }
+  const compact = [];
+  for (const char of chars) {
+    if (char.char === ' ' && (!compact.length || compact.at(-1).char === ' ')) continue;
+    compact.push(char);
+  }
+  if (compact.at(-1)?.char === ' ') compact.pop();
+  return { text: compact.map(x => x.char).join(''), spans: compact };
+}
+
+function matchWrappedRequest(raw) {
+  const { text: normalized, spans } = normalizedWithOffsets(raw);
   const exact = intentIndex.get(normalized) ?? naturalPhraseIndex.get(normalized);
   if (exact) return { ...exact, target: null };
-
-  const polite = normalized
-    .replace(/^please\s+/u, '')
-    .replace(/^can you\s+/u, '')
-    .replace(/^could you\s+/u, '');
-
-  const suffixes = [...intentIndex.entries(), ...naturalPhraseIndex.entries()]
-    .sort(([left], [right]) => right.length - left.length);
-
-  for (const [alias, match] of suffixes) {
-    const makePrefix = 'make ';
-    const suffix = ` ${alias}`;
-    if (polite.startsWith(makePrefix) && polite.endsWith(suffix)) {
-      const target = polite.slice(makePrefix.length, -suffix.length).trim();
-      if (target) return { ...match, target: /^(it|this)$/u.test(target) ? null : target };
+  const polite = normalized.replace(/^(?:please |can you |could you )/u, '');
+  const base = normalized.length - polite.length;
+  const unquote = value => {
+    value = value.trim();
+    return /^("[\s\S]*"|'[\s\S]*')$/.test(value) ? value.slice(1, -1) : value;
+  };
+  const aliases = [...intentIndex.entries(), ...naturalPhraseIndex.entries()].sort(([a], [b]) => b.length - a.length);
+  for (const [alias, match] of aliases) {
+    if (polite.startsWith('make ') && polite.endsWith(` ${alias}`)) {
+      const target = unquote(raw.slice(spans[base + 3].end, spans[normalized.length - alias.length].start));
+      if (target) return { ...match, target: /^(it|this)$/iu.test(target) ? null : target };
     }
-
-    if (polite === `${alias} it` || polite === `${alias} this`) {
-      return { ...match, target: null };
-    }
-    if (polite.startsWith(`${alias} `)) {
-      const target = polite.slice(alias.length + 1).trim();
-      if (target && target !== 'it' && target !== 'this') return { ...match, target };
-    }
+    if (polite === `${alias} it` || polite === `${alias} this`) return { ...match, target: null };
+    if (polite.startsWith(`${alias} `)) return { ...match, target: unquote(raw.slice(spans[base + alias.length - 1].end)) };
   }
-
   return null;
 }
 
 const REVIEW_TARGET_REFERENCES = Object.freeze([
   Object.freeze({ reference: 'references/ai-ui.md', phrases: ['artificial intelligence', 'ai flow', 'ai ui'], words: ['ai', 'llm'] }),
-  Object.freeze({ reference: 'references/data-tables.md', phrases: ['data table'], words: ['table', 'grid'] }),
+  Object.freeze({ reference: 'references/data-tables.md', phrases: ['data table'], words: ['table', 'tables', 'grid', 'grids'] }),
   Object.freeze({ reference: 'references/forms.md#onboarding--activate', phrases: ['first run'], words: ['onboarding', 'activation'] }),
-  Object.freeze({ reference: 'references/forms.md#forms--form', phrases: [], words: ['form'] }),
+  Object.freeze({ reference: 'references/forms.md#forms--form', phrases: [], words: ['form', 'forms'] }),
   Object.freeze({ reference: 'references/navigation.md', phrases: ['app shell'], words: ['navigation', 'nav', 'sidebar'] }),
   Object.freeze({ reference: 'references/motion.md', phrases: [], words: ['motion', 'animation', 'transition'] }),
   Object.freeze({ reference: 'references/product-craft.md', phrases: [], words: ['layout', 'typography', 'color', 'responsive', 'breakpoint', 'mobile'] }),
@@ -130,11 +122,11 @@ function reviewTargetReferences(command, target) {
   if (command.id !== 'review' || !target) return [];
   const normalized = normalizeAlias(target);
   const words = new Set(normalized.split(' ').filter(Boolean));
-  const match = REVIEW_TARGET_REFERENCES.find((candidate) => (
+  const matches = REVIEW_TARGET_REFERENCES.filter((candidate) => (
     candidate.phrases.some((phrase) => normalized === phrase || normalized.startsWith(`${phrase} `) || normalized.endsWith(` ${phrase}`) || normalized.includes(` ${phrase} `))
     || candidate.words.some((word) => words.has(word))
   ));
-  return match ? [match.reference] : [];
+  return [...new Set(matches.map(match => match.reference))];
 }
 
 /**
@@ -147,7 +139,7 @@ export function resolveRequest(input, options = {}) {
   const request = typeof input === 'string' ? { phrase: input, ...options } : { ...(input ?? {}) };
   const phrase = request.phrase ?? request.text ?? '';
   const normalized = normalizeAlias(phrase);
-  const match = matchWrappedRequest(normalized);
+  const match = matchWrappedRequest(phrase);
   const requestedLevel = normalizeLevel(request.level);
 
   if (request.level != null && !requestedLevel) {
@@ -160,39 +152,23 @@ export function resolveRequest(input, options = {}) {
   }
 
   if (!match) {
-    return { kind: 'unknown', normalized, reason: 'no-exact-intent-match' };
+    return { kind: 'unknown', request: phrase, normalized, reason: 'no-exact-intent-match', fallback: 'Interpret the user task, then call explain with one known intent and --target preserving the exact target. Keep reviews read-only; do not invent permission.' };
   }
 
   const explicit = request.explicit === true;
   const fix = request.fix === true;
   const readOnly = match.command.mutationPolicy === 'read-only-unless-fix' && !fix;
-  const shouldPick = match.command.naturalPhrasePicker && !explicit && !requestedLevel;
-  const supportingReferences = reviewTargetReferences(match.command, match.target);
-
-  if (shouldPick) {
-    return {
-      kind: 'picker',
-      intent: match.command.id,
-      matchedAlias: match.matchedAlias,
-      normalized,
-      target: match.target,
-      recommendedLevel: match.command.defaultLevel,
-      options: PICKER_OPTIONS.map((option) => ({ ...option })),
-      explicit: false,
-      fix,
-      readOnly,
-      reference: match.command.reference,
-      supportingReferences
-    };
-  }
+  const target = request.target ?? match.target;
+  const supportingReferences = reviewTargetReferences(match.command, target);
 
   return {
     kind: 'direct',
     intent: match.command.id,
     matchedAlias: match.matchedAlias,
     normalized,
-    target: match.target,
+    target,
     level: requestedLevel ?? match.command.defaultLevel,
+    stage: readOnly ? 'review' : match.command.id === 'explore' || requestedLevel === 'reimagine' ? 'explore' : 'build',
     explicit,
     fix,
     readOnly,

@@ -64,7 +64,7 @@ try {
   for (const name of ['wingman-design', 'wingmanpm-product-designer']) {
     await access(executable(name));
     const version = run(executable(name), ['--version'], consumer);
-    assert.equal(version.stdout.trim(), '1.0.0');
+    assert.equal(version.stdout.trim(), '1.1.0');
     assert.equal(version.stdout.includes(wingmanDomain), false);
   }
 
@@ -85,7 +85,7 @@ try {
   const projectPackage = JSON.parse(await readFile(path.join(project, 'package.json'), 'utf8'));
   assert.equal(
     projectPackage.scripts['design:doctor'],
-    'npx --yes wingmanpm-product-designer@1.0.0 doctor --project .'
+    'npx --yes wingmanpm-product-designer@1.1.0 doctor --project .'
   );
   const cleanPathDoctor = spawnSync(npxCommand, [
     '--yes', '--package', tarball, 'wingman-design', 'doctor', '--project', project

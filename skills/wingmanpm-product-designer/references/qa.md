@@ -1,78 +1,53 @@
-# Review and Verification
+# Review and verification
 
 ## Read-only reviews
 
-When asked to review, do not edit. Report evidence in this format:
+Review and audit do not edit unless the user requests fixes or supplies `--fix`.
+Use a compact Before | After | Why table with source, DOM, screenshot, or test
+evidence. Separate confirmed defects from design preference. Lead with impact.
 
-| Before | After | Why |
-| --- | --- | --- |
-| Current measured behavior | Specific proposed behavior | User and product impact |
+## Stage-specific proof
 
-Order findings by impact. Use screenshots, DOM evidence, exact files, or test
-results. Separate confirmed defects from design preference.
+Exploration follows [explore.md](explore.md): polished comparable slices, basic
+responsive and keyboard review, honest mock behavior, tradeoffs, and selection.
+No full-system scaffold or production certificate is needed.
 
-## Required proof for implementation
+Build uses [workflow.md](workflow.md): the selected surface, relevant states,
+scoped source checks, and meaningful test commands. A command exit code is only
+command evidence. Complete visual and interaction review separately.
 
-1. `npx --yes wingmanpm-product-designer@1.0.0 check` has no blocking finding.
-2. Storybook builds and relevant interactions pass.
-3. Chromium browser review covers 390, 768, 1280, and 1440 CSS pixels.
-4. Keyboard-only use, visible focus, 200% zoom, reduced motion, long content,
-   light, dark, loading, empty, error, and permission paths were exercised.
-   Modal and overlay checks cover every close path and return focus to the
-   invoking control after Escape, Cancel, close, and successful completion.
-5. Axe has no serious or critical issue in the changed surfaces.
-6. Visual comparison has explicit reviewer evidence; unexpected baselines were
-   not silently replaced.
-7. The full Playwright run wrote current passed evidence to
-   `.wingmanpm-design/browser-evidence.json`. Source-shaped test files alone do
-   not satisfy WPD022 or WPD023, and review recording refuses missing, failed,
-   or stale browser evidence.
+Ship requires the project's design check, relevant Storybook interactions,
+Chromium review at 390, 768, 1280, and 1440 CSS pixels, keyboard use, visible focus,
+200% zoom, reduced motion, long content, required themes, workflow states, and
+no serious or critical axe issue. Modals return focus after Escape, Cancel,
+close, and success; test actual browser cancel and close events. Existing
+machine-written `.wingmanpm-design/browser-evidence.json` must be fresh and pass
+before the full review can be recorded. Scoped command proof never replaces it.
+The current full gate audits every story; scoped build checks do not claim that
+coverage. Missing authenticated or observed visual proof is a stated limit.
 
-## Global hard rules
+## Policy and judgment
 
-Run these rules for every skill-produced UI, copy, document, story, template,
-and handoff before completion:
+- WPD009 card counts, WPD004 raw colors, and WPD005 motion-source patterns are
+  advisory. Inspect context and the rendered result before proposing a fix.
+- Four direction axes are optional. If recorded, values must be in range.
+- WPD021 punctuation is a house preference. Configure `policy.punctuation` as
+  `off`, `warn` (default), or `block` in `.wingmanpm-design/config.json`.
+- Repeated heading text can be valid in separate content regions. Configure
+  `policy.uniqueHeadings` with the same choices. Source detection warns by
+  default; browser heading rejection is enabled only by `block`.
+- WPD022 still protects shell landmarks and dialog controls. WPD023 still needs
+  observed dropdown contrast and Escape behavior. Source-only tests are not proof.
 
-- `WPD021` blocks the forbidden long dash and each HTML, JavaScript, or CSS
-  form that renders it. Use a comma, colon, period, or shorter dash that fits
-  the sentence.
-- `WPD022` blocks repeated visible headings with the same level and text in one
-  surface, repeated top-level banner or contentinfo landmarks in one app shell,
-  and more than one icon-only close control in one visible dialog. Markdown
-  uses the same normalized heading rule outside fenced code.
-- `WPD023` requires executable light and dark browser checks whenever a select,
-  combobox, or listbox exists. Test enabled current values and options at 4.5:1
-  text contrast or better, require a nonzero candidate count, and confirm that
-  custom popups close with Escape.
+For uncertain gradient or composited contrast, measure the rendered pixels or
+use an appropriate contrast method. The current automated gate fails unresolved
+colors; resolve the evidence gap rather than claiming a measured failure or pass.
 
-Resolve transparent backgrounds through their ancestors. Treat gradients or
-unresolved colors as failures. Set `color-scheme: light dark` on the document
-or theme root so native controls use the intended platform palette. Browser
-evidence must enumerate every Storybook story from its runtime index. It must
-not rely on a fixed story list.
+Exceptions name the rule, scoped target, reason, approver, and a valid review
+date in `.wingmanpm-design/exceptions.json`. Accessibility evidence gates cannot
+be hidden in a legacy baseline. Project copy policy can be configured directly;
+a global typography preference does not override user-supplied legal content.
 
-The managed reporter invalidates the prior browser record when a run starts.
-It writes passed evidence only after the canonical all-story audit and the full
-Playwright run pass. Vue, Svelte, and Astro surfaces use the same hard rules as
-HTML and React surfaces.
-
-## Exceptions
-
-A bypass is valid only when `.wingmanpm-design/exceptions.json` contains:
-
-- the exact rule ID;
-- a scoped target;
-- a concrete reason;
-- an accountable approver;
-- an ISO review date that has not passed.
-
-An exception is visible debt, not deletion of the rule. `doctor` reports invalid
-and expired entries.
-
-WPD021, WPD022, and WPD023 are global hard rules. They cannot be excepted or
-absorbed into a legacy baseline.
-
-## Completion
-
-Report outcome, exact proof, and genuine remaining limits. A tool exit code is
-not enough when authenticated or visual behavior was not observed.
+Batch inspection, repair material issues, and confirm. Bound cosmetic iteration,
+not correctness. Do not claim completion while required checks fail. Report
+outcome, observed proof, remaining gaps, and unexpected baseline changes.

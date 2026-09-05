@@ -29,6 +29,24 @@ npx plugins add Qewler/wingmanpm-product-designer
   <img src="docs/assets/readme/hero-light.webp" alt="WingmanPM Product Designer beside a refined renewable-energy operations workspace" width="1600">
 </picture>
 
+## Creative exploration and quick craft checks
+
+Use `patterns "<task and constraints>" --limit 3 --json` to retrieve a few of
+nine task-based design patterns. Each includes a visual signature, a mobile
+translation, and reasons it may not fit. Exploration develops distinct task
+strategies at equal fidelity in a local comparison board.
+
+On-demand component and anti-pattern references guide interaction detail, lean
+copy, meaningful headings, clear actions, and product-specific composition.
+
+Every UI delivery now applies a minimum craft floor, including quick polish
+and throwaway previews. `craft --file <preview.html> --json` or
+`craft --url <loopback-dev-url> --json` checks rendered text contrast, overflow,
+runtime errors, and mobile navigation continuity using an existing Playwright
+installation. Use `--browser-module <path>` for a shared host installation.
+It installs no browser dependency. Missing or unsupported proof is `unverified`,
+not a pass; the full shipping gate remains separate.
+
 ## Proof, not promises
 
 The showcase uses runnable React stories, the same copy and sample data on both sides, and deterministic Playwright captures. Every Tamarack Renewables surface is clearly marked **Concept demo**.
@@ -69,6 +87,16 @@ Install through the interface your agent already understands.
 | Claude Code | `claude plugin install wingmanpm-product-designer@wingmanpm` |
 | npm / npx | `npx wingmanpm-product-designer@latest install --agent all` |
 
+The skills.sh command installs the **complete skill folder**, including the
+CLI, references, schemas, registries, and templates. The bundled CLI needs
+Node.js 20 or newer and has no npm runtime dependencies. Do not install a raw
+`SKILL.md` URL on its own.
+
+Project setup is separate: `init` and `add data-table` declare the packages
+their generated UI needs. The agent then installs those packages with the
+project's package manager and installs Chromium when browser tests need it.
+See [project setup](skills/wingmanpm-product-designer/references/setup.md).
+
 Native marketplace installs need a one-time catalog setup:
 
 ```bash
@@ -86,10 +114,10 @@ $wingmanpm-product-designer stunning onboarding
 /wingmanpm-product-designer review billing settings
 
 # Direct scope
-$wingmanpm-product-designer elevate the pricing page --level elevate
+$wingmanpm-product-designer standout the pricing page --level elevate
 ```
 
-Plain requests work too. “Make this beautiful” starts with product inspection and one bounded choice. It does not silently turn a focused repair into a redesign.
+Plain requests work too. “Make this beautiful” inspects the product and applies a focused refinement. Use `explore` for visual alternatives, or `--level reimagine` for a replacement direction.
 
 Claude marketplace installs namespace the explicit command as
 `/wingmanpm-product-designer:wingmanpm-product-designer`. A standalone Agent
@@ -97,14 +125,42 @@ Skills install keeps the shorter `/wingmanpm-product-designer` form.
 
 ## Judgment before decoration
 
-Most design prompts fail before the first pixel. They skip context, choose a fashionable default, and stop at one successful desktop state. This skill follows a stricter loop:
+Most design prompts fail before the first pixel. They skip context, choose a fashionable default, and stop at one successful desktop state. This skill follows a scoped process:
 
 1. **Inspect:** understand the product, stack, design system, information structure, and constraints.
-2. **Choose:** use **Refine**, **Elevate**, or **Reimagine** to set an honest change boundary.
+2. **Explore when useful:** compare two polished directions using the same content, then save the user’s choice.
 3. **Build:** implement product-owned components, useful motion, complete states, and explicit responsive behavior.
-4. **Prove:** run deterministic checks, Storybook, keyboard review, accessibility checks, and browser evidence.
+4. **Prove:** run focused build checks during iteration and the full browser and accessibility gate before shipping.
 
 It covers product UI, marketing surfaces, design-system work, AI interactions, forms, navigation, account patterns, and operational tables. Existing capable components stay in place. Project truth wins over a generic aesthetic.
+
+## Explore before you commit to a direction
+
+```text
+$wingmanpm-product-designer explore the AI review flow
+```
+
+The agent creates two polished local previews, a shared-content comparison board,
+tradeoffs, and a recommendation. Desktop/mobile controls and full-size previews
+make the differences visible. A served board saves your choice locally; a static
+board prepares a chat message. The agent reads that decision before implementation.
+No backend, image subscription, or other skill is required.
+
+The bundled CLI adds `context`, `explore`, `proof`, and stage-aware `check` commands.
+See [visual exploration](skills/wingmanpm-product-designer/references/explore.md)
+and [scoped proof](skills/wingmanpm-product-designer/references/workflow.md).
+A build check reports its scope and pending proof; it never certifies a release.
+
+## Updates without repeated setup
+
+The skill checks for new stable releases on first use, with a daily cache.
+Clean standalone installs update automatically, with verified downloads and a
+backup. Local edits and development checkouts stay intact. Native plugin installs
+use the host's update channel; Cursor keeps its marketplace review boundary.
+Read-only reviews check without writing. Use `update --disable` to pin a copy.
+This starts after version 1.1 is installed; version 1.0 needs one normal installer
+update first.
+See [update behavior](skills/wingmanpm-product-designer/references/updates.md).
 
 ## Built for real product work
 
@@ -119,7 +175,7 @@ It covers product UI, marketing surfaces, design-system work, AI interactions, f
 
 `npx wingmanpm-product-designer@latest check` blocks missing contracts and stale evidence. It checks token use, semantics, keyboard paths, loading and error states, responsive behavior, dark mode, reduced motion, AI approval boundaries, table behavior, and visual review freshness.
 
-The checker does not pretend that a regular expression can measure beauty. Machine checks prove the contract. Browser evidence and human review prove the result.
+Card counts, raw colors, and motion patterns are review signals. Punctuation and repeated-heading checks are project policy. Machine-written browser evidence and explicit review still guard shipping.
 
 ```bash
 npx wingmanpm-product-designer@latest init --project /path/to/project

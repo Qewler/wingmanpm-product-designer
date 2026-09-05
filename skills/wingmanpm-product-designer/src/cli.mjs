@@ -1,4 +1,11 @@
-import { cp, lstat, mkdir, readFile, readdir, rm, rmdir, stat } from 'node:fs/promises';
+import { updateSkill } from './update.mjs';
+import { readContext } from './context.mjs';
+import { runCraft } from './craft.mjs';
+import { createExploration, inspectExploration, chooseExploration, serveExploration } from './explore.mjs';
+import { getPattern, searchPatterns } from './patterns.mjs';
+import { checkStage, runProof } from './stages.mjs';
+import { evidencePlan } from './evidence.mjs';
+import { cp, lstat, mkdir, readFile, readdir, realpath, rm, rmdir, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,7 +27,7 @@ const SKILL_NAME = 'wingmanpm-product-designer';
 const POINTER_LABEL = SKILL_NAME;
 const PROJECT_MANIFEST = '.wingmanpm-design/manifest.json';
 const BROWSER_EVIDENCE = '.wingmanpm-design/browser-evidence.json';
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const PROJECT_SCHEMA_VERSION = 2;
 const DEFAULT_SCAN_ROOTS = ['src', 'app', 'pages', 'components', 'stories', 'design-system/examples'];
 
@@ -32,13 +39,21 @@ Usage:
   wingman-design init [--project PATH] [--mode new-system|preserve] [--dry-run]
   wingman-design upgrade [--project PATH] [--dry-run]
   wingman-design add data-table [--project PATH] [--profile static|work|editable] [--id TABLE_ID] [--dry-run]
-  wingman-design check [--project PATH] [--json] [--allow-pending-review]
+  wingman-design update [--auto|--check|--enable|--disable] [--force]
+  wingman-design context [--no-update] [--project PATH] [--target PATH] [--request TEXT] [--json]
+  wingman-design explore create --spec FILE [--project PATH]
+  wingman-design explore serve|inspect --id ID [--project PATH]
+  wingman-design explore choose --id ID --option ID --reason TEXT [--project PATH]
+  wingman-design proof --target PATH [--command-file FILE] [--project PATH]
+  wingman-design check [--stage explore|build|ship] [--target PATH] [--id ID] [--project PATH] [--json] [--allow-pending-review]
   wingman-design check --record-review --reviewer NAME --confirm CHECKS [--project PATH]
   wingman-design doctor [--project PATH] [--json]
   wingman-design uninstall [--project PATH] [--agent all|codex|claude|cursor] [--scope user|project] [--dry-run]
   wingman-design commands [--json]
   wingman-design explain PHRASE [--explicit] [--level refine|elevate|reimagine] [--fix] [--json]
   wingman-design search TERMS [--domain NAME] [--json]
+  wingman-design craft --file PATH|--url URL [--browser-module PATH] [--cdp URL] [--out PATH] [--project PATH] [--json]
+  wingman-design patterns [QUERY WORDS] [--id ID] [--limit 1..5] [--json]
 
 Required review confirmation list:
   keyboard,zoom200,reducedMotion,longContent,light,dark,axe,responsiveStates,structureUnique,dropdownContrast
@@ -58,6 +73,74 @@ function validateRoot(root) {
     throw new Error(`Refusing broad project root: ${resolved}`);
   }
   return resolved;
+}
+
+function isWithin(root, target) {
+  const relative = path.relative(root, target);
+  return relative !== '' && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+}
+
+async function validateProjectPath(root, value, label, { mustExist = false } = {}) {
+  if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} needs a path.`);
+  const resolvedRoot = await realpath(root);
+  const resolved = path.resolve(root, value);
+  if (!isWithin(path.resolve(root), resolved)) throw new Error(`${label} must stay inside the project.`);
+
+  if (mustExist) {
+    let actual;
+    try {
+      actual = await realpath(resolved);
+      if (!(await stat(actual)).isFile()) throw new Error(`${label} must be a file.`);
+    } catch (error) {
+      if (error.message === `${label} must be a file.`) throw error;
+      throw new Error(`${label} does not exist: ${resolved}`);
+    }
+    if (!isWithin(resolvedRoot, actual)) throw new Error(`${label} must stay inside the project.`);
+    return actual;
+  }
+
+  let ancestor = resolved;
+  while (ancestor !== path.dirname(ancestor)) {
+    try {
+      const actualAncestor = await realpath(ancestor);
+      if (!isWithin(resolvedRoot, actualAncestor) && actualAncestor !== resolvedRoot) {
+        throw new Error(`${label} must stay inside the project.`);
+      }
+      return resolved;
+    } catch (error) {
+      if (error.message === `${label} must stay inside the project.`) throw error;
+      ancestor = path.dirname(ancestor);
+    }
+  }
+  throw new Error(`${label} must stay inside the project.`);
+}
+
+function validateServiceUrl(value, label, protocols) {
+  if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} needs a URL.`);
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error(`${label} must be a valid URL.`);
+  }
+  if (!protocols.includes(parsed.protocol)) throw new Error(`${label} must use ${protocols.join(' or ')}.`);
+  return parsed.href;
+}
+
+async function validateBrowserModule(root, value) {
+  if (typeof value !== 'string' || !value.trim()) throw new Error('Craft --browser-module needs a path.');
+  const resolved = path.resolve(root, value);
+  if (!['.js', '.mjs', '.cjs'].includes(path.extname(resolved))) {
+    throw new Error('Craft --browser-module must be a .js, .mjs, or .cjs file.');
+  }
+  try {
+    const actual = await realpath(resolved);
+    if (!(await stat(actual)).isFile()) throw new Error('Craft --browser-module must be a file.');
+    return actual;
+  } catch (error) {
+    if (error.message === 'Craft --browser-module must be a file.') throw error;
+    throw new Error(`Craft --browser-module does not exist: ${resolved}`);
+  }
 }
 
 async function detectProject(root) {
@@ -97,6 +180,7 @@ async function runtimeAssets({ includePlaywright = false } = {}) {
     .sort()
     .map((name) => ({ source: path.join(SRC_ROOT, 'schemas', name), relative: `.wingmanpm-design/runtime/schemas/${name}` }));
   return [
+    { source: path.join(SRC_ROOT, 'src', 'evidence.mjs'), relative: '.wingmanpm-design/runtime/evidence.mjs' },
     { source: path.join(SRC_ROOT, 'src', 'checker.mjs'), relative: '.wingmanpm-design/runtime/checker.mjs' },
     { source: path.join(SRC_ROOT, 'src', 'browser-reporter.mjs'), relative: '.wingmanpm-design/runtime/browser-reporter.mjs' },
     { source: path.join(SRC_ROOT, 'registry', 'rules.json'), relative: '.wingmanpm-design/runtime/rules.json' },
@@ -481,6 +565,12 @@ async function initProject(flags) {
         }
       }
       if (detected.goldenStack) {
+        packageJson.dependencies ??= {};
+        if (!('lucide-react' in packageJson.dependencies) && !('lucide-react' in (packageJson.devDependencies ?? {}))) {
+          const value = '^1.41.0';
+          packageJson.dependencies['lucide-react'] = value;
+          manifest.packageDependencies.push({ section: 'dependencies', key: 'lucide-react', value });
+        }
         packageJson.devDependencies ??= {};
         const designDependencies = {
           storybook: '^10.5.10',
@@ -717,10 +807,12 @@ async function recordReview(root, flags) {
 
 async function checkProject(flags) {
   const root = validateRoot(flags.project ?? process.cwd());
+  if (flags['record-review'] && flags.stage && flags.stage !== 'ship') throw new Error('Review recording requires the ship stage.');
   if (flags['record-review']) await recordReview(root, flags);
-  const report = await runChecks(root, { allowPendingReview: Boolean(flags['allow-pending-review']) });
+  const report = await checkStage(root, { stage: flags.stage ?? 'ship', target: flags.target, id: flags.id, allowPendingReview: Boolean(flags['allow-pending-review']) });
   logJsonOrText(report, Boolean(flags.json), (value) => [
     ...value.findings.map((finding) => `${finding.severity.toUpperCase()} ${finding.ruleId} ${finding.file}:${finding.line} ${finding.message}`),
+    ...(value.pending ? [`Stage: ${value.stage}; ${value.status}; not release proof. Pending: ${value.pending.join('; ')}`] : []),
     `WingmanPM design check: ${value.counts.block} block, ${value.counts.warn} warn, ${value.counts.excepted} excepted, ${value.counts.baselined} legacy.`
   ].join('\n'));
   if (report.counts.block) process.exitCode = 1;
@@ -927,7 +1019,7 @@ async function installSkill(flags) {
   const roots = installRoots(scope, flags.project);
   const agents = selectedAgents(flags.agent);
   const sourceEntries = [
-    'SKILL.md', 'LICENSE', 'NOTICE', 'agents', 'bin', 'references', 'registry',
+    'SKILL.md', 'LICENSE', 'NOTICE', 'bundle-manifest.json', 'agents', 'bin', 'references', 'registry',
     'schemas', 'scripts', 'src', 'templates'
   ];
   const results = [];
@@ -1107,6 +1199,86 @@ async function searchRegistry(positional, flags) {
   return results;
 }
 
+function formatFinding(finding) {
+  if (typeof finding === 'string') return finding;
+  const label = [finding?.id ?? finding?.code, finding?.severity].filter(Boolean).join(' ');
+  const message = finding?.message ?? finding?.summary ?? finding?.title ?? 'Finding recorded.';
+  return label ? `${label}: ${message}` : message;
+}
+
+async function craftCommand(positional, flags) {
+  if (positional.length) throw new Error('Craft accepts --file or --url, not positional input.');
+  const hasFile = flags.file !== undefined;
+  const hasUrl = flags.url !== undefined;
+  if (hasFile === hasUrl) throw new Error('Craft needs exactly one of --file or --url.');
+
+  const project = validateRoot(flags.project ?? process.cwd());
+  const file = hasFile ? await validateProjectPath(project, flags.file, 'Craft --file', { mustExist: true }) : undefined;
+  const url = hasUrl ? validateServiceUrl(flags.url, 'Craft --url', ['http:', 'https:']) : undefined;
+  const browserModule = flags['browser-module'] === undefined
+    ? undefined
+    : await validateBrowserModule(project, flags['browser-module']);
+  const cdp = flags.cdp === undefined
+    ? undefined
+    : validateServiceUrl(flags.cdp, 'Craft --cdp', ['http:', 'https:']);
+  const out = flags.out === undefined
+    ? undefined
+    : await validateProjectPath(project, flags.out, 'Craft --out');
+
+  const result = await runCraft({ project, file, url, browserModule, cdp, out });
+  if (!['passed', 'failed', 'unverified'].includes(result?.status)) {
+    throw new Error('Craft returned an invalid status.');
+  }
+  logJsonOrText(result, Boolean(flags.json), (value) => {
+    const findings = Array.isArray(value.findings) ? value.findings : [];
+    const shown = findings.slice(0, 10);
+    return [
+      `Craft ${value.status}: ${findings.length} finding${findings.length === 1 ? '' : 's'}.`,
+      ...shown.map((finding) => `  ${formatFinding(finding)}`),
+      findings.length > shown.length ? `  ${findings.length - shown.length} more. Use --json for all findings.` : null,
+      out ? `Output: ${out}` : null
+    ].filter(Boolean).join('\n');
+  });
+  if (result.status === 'failed') process.exitCode = 1;
+  else if (result.status === 'unverified') process.exitCode = 2;
+  return result;
+}
+
+function formatPattern(pattern) {
+  const title = pattern.title ?? pattern.name ?? pattern.id;
+  const summary = pattern.summary ?? pattern.description ?? pattern.useWhen ?? pattern.when;
+  const strategy = pattern.strategy;
+  return [
+    `${pattern.id}${title && title !== pattern.id ? `: ${title}` : ''}`,
+    summary ? `  ${summary}` : null,
+    strategy && strategy !== summary ? `  ${strategy}` : null
+  ].filter(Boolean).join('\n');
+}
+
+function patternsCommand(positional, flags) {
+  const rawLimit = flags.limit ?? 3;
+  const limit = typeof rawLimit === 'number'
+    ? rawLimit
+    : typeof rawLimit === 'string' && /^\d+$/.test(rawLimit) ? Number(rawLimit) : NaN;
+  if (!Number.isInteger(limit) || limit < 1 || limit > 5) throw new Error('Patterns --limit must be an integer from 1 to 5.');
+
+  if (flags.id !== undefined) {
+    if (typeof flags.id !== 'string' || !flags.id.trim()) throw new Error('Patterns --id needs an ID.');
+    if (positional.length) throw new Error('Patterns accepts a query or --id, not both.');
+    const pattern = getPattern(flags.id);
+    if (!pattern) throw new Error(`Unknown pattern ID: ${flags.id}`);
+    logJsonOrText(pattern, Boolean(flags.json), formatPattern);
+    return pattern;
+  }
+
+  const query = positional.join(' ').trim();
+  const patterns = searchPatterns(query, { limit });
+  logJsonOrText(patterns, Boolean(flags.json), (items) => items.length
+    ? items.map(formatPattern).join('\n')
+    : 'No matching pattern.');
+  return patterns;
+}
+
 function commandCatalog(flags) {
   const commands = listCommands();
   logJsonOrText(commands, Boolean(flags.json), (items) => items.map((item) => {
@@ -1122,6 +1294,7 @@ function explainCommand(positional, flags) {
   if (!phrase) throw new Error('Explain needs an intent or phrase.');
   const result = resolveRequest(phrase, {
     explicit: Boolean(flags.explicit),
+    target: typeof flags.target === 'string' ? flags.target : undefined,
     level: typeof flags.level === 'string' ? flags.level : undefined,
     fix: Boolean(flags.fix)
   });
@@ -1165,6 +1338,46 @@ export async function runCli(argv = process.argv.slice(2)) {
     console.log(help);
     return;
   }
+  if (command === 'update') {
+    const result = await updateSkill(SRC_ROOT, { auto: Boolean(flags.auto), force: Boolean(flags.force), readOnly: Boolean(flags.check), enabled: flags.disable ? false : flags.enable ? true : undefined });
+    console.log(JSON.stringify(result)); return result;
+  }
+  if (command === 'context') {
+    const readOnly = Boolean(flags['no-update']) || (typeof flags.request === 'string' && resolveRequest(flags.request).readOnly === true);
+    const update = await updateSkill(SRC_ROOT, { auto: !readOnly, readOnly });
+    if (update.status === 'updated') { console.log(JSON.stringify({ update, next: 'Reload the SKILL.md at update.reload, then run context again from that installed directory.' })); return update; }
+    const value = await readContext(validateRoot(flags.project ?? process.cwd()), { target: flags.target, request: flags.request });
+    if (!['development', 'current', 'disabled'].includes(update.status)) value.update = update;
+    console.log(JSON.stringify(value)); return value;
+  }
+  if (command === 'proof') {
+    const root = validateRoot(flags.project ?? process.cwd());
+    if (typeof flags.target !== 'string') throw new Error('Proof needs --target.');
+    const value = flags['command-file']
+      ? await runProof(root, [flags.target], JSON.parse(await readFile(path.resolve(root, flags['command-file']), 'utf8')))
+      : await evidencePlan(root, [flags.target]);
+    const display = flags.json || value.kind === 'command-result' ? value : { scope: value.scope, targets: value.targets, sourceHash: value.sourceHash, files: value.files.length, stories: value.storyFiles.slice(0, 12), warnings: value.warnings.slice(0, 5), detail: 'Use --json for the full dependency manifest.' };
+    console.log(JSON.stringify(display, null, 2));
+    if (value.status === 'failed') process.exitCode = 1;
+    return value;
+  }
+  if (command === 'explore') {
+    const root = validateRoot(flags.project ?? process.cwd());
+    const action = positional.shift();
+    let value;
+    if (action === 'create') {
+      if (typeof flags.spec !== 'string') throw new Error('Explore create needs --spec FILE.');
+      value = await createExploration(root, JSON.parse(await readFile(path.resolve(root, flags.spec), 'utf8')));
+    } else if (action === 'inspect') value = await inspectExploration(root, flags.id);
+    else if (action === 'choose') value = await chooseExploration(root, flags.id, flags.option, flags.reason);
+    else if (action === 'serve') {
+      const port = flags.port === undefined ? 0 : Number(flags.port);
+      if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid preview port.');
+      const live = await serveExploration(root, flags.id, port);
+      value = { id: live.id, url: live.url, selection: 'saved locally; read with explore inspect' };
+    } else throw new Error('Explore supports create, inspect, choose, and serve.');
+    console.log(JSON.stringify(value, null, 2)); return value;
+  }
   if (command === 'init') return initProject(flags);
   if (command === 'upgrade') return upgradeProject(flags);
   if (command === 'add') return addProjectAsset(positional, flags);
@@ -1178,5 +1391,7 @@ export async function runCli(argv = process.argv.slice(2)) {
   if (command === 'commands') return commandCatalog(flags);
   if (command === 'explain') return explainCommand(positional, flags);
   if (command === 'search') return searchRegistry(positional, flags);
+  if (command === 'craft') return craftCommand(positional, flags);
+  if (command === 'patterns') return patternsCommand(positional, flags);
   throw new Error(`Unknown command: ${command}\n\n${help}`);
 }

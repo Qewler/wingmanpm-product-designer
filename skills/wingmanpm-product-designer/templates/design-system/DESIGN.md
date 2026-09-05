@@ -3,22 +3,17 @@
 > Mode: {{SYSTEM_MODE}}. Generated values are a starting hypothesis and require
 > product evidence before a major implementation.
 
-## Direction axes
+## Design idea
 
-| Axis | Value | Design consequences |
-| --- | ---: | --- |
-| Expression | 5 | Quiet shell; distinctive composition and one earned focal moment |
-| Density | 7 | Compact controls, strong grouping, comfortable target sizes |
-| Motion | 4 | Fast micro-feedback; rare explanatory motion only |
-| Warmth | 6 | Warm neutrals, controlled softness, direct humane copy |
+State the main user task and the product-specific idea that makes it clearer.
+Choose composition, type, color, density, and interaction from that task and the
+existing brand. These are hypotheses until checked against the rendered result.
 
 ## Visual system
 
-- Type: one strong sans family; mono or tabular numerals for data.
-- Color: one brand accent plus semantic status and data colors.
-- Shape: small control radii, medium container radii, no uniform card wall.
-- Elevation: borders and surface contrast first; shadow only for real elevation.
-- Icons: Lucide in the golden stack; one coherent project-owned vocabulary.
+Record the actual type roles, palette, spacing, shape, elevation, icons, and
+component behavior. Prefer established product tokens and components. Optional
+Expression, Density, Motion, and Warmth values must have concrete consequences.
 
 ## Themes
 
@@ -28,7 +23,7 @@
 
 ## Interaction
 
-- Repeated motion is 90-180 ms and interruptible.
+- Repeated actions respond immediately; useful motion is brief and interruptible.
 - Structural transitions are normally 160-320 ms.
 - Reduced motion preserves all meaning and input.
 - Focus is visible; keyboard order follows reading and task order.
@@ -42,6 +37,9 @@
 
 ## Content contract
 
-- Local UX copy can improve when meaning remains intact.
+- Local UX copy can improve when meaning remains intact. Cut repetition, not
+  necessary evidence or recovery instructions.
+- Headings identify real sections; eyebrows add context instead of repeating titles.
+- Main and supporting actions are clear within each decision area.
 - Legal text, claims, prices, and business rules are protected.
 - Long labels, locale-aware values, and 200% zoom must remain usable.
