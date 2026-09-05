@@ -7,7 +7,7 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [1.1.0] - Pending publication
+## [1.1.0] - 2026-09-05
 
 ### Added
 
@@ -72,5 +72,6 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   code loader, or install-time lifecycle script.
 - Content-hash protection for user-modified installed files.
 
-[Unreleased]: https://github.com/Qewler/wingmanpm-product-designer/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Qewler/wingmanpm-product-designer/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Qewler/wingmanpm-product-designer/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Qewler/wingmanpm-product-designer/releases/tag/v1.0.0

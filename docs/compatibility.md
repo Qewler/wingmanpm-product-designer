@@ -24,7 +24,13 @@ The machine-readable record is
 
 ## Agent interface
 
-The unreleased working version uses one skill and 19 command families, including `explore`. The released v1 evidence below remains historical.
+Version 1.1.0 uses one skill and 19 command families, including `explore`. The version-1.0 evidence in this document remains historical.
+
+The 1.1.0 PR passed all 10 CI jobs: Node 20/22/24, generated fixture browser
+checks, public showcase, and package lifecycles on Linux, macOS, and Windows.
+It passed 119 regression tests, 14 routing fixtures, and full skills.sh copy
+and symlink installs with all 88 portable files. For current publication and
+marketplace states, see [the publication record](publication-record.md).
 
 | Host | Explicit form | Current host benchmark |
 | --- | --- | --- |
