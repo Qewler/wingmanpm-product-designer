@@ -53,7 +53,8 @@ For general work: [system](references/system.md) for a new system or redesign;
 [product craft](references/product-craft.md) for a focused design dimension;
 [product UI](references/product-ui.md) for several product patterns;
 [marketing](references/marketing.md) for product marketing.
-Only load [QA](references/qa.md) for review, hardening, or the shipping gate.
+Read [minimum craft](references/craft.md) for every UI delivery, including polish
+and previews. Load full [QA](references/qa.md) for review, hardening, or shipping.
 
 ## Design from the task
 
@@ -62,6 +63,11 @@ Translate it into composition, type, content, and behavior. Preserve coherent
 brands; do not impose a warm, compact, one-accent style on every product. The
 four axes, Expression, Density, Motion, and Warmth, are optional summaries when
 they explain a real choice. Their scores are not proof of quality.
+
+For new surfaces or stronger creative direction, use
+[creative patterns](references/creative-patterns.md): retrieve up to three useful
+patterns, test distinct task strategies, and develop two at equal fidelity.
+Skip this for a precise repair.
 
 Explore structure and interaction as well as appearance. Keep identical content
 and constraints across variants; give each the same detail pass. Reuse common

@@ -16,11 +16,9 @@ a distinct way to support the task, not just a different accent color. A third
 may help a wide brief. Honor larger explicit counts; one board supports up to
 six options, and larger requests can use multiple boards. A precise small repair normally needs one implementation.
 
-Useful creative moves: make a relationship spatial; change the dominant object;
-reveal detail in place; turn an unclear transition into visible feedback; use
-content, imagery, type, or motion to make a product-specific idea memorable.
-Avoid merely increasing decoration. Do not treat any visual style as universally
-forbidden when the brief supports it.
+Use [creative patterns](creative-patterns.md) to form distinct task strategies
+and retrieve only relevant patterns. Apply [minimum craft](craft.md) to each
+option before comparison.
 
 ## Make the choice visible
 
@@ -37,7 +35,9 @@ external image tool. Image generation is optional; code is a capable fallback.
 
 ## Create the comparison board
 
-Author a JSON spec using project-relative preview paths:
+Author a JSON spec using project-relative preview paths. This example shows the
+schema, not default design directions. Replace its concepts with the brief’s own
+question and selected strategies:
 
 ```json
 {

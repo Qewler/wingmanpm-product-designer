@@ -8,6 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { checkExplorationBrowser } from './check-exploration-browser.mjs';
+import { checkCraftBrowser } from './check-craft-browser.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const skillName = 'wingmanpm-product-designer';
@@ -109,6 +110,7 @@ try {
     if (process.argv.includes('--browser')) {
       run(npm, ['exec', '--no', '--', 'playwright', 'install', ...(process.platform === 'linux' ? ['--with-deps'] : []), 'chromium'], buildProject);
       await checkExplorationBrowser(path.join(temporary, 'symlink', '.agents', 'skills', skillName), buildProject, process.env.WINGMAN_ARTIFACT_DIR);
+      await checkCraftBrowser(path.join(temporary, 'symlink', '.agents', 'skills', skillName), buildProject, process.env.WINGMAN_ARTIFACT_DIR);
     }
   }
 } finally {

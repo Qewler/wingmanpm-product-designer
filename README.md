@@ -29,6 +29,21 @@ npx plugins add Qewler/wingmanpm-product-designer
   <img src="docs/assets/readme/hero-light.webp" alt="WingmanPM Product Designer beside a refined renewable-energy operations workspace" width="1600">
 </picture>
 
+## Creative exploration and quick craft checks
+
+Use `patterns "<task and constraints>" --limit 3 --json` to retrieve a few of
+nine task-based design patterns. Each includes a visual signature, a mobile
+translation, and reasons it may not fit. Exploration develops distinct task
+strategies at equal fidelity in a local comparison board.
+
+Every UI delivery now applies a minimum craft floor, including quick polish
+and throwaway previews. `craft --file <preview.html> --json` or
+`craft --url <loopback-dev-url> --json` checks rendered text contrast, overflow,
+runtime errors, and mobile navigation continuity using an existing Playwright
+installation. Use `--browser-module <path>` for a shared host installation.
+It installs no browser dependency. Missing or unsupported proof is `unverified`,
+not a pass; the full shipping gate remains separate.
+
 ## Proof, not promises
 
 The showcase uses runnable React stories, the same copy and sample data on both sides, and deterministic Playwright captures. Every Tamarack Renewables surface is clearly marked **Concept demo**.

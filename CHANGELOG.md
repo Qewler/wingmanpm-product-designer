@@ -11,6 +11,11 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A quick rendered craft check for text contrast, overflow, runtime errors, and
+  mobile navigation continuity, using an existing host or project browser.
+- Nine searchable creative patterns with task strategy, signature, mobile
+  translation, and risks; equal-fidelity exploration with distinct task flows.
+
 - Cached stable-release checks and automatic updates for clean standalone skill
   installs, with integrity validation, atomic replacement, backups, local-edit
   protection, read-only mode, and native plugin-manager routing.

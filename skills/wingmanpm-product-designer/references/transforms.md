@@ -25,7 +25,8 @@ Default level: **Refine**.
 2. Repair rhythm, hierarchy, control states, type roles, icon alignment, color
    use, and responsive edges using the established system.
 3. Remove accidental inconsistency. Do not introduce a new visual thesis.
-4. Compare the result at representative desktop and mobile widths.
+4. Apply [minimum craft](craft.md): measure text contrast and verify the mobile
+   replacement for every existing route and task action. Compare both widths.
 
 Success means the interface feels intentional while remaining recognizably the
 same product. Expression usually stays fixed; other axes change only when the
@@ -35,6 +36,7 @@ current execution contradicts its own contract.
 
 Default level: **Elevate**.
 
+Use [creative patterns](creative-patterns.md) to find a task-based signature.
 Complete the Polish pass, then identify the user's key object, decision, or
 transition. Create one earned signature moment there. It can be a distinctive
 composition, unusually clear data treatment, revealing interaction, purposeful

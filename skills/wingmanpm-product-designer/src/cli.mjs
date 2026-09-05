@@ -1,9 +1,11 @@
 import { updateSkill } from './update.mjs';
 import { readContext } from './context.mjs';
+import { runCraft } from './craft.mjs';
 import { createExploration, inspectExploration, chooseExploration, serveExploration } from './explore.mjs';
+import { getPattern, searchPatterns } from './patterns.mjs';
 import { checkStage, runProof } from './stages.mjs';
 import { evidencePlan } from './evidence.mjs';
-import { cp, lstat, mkdir, readFile, readdir, rm, rmdir, stat } from 'node:fs/promises';
+import { cp, lstat, mkdir, readFile, readdir, realpath, rm, rmdir, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,6 +52,8 @@ Usage:
   wingman-design commands [--json]
   wingman-design explain PHRASE [--explicit] [--level refine|elevate|reimagine] [--fix] [--json]
   wingman-design search TERMS [--domain NAME] [--json]
+  wingman-design craft --file PATH|--url URL [--browser-module PATH] [--cdp URL] [--out PATH] [--project PATH] [--json]
+  wingman-design patterns [QUERY WORDS] [--id ID] [--limit 1..5] [--json]
 
 Required review confirmation list:
   keyboard,zoom200,reducedMotion,longContent,light,dark,axe,responsiveStates,structureUnique,dropdownContrast
@@ -69,6 +73,74 @@ function validateRoot(root) {
     throw new Error(`Refusing broad project root: ${resolved}`);
   }
   return resolved;
+}
+
+function isWithin(root, target) {
+  const relative = path.relative(root, target);
+  return relative !== '' && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+}
+
+async function validateProjectPath(root, value, label, { mustExist = false } = {}) {
+  if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} needs a path.`);
+  const resolvedRoot = await realpath(root);
+  const resolved = path.resolve(root, value);
+  if (!isWithin(path.resolve(root), resolved)) throw new Error(`${label} must stay inside the project.`);
+
+  if (mustExist) {
+    let actual;
+    try {
+      actual = await realpath(resolved);
+      if (!(await stat(actual)).isFile()) throw new Error(`${label} must be a file.`);
+    } catch (error) {
+      if (error.message === `${label} must be a file.`) throw error;
+      throw new Error(`${label} does not exist: ${resolved}`);
+    }
+    if (!isWithin(resolvedRoot, actual)) throw new Error(`${label} must stay inside the project.`);
+    return actual;
+  }
+
+  let ancestor = resolved;
+  while (ancestor !== path.dirname(ancestor)) {
+    try {
+      const actualAncestor = await realpath(ancestor);
+      if (!isWithin(resolvedRoot, actualAncestor) && actualAncestor !== resolvedRoot) {
+        throw new Error(`${label} must stay inside the project.`);
+      }
+      return resolved;
+    } catch (error) {
+      if (error.message === `${label} must stay inside the project.`) throw error;
+      ancestor = path.dirname(ancestor);
+    }
+  }
+  throw new Error(`${label} must stay inside the project.`);
+}
+
+function validateServiceUrl(value, label, protocols) {
+  if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} needs a URL.`);
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error(`${label} must be a valid URL.`);
+  }
+  if (!protocols.includes(parsed.protocol)) throw new Error(`${label} must use ${protocols.join(' or ')}.`);
+  return parsed.href;
+}
+
+async function validateBrowserModule(root, value) {
+  if (typeof value !== 'string' || !value.trim()) throw new Error('Craft --browser-module needs a path.');
+  const resolved = path.resolve(root, value);
+  if (!['.js', '.mjs', '.cjs'].includes(path.extname(resolved))) {
+    throw new Error('Craft --browser-module must be a .js, .mjs, or .cjs file.');
+  }
+  try {
+    const actual = await realpath(resolved);
+    if (!(await stat(actual)).isFile()) throw new Error('Craft --browser-module must be a file.');
+    return actual;
+  } catch (error) {
+    if (error.message === 'Craft --browser-module must be a file.') throw error;
+    throw new Error(`Craft --browser-module does not exist: ${resolved}`);
+  }
 }
 
 async function detectProject(root) {
@@ -1127,6 +1199,86 @@ async function searchRegistry(positional, flags) {
   return results;
 }
 
+function formatFinding(finding) {
+  if (typeof finding === 'string') return finding;
+  const label = [finding?.id ?? finding?.code, finding?.severity].filter(Boolean).join(' ');
+  const message = finding?.message ?? finding?.summary ?? finding?.title ?? 'Finding recorded.';
+  return label ? `${label}: ${message}` : message;
+}
+
+async function craftCommand(positional, flags) {
+  if (positional.length) throw new Error('Craft accepts --file or --url, not positional input.');
+  const hasFile = flags.file !== undefined;
+  const hasUrl = flags.url !== undefined;
+  if (hasFile === hasUrl) throw new Error('Craft needs exactly one of --file or --url.');
+
+  const project = validateRoot(flags.project ?? process.cwd());
+  const file = hasFile ? await validateProjectPath(project, flags.file, 'Craft --file', { mustExist: true }) : undefined;
+  const url = hasUrl ? validateServiceUrl(flags.url, 'Craft --url', ['http:', 'https:']) : undefined;
+  const browserModule = flags['browser-module'] === undefined
+    ? undefined
+    : await validateBrowserModule(project, flags['browser-module']);
+  const cdp = flags.cdp === undefined
+    ? undefined
+    : validateServiceUrl(flags.cdp, 'Craft --cdp', ['http:', 'https:']);
+  const out = flags.out === undefined
+    ? undefined
+    : await validateProjectPath(project, flags.out, 'Craft --out');
+
+  const result = await runCraft({ project, file, url, browserModule, cdp, out });
+  if (!['passed', 'failed', 'unverified'].includes(result?.status)) {
+    throw new Error('Craft returned an invalid status.');
+  }
+  logJsonOrText(result, Boolean(flags.json), (value) => {
+    const findings = Array.isArray(value.findings) ? value.findings : [];
+    const shown = findings.slice(0, 10);
+    return [
+      `Craft ${value.status}: ${findings.length} finding${findings.length === 1 ? '' : 's'}.`,
+      ...shown.map((finding) => `  ${formatFinding(finding)}`),
+      findings.length > shown.length ? `  ${findings.length - shown.length} more. Use --json for all findings.` : null,
+      out ? `Output: ${out}` : null
+    ].filter(Boolean).join('\n');
+  });
+  if (result.status === 'failed') process.exitCode = 1;
+  else if (result.status === 'unverified') process.exitCode = 2;
+  return result;
+}
+
+function formatPattern(pattern) {
+  const title = pattern.title ?? pattern.name ?? pattern.id;
+  const summary = pattern.summary ?? pattern.description ?? pattern.useWhen ?? pattern.when;
+  const strategy = pattern.strategy;
+  return [
+    `${pattern.id}${title && title !== pattern.id ? `: ${title}` : ''}`,
+    summary ? `  ${summary}` : null,
+    strategy && strategy !== summary ? `  ${strategy}` : null
+  ].filter(Boolean).join('\n');
+}
+
+function patternsCommand(positional, flags) {
+  const rawLimit = flags.limit ?? 3;
+  const limit = typeof rawLimit === 'number'
+    ? rawLimit
+    : typeof rawLimit === 'string' && /^\d+$/.test(rawLimit) ? Number(rawLimit) : NaN;
+  if (!Number.isInteger(limit) || limit < 1 || limit > 5) throw new Error('Patterns --limit must be an integer from 1 to 5.');
+
+  if (flags.id !== undefined) {
+    if (typeof flags.id !== 'string' || !flags.id.trim()) throw new Error('Patterns --id needs an ID.');
+    if (positional.length) throw new Error('Patterns accepts a query or --id, not both.');
+    const pattern = getPattern(flags.id);
+    if (!pattern) throw new Error(`Unknown pattern ID: ${flags.id}`);
+    logJsonOrText(pattern, Boolean(flags.json), formatPattern);
+    return pattern;
+  }
+
+  const query = positional.join(' ').trim();
+  const patterns = searchPatterns(query, { limit });
+  logJsonOrText(patterns, Boolean(flags.json), (items) => items.length
+    ? items.map(formatPattern).join('\n')
+    : 'No matching pattern.');
+  return patterns;
+}
+
 function commandCatalog(flags) {
   const commands = listCommands();
   logJsonOrText(commands, Boolean(flags.json), (items) => items.map((item) => {
@@ -1239,5 +1391,7 @@ export async function runCli(argv = process.argv.slice(2)) {
   if (command === 'commands') return commandCatalog(flags);
   if (command === 'explain') return explainCommand(positional, flags);
   if (command === 'search') return searchRegistry(positional, flags);
+  if (command === 'craft') return craftCommand(positional, flags);
+  if (command === 'patterns') return patternsCommand(positional, flags);
   throw new Error(`Unknown command: ${command}\n\n${help}`);
 }

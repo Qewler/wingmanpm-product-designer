@@ -1,0 +1,162 @@
+[
+  {
+    "id": "evidence-spine",
+    "name": "Evidence spine",
+    "tags": [
+      "review",
+      "source",
+      "evidence",
+      "trust",
+      "ai",
+      "research"
+    ],
+    "useWhen": "A decision needs traceable source material.",
+    "strategy": "Make the source a stable reading spine; attach proposed actions to exact evidence.",
+    "signature": "Use a shared alignment axis and small source anchors; reveal detail where it is cited.",
+    "mobile": "One source and decision at a time, with a clear return to the queue.",
+    "risk": "Weak when source reading is secondary. Never invent evidence or confidence.",
+    "reference": "references/creative-patterns.md"
+  },
+  {
+    "id": "delta-first",
+    "name": "Delta first",
+    "tags": [
+      "compare",
+      "change",
+      "diff",
+      "revision",
+      "approval"
+    ],
+    "useWhen": "The user must understand what will change.",
+    "strategy": "Lead with the change, then expose original context and consequences.",
+    "signature": "Let additions, removals, and unchanged context create hierarchy; use words as well as color.",
+    "mobile": "Stack paired fields with persistent Original and Proposed labels.",
+    "risk": "Avoid for unrelated objects or changes with no meaningful baseline.",
+    "reference": "references/creative-patterns.md"
+  },
+  {
+    "id": "triage-lanes",
+    "name": "Triage lanes",
+    "tags": [
+      "queue",
+      "priority",
+      "support",
+      "operations",
+      "risk"
+    ],
+    "useWhen": "A large queue contains different next actions.",
+    "strategy": "Group by actual work state or decision type, then show the next useful action.",
+    "signature": "Give each lane a clear verb and distinct content rhythm, within one shared visual system.",
+    "mobile": "Use a compact lane selector and a readable list, preserving counts and selection.",
+    "risk": "Do not invent priority scores. Avoid arbitrary categories or hiding unassigned work.",
+    "reference": "references/creative-patterns.md"
+  },
+  {
+    "id": "object-workbench",
+    "name": "Object workbench",
+    "tags": [
+      "editor",
+      "object",
+      "detail",
+      "tools",
+      "configure",
+      "inspect"
+    ],
+    "useWhen": "The user works deeply on one object.",
+    "strategy": "Keep the object stable while context and tools change around it.",
+    "signature": "Build one distinctive object view; align tools to the part they affect.",
+    "mobile": "Move secondary tools into labelled drawers; keep the object and primary action visible.",
+    "risk": "Avoid a three-pane layout when the object does not need sustained attention.",
+    "reference": "references/creative-patterns.md"
+  },
+  {
+    "id": "preview-commit",
+    "name": "Preview then commit",
+    "tags": [
+      "form",
+      "setup",
+      "onboarding",
+      "publish",
+      "settings",
+      "preview"
+    ],
+    "useWhen": "A configuration has consequences the user needs to predict.",
+    "strategy": "Show a live, honest preview beside a short set of controls; separate draft from commit.",
+    "signature": "Make each input visibly affect the same product scene, with clear saved and unsaved states.",
+    "mobile": "Alternate between controls and preview with preserved input and an explicit commit action.",
+    "risk": "A fabricated preview creates false trust. Explain unsupported effects.",
+    "reference": "references/creative-patterns.md"
+  },
+  {
+    "id": "time-and-state",
+    "name": "Time and state",
+    "tags": [
+      "activity",
+      "timeline",
+      "history",
+      "monitoring",
+      "status",
+      "incident"
+    ],
+    "useWhen": "Users need both current truth and how it changed.",
+    "strategy": "Pair a calm current snapshot with a selective event trail.",
+    "signature": "Use time spacing and event structure to show meaningful changes; keep current values prominent.",
+    "mobile": "Lead with current state, then a vertically readable event trail with date anchors.",
+    "risk": "Avoid decorative timelines for unordered content; separate event time from report time.",
+    "reference": "references/creative-patterns.md"
+  },
+  {
+    "id": "relationship-map",
+    "name": "Relationship map",
+    "tags": [
+      "dependencies",
+      "graph",
+      "spatial",
+      "network",
+      "workflow",
+      "topology"
+    ],
+    "useWhen": "Relationships or dependencies determine the next action.",
+    "strategy": "Make connections spatial and provide a linked list for exact lookup.",
+    "signature": "Give position a stable meaning; reveal one relevant path rather than every edge.",
+    "mobile": "Use the linked list and a focused path view, preserving the same selection.",
+    "risk": "Avoid when proximity has no meaning. A canvas requires keyboard and list alternatives.",
+    "reference": "references/creative-patterns.md"
+  },
+  {
+    "id": "mechanism-scene",
+    "name": "Mechanism scene",
+    "tags": [
+      "marketing",
+      "landing",
+      "explain",
+      "story",
+      "product",
+      "proof"
+    ],
+    "useWhen": "A product is easier to understand by seeing how it works.",
+    "strategy": "Turn one real product mechanism into the central scene, with a short evidence-led story.",
+    "signature": "Use purposeful scale, typography, and a single visual transformation tied to the mechanism.",
+    "mobile": "Retell the scene in a linear sequence; preserve the same proof and call to action.",
+    "risk": "Do not invent metrics, logos, or capabilities. Avoid a decorative mock dashboard.",
+    "reference": "references/creative-patterns.md"
+  },
+  {
+    "id": "constraint-composer",
+    "name": "Constraint composer",
+    "tags": [
+      "planning",
+      "budget",
+      "schedule",
+      "filters",
+      "tradeoff",
+      "constraints"
+    ],
+    "useWhen": "The user must balance a few clear constraints.",
+    "strategy": "Make constraints editable and show their effect on a valid outcome.",
+    "signature": "Use a compact visual model of remaining capacity or tradeoffs, with precise labels.",
+    "mobile": "Use sequential constraint controls plus a persistent result summary.",
+    "risk": "Use only real calculation rules. Never imply an optimum without a defined objective.",
+    "reference": "references/creative-patterns.md"
+  }
+]
