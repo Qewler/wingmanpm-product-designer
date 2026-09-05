@@ -17,3 +17,14 @@ private screenshot, authentication route, checkout, or price.
 
 The coastal wind-farm image was generated for this fictional concept. It does
 not depict a real Tamarack Renewables site.
+
+Regenerate only the responsive README image with:
+
+```bash
+npm --prefix showcase run capture -- --only readme-brand--responsive
+```
+
+Its three frames load the same operational story in independent 1280, 768, and
+390 pixel viewports. Capture first verifies full-width narrow layouts, all three
+site records, both actions, four navigation links, keyboard access, and exact
+frame fit. It fails if content is clipped or a frame is incompletely rendered.

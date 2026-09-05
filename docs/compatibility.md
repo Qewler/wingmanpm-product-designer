@@ -1,8 +1,9 @@
 # Compatibility and current evidence
 
-Version `1.0.0` was released and checked on 2026-08-31 with Node.js 24.18.0
-and npm 11.16.0. Public evidence comes only from the committed Tamarack
-FieldOps fixture, which is always marked `Concept demo`.
+The current public version is `1.1.0`, released on 2026-09-05. The detailed
+fixture baseline below was recorded for version `1.0.0` on 2026-08-31 with
+Node.js 24.18.0 and npm 11.16.0. Public fixture evidence comes only from the
+committed Tamarack FieldOps fixture, which is always marked `Concept demo`.
 
 | Check | Current evidence |
 | --- | --- |
@@ -34,9 +35,9 @@ marketplace states, see [the publication record](publication-record.md).
 
 | Host | Explicit form | Current host benchmark |
 | --- | --- | --- |
-| Codex | `$wingmanpm-product-designer <intent> [target]` | Historical text contract plus isolated build |
-| Claude Code | `/wingmanpm-product-designer <intent> [target]` | Live run deferred by user; strict plugin validation passed |
-| Cursor | `/wingmanpm-product-designer <intent> [target]` | Live run deferred by user; authenticated CLI confirmed |
+| Codex | `$wingmanpm-product-designer <intent> [target]` | Own-marketplace `1.1.0` install verified; historical text contract plus isolated build |
+| Claude Code | `/wingmanpm-product-designer <intent> [target]` | Own-marketplace `1.1.0` install verified; live run deferred by user; strict plugin validation passed |
+| Cursor | `/wingmanpm-product-designer <intent> [target]` | Standalone `1.1.0` skill install verified; live run deferred by user; public marketplace approval not verified |
 
 Explicit invocations and ordinary refinement requests act within their bounded
 scope. `explore` and unresolved `reimagine` requests show visual directions
@@ -56,12 +57,14 @@ read-only unless the user asks for changes or supplies `--fix`.
 
 ## Publication status
 
-GitHub `v1.1.0`, public-repository skills.sh installs, and the direct Codex and
-Claude marketplace installs are verified. Existing standalone skills, including
-Cursor, are updated to `1.1.0`. npm `1.1.0` is staged and awaits owner approval;
-public `latest` is still `1.0.0` at the recorded check.
+GitHub `v1.1.0`, npm `1.1.0`, public-repository skills.sh installs, and the
+direct Codex and Claude marketplace installs are verified. Existing standalone
+skills, including Cursor, are updated to `1.1.0`. npm published `1.1.0` as
+`latest` on September 5, 2026.
 
-Reviewed catalog approval is separate from direct installation. See the
-[current publication record](publication-record.md) for Claude, Cursor, OpenAI,
-and the exact remaining authentication or approval steps. Deferred live Claude
-and Cursor behavior benchmarks are not reported as passes.
+Reviewed catalog approval is separate from direct installation. The Claude
+reviewed catalog remains pending, and Cursor marketplace approval is not
+confirmed. OpenAI organization identity is approved, but the skills-only
+creation gate still appears. OpenAI creation is paused to avoid a duplicate.
+See the [current publication record](publication-record.md) for details.
+Deferred live Claude and Cursor behavior benchmarks are not reported as passes.

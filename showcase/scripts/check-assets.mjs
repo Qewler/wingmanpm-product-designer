@@ -19,7 +19,7 @@ const expected = [
   ['docs/assets/readme/comparison-workspace.webp', 1600, 900],
   ['docs/assets/readme/comparison-ai-review.webp', 1600, 900],
   ['docs/assets/readme/comparison-marketing.webp', 1600, 900],
-  ['docs/assets/readme/responsive-proof.webp', 1600, 780],
+  ['docs/assets/readme/responsive-proof.webp', 1600, 900],
 ];
 
 let readmeBytes = 0;

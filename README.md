@@ -187,7 +187,9 @@ Generated files are recorded in `.wingmanpm-design/manifest.json`. Upgrades refr
 
 ## Responsive by construction
 
-<img src="docs/assets/readme/responsive-proof.webp" alt="The same Tamarack FieldOps story shown at desktop, tablet, and mobile widths" width="1600">
+<img src="docs/assets/readme/responsive-proof.webp" alt="Tamarack FieldOps rendered at 1280, 768, and 390 pixels, with full-width tablet and mobile content, visible navigation, and all three sites" width="1600">
+
+These are independent browser renders at 1280, 768, and 390 pixels. Capture checks that every site, navigation link, and action fits before producing the image.
 
 The golden React path includes Storybook and Playwright proof. Other stacks receive the same design contract and portable references without pretending to be React.
 

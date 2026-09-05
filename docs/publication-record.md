@@ -11,7 +11,7 @@ Publisher: Wingman.PM / Qewler
 | Channel | Verified state |
 | --- | --- |
 | GitHub | [PR #4](https://github.com/Qewler/wingmanpm-product-designer/pull/4) merged; [v1.1.0](https://github.com/Qewler/wingmanpm-product-designer/releases/tag/v1.1.0) published with all five release assets; downloaded checksums passed |
-| npm | `1.1.0` staged by trusted GitHub publishing; owner approval is still required. Public `latest` remains `1.0.0` until approval succeeds |
+| npm | [`1.1.0`](https://www.npmjs.com/package/wingmanpm-product-designer/v/1.1.0) published on September 5, 2026; public `latest` is `1.1.0`; registry SHA-1 is `d790a18be20cc77c94a0123cac80cf3974f38d73` |
 | skills.sh | A fresh install from the public repository returned `1.1.0`, with all 88 portable files identical to the source bundle |
 | Codex own marketplace | `wingmanpm-product-designer@wingmanpm` updated to `1.1.0`; publisher metadata verified as Wingman.PM / Qewler |
 | Claude Code own marketplace | Updated from `1.0.0` to `1.1.0`; restart required to load the update |
@@ -37,11 +37,9 @@ relative archive path was parsed as a GitHub repository. The corrected
 staged the checksum-verified existing archive successfully, without rebuilding
 or replacing the public assets.
 
-The npm stage ID is `1abcd981-0880-40eb-887b-ba772a1a7cb0`; its SHA-1 is
-`d790a18be20cc77c94a0123cac80cf3974f38d73`. The owner can approve it in
-[npm Staged Packages](https://www.npmjs.com/settings/qewler/staged-packages).
-At the last attempt, npm redirected approval to a 2FA configuration notice
-despite an existing security key. Publication is not marked complete.
+The npm stage ID was `1abcd981-0880-40eb-887b-ba772a1a7cb0`. The staged archive
+had SHA-1 `d790a18be20cc77c94a0123cac80cf3974f38d73`. Owner approval later completed,
+and npm published that archive as `latest` at `2026-09-05T15:04:17.407Z`.
 
 Historical records below describe earlier checkpoints, not current availability.
 
@@ -57,7 +55,7 @@ License: Apache-2.0
 
 Release status: public v1 released; Claude Code and Cursor live behavior tests remain explicitly deferred
 
-## Public destinations
+## Public destinations as recorded on August 31, 2026
 
 | Destination | URL | State |
 | --- | --- | --- |
@@ -101,10 +99,11 @@ npx wingmanpm-product-designer@latest install --agent all
 | Cursor behavior and implementation | Deferred by user; not marked passed |
 | Final release workflow | [Passed](https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33345388217) |
 
-Claude community marketplace and Cursor Marketplace are submitted but remain
-pending until their public listings are approved and verified. OpenAI remains
-blocked only by developer identity verification. Do not mark a reviewed channel
-as published until its public page and clean install are verified.
+At this historical checkpoint, Claude community marketplace and Cursor
+Marketplace were submitted but pending. OpenAI was blocked by developer identity
+verification. These statements describe the August 31 record, not current
+approval state. Do not mark a reviewed channel as published until its public page
+and clean install are verified.
 
 ## September 5 pre-release distribution check (historical)
 
