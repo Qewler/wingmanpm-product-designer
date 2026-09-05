@@ -16,6 +16,11 @@ on:
         required: true
         type: boolean
         default: false
+      stage_existing_release:
+        description: Stage the verified npm archive from an existing GitHub release without rebuilding it.
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -26,6 +31,7 @@ concurrency:
 
 jobs:
   full-validation:
+    if: ${{ !inputs.stage_existing_release }}
     name: Full validation
     uses: ./.github/workflows/ci.yml
 
@@ -170,4 +176,55 @@ jobs:
         shell: bash
         env:
           VERSION: ${{ needs.build-release.outputs.version }}
-        run: npm stage publish "release-assets/wingmanpm-product-designer-${VERSION}.tgz" --access public
+        run: npm stage publish "${GITHUB_WORKSPACE}/release-assets/wingmanpm-product-designer-${VERSION}.tgz" --access public
+
+  stage-existing-release:
+    name: Stage existing GitHub release on npm
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.stage_existing_release && inputs.publish_npm &&
+      vars.WINGMANPM_ENABLE_NPM_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Set up Node.js for npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Download and verify the published archive
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$REQUESTED_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "An existing stable release tag is required." >&2
+            exit 1
+          fi
+          gh release view "$REQUESTED_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft,isPrerelease > release.json
+          node -e "const r=require('./release.json'); if(r.isDraft || r.isPrerelease) throw Error('A published stable release is required');"
+          archive="wingmanpm-product-designer-${REQUESTED_TAG#v}.tgz"
+          gh release download "$REQUESTED_TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$archive" --pattern SHA256SUMS --dir release-assets
+          export ARCHIVE_NAME="$archive"
+          node <<'NODE'
+          const fs = require('node:fs');
+          const crypto = require('node:crypto');
+          const file = process.env.ARCHIVE_NAME;
+          const entries = fs.readFileSync('release-assets/SHA256SUMS', 'utf8').trim().split(/\r?\n/);
+          const matches = entries.map(line => line.match(/^([a-f0-9]{64})  (.+)$/)).filter(match => match && match[2] === file);
+          if (matches.length !== 1) throw Error('Missing or ambiguous archive checksum');
+          const actual = crypto.createHash('sha256').update(fs.readFileSync('release-assets/' + file)).digest('hex');
+          if (actual !== matches[0][1]) throw Error('Published archive checksum mismatch');
+          NODE
+          echo "NPM_ARCHIVE=${GITHUB_WORKSPACE}/release-assets/$archive" >> "$GITHUB_ENV"
+
+      - name: Stage the verified existing archive
+        run: npm stage publish "$NPM_ARCHIVE" --access public
