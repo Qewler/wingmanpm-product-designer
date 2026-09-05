@@ -80,19 +80,86 @@ async function closeServer(server) {
   await new Promise(resolve => server.close(resolve));
 }
 
-async function readCdpPort(profile, owner) {
-  const portFile = path.join(profile, 'DevToolsActivePort');
-  for (let attempt = 0; attempt < 100; attempt += 1) {
-    if (owner.exitCode !== null) throw new Error(`CDP owner exited with code ${owner.exitCode}.`);
-    try {
-      const [port] = (await readFile(portFile, 'utf8')).trim().split(/\s+/);
-      if (/^\d+$/.test(port)) return Number(port);
-    } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
+const childTermination = child => (
+  child.exitCode !== null || child.signalCode !== null
+    ? { exitCode: child.exitCode, signalCode: child.signalCode }
+    : null
+);
+
+const describeTermination = ({ exitCode, signalCode }) => (
+  signalCode ? `signal ${signalCode}` : `code ${exitCode}`
+);
+
+export async function stopChild(child, { signal = 'SIGKILL', timeoutMs = 5_000 } = {}) {
+  const stopped = childTermination(child);
+  if (stopped) return stopped;
+
+  return new Promise((resolve, reject) => {
+    let timer;
+    const finish = result => {
+      clearTimeout(timer);
+      child.off('exit', onExit);
+      child.off('close', onClose);
+      child.off('error', onError);
+      resolve(result);
+    };
+    const onExit = (exitCode, signalCode) => finish({ exitCode, signalCode });
+    const onClose = (exitCode, signalCode) => finish({ exitCode, signalCode });
+    const onError = error => finish({ exitCode: child.exitCode, signalCode: child.signalCode, error });
+
+    child.once('exit', onExit);
+    child.once('close', onClose);
+    child.once('error', onError);
+    timer = setTimeout(() => {
+      child.off('exit', onExit);
+      child.off('close', onClose);
+      child.off('error', onError);
+      reject(new Error(`Browser process did not stop within ${timeoutMs}ms after ${signal}.`));
+    }, timeoutMs);
+    const racedStop = childTermination(child);
+    if (racedStop) {
+      finish(racedStop);
+      return;
     }
-    await new Promise(resolve => setTimeout(resolve, 50));
+    try {
+      child.kill(signal);
+    } catch (error) {
+      finish({ exitCode: child.exitCode, signalCode: child.signalCode, error });
+    }
+  });
+}
+
+export async function readCdpPort(profile, owner, { timeoutMs = 5_000, pollIntervalMs = 50 } = {}) {
+  const portFile = path.join(profile, 'DevToolsActivePort');
+  const deadline = Date.now() + timeoutMs;
+  let spawnError;
+  let stderr = '';
+  const onError = error => { spawnError = error; };
+  const onStderr = chunk => { stderr = `${stderr}${chunk}`.slice(-4_000); };
+  owner.once('error', onError);
+  owner.stderr?.on('data', onStderr);
+
+  try {
+    while (Date.now() < deadline) {
+      if (spawnError) throw new Error(`CDP owner failed to start: ${spawnError.message}`);
+      const stopped = childTermination(owner);
+      if (stopped) {
+        const detail = stderr.trim();
+        throw new Error(`CDP owner exited with ${describeTermination(stopped)} before publishing a debug port.${detail ? ` Chromium stderr: ${detail}` : ''}`);
+      }
+      try {
+        const [port] = (await readFile(portFile, 'utf8')).trim().split(/\s+/);
+        if (/^\d+$/.test(port)) return Number(port);
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+      }
+      await new Promise(resolve => setTimeout(resolve, Math.min(pollIntervalMs, Math.max(0, deadline - Date.now()))));
+    }
+    throw new Error(`CDP owner did not publish a debug port within ${timeoutMs}ms.${stderr.trim() ? ` Chromium stderr: ${stderr.trim()}` : ''}`);
+  } finally {
+    owner.off('error', onError);
+    owner.stderr?.off('data', onStderr);
   }
-  throw new Error('CDP owner did not publish a debug port.');
 }
 
 /** Reuses the smoke project's installed browser dependency; it does not install or mutate project sources. */
@@ -156,11 +223,13 @@ export async function checkCraftBrowser(skill, project, artifactDirectory) {
 
     const cdpProfile = path.join(temporary, 'cdp-profile');
     await mkdir(cdpProfile);
+    // These flags apply only to this disposable, test-owned Chromium profile. They never launch or change a user browser.
+    const linuxSandboxFlags = process.platform === 'linux' ? ['--no-sandbox', '--disable-dev-shm-usage'] : [];
     cdpOwner = spawn(chromium.executablePath(), [
       '--headless', '--disable-background-networking', '--disable-component-update', '--disable-default-apps',
       '--disable-extensions', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=0',
-      `--user-data-dir=${cdpProfile}`, 'about:blank'
-    ], { stdio: 'ignore' });
+      ...linuxSandboxFlags, `--user-data-dir=${cdpProfile}`, 'about:blank'
+    ], { stdio: ['ignore', 'ignore', 'pipe'] });
     const cdpPort = await readCdpPort(cdpProfile, cdpOwner);
     const cdp = `http://127.0.0.1:${cdpPort}`;
     const connected = await runCraft({
@@ -170,7 +239,7 @@ export async function checkCraftBrowser(skill, project, artifactDirectory) {
     if (!cdpNavigationVerified) {
       assert.ok(connected.findings.some(({ code, message }) => code === 'browser-check-incomplete' && /Timeout 20000ms/.test(message)), JSON.stringify(connected.findings));
     }
-    assert.equal(cdpOwner.exitCode, null, 'Craft must not stop the browser that owns the CDP endpoint.');
+    assert.equal(childTermination(cdpOwner), null, 'Craft must not stop the browser that owns the CDP endpoint.');
     const version = await fetch(`${cdp}/json/version`);
     assert.equal(version.ok, true, 'The owning browser must still answer after Craft disconnects.');
 
@@ -184,10 +253,7 @@ export async function checkCraftBrowser(skill, project, artifactDirectory) {
     return reports;
   } finally {
     if (notFoundServer) await closeServer(notFoundServer);
-    if (cdpOwner?.exitCode === null) {
-      cdpOwner.kill('SIGKILL');
-      await new Promise(resolve => cdpOwner.once('exit', resolve));
-    }
+    if (cdpOwner) await stopChild(cdpOwner);
     await rm(temporary, { recursive: true, force: true });
   }
 }

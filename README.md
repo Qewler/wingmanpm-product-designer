@@ -36,6 +36,9 @@ nine task-based design patterns. Each includes a visual signature, a mobile
 translation, and reasons it may not fit. Exploration develops distinct task
 strategies at equal fidelity in a local comparison board.
 
+On-demand component and anti-pattern references guide interaction detail, lean
+copy, meaningful headings, clear actions, and product-specific composition.
+
 Every UI delivery now applies a minimum craft floor, including quick polish
 and throwaway previews. `craft --file <preview.html> --json` or
 `craft --url <loopback-dev-url> --json` checks rendered text contrast, overflow,

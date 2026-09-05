@@ -11,6 +11,11 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Contextual anti-pattern guidance for excess text, headings, eyebrows, unclear
+  action priority, and generic component-library composition.
+- Component detail patterns for pending actions, anchored overlays, grouped help,
+  feedback, selection, and gestures, with interruption and recovery checks.
+
 - A quick rendered craft check for text contrast, overflow, runtime errors, and
   mobile navigation continuity, using an existing host or project browser.
 - Nine searchable creative patterns with task strategy, signature, mobile
@@ -39,6 +44,9 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   resolution widens the check rather than silently dropping inputs.
 
 ### Fixed
+
+- Browser test cleanup handles processes already stopped by a signal, reports
+  startup failures, and uses a bounded shutdown instead of hanging Linux CI.
 
 - Fresh React scaffolds declare the icon dependency their generated UI imports.
 - Copied checkers execute correctly through symlinked project paths.

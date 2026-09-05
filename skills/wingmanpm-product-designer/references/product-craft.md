@@ -6,7 +6,9 @@ patterns. Preserve product meaning, data relationships, component contracts,
 and established brand authority.
 
 Use Expression, Density, Motion, and Warmth only when they clarify the choice.
-A single-dimension command should preserve unrelated design decisions.
+A single-dimension command should preserve unrelated design decisions. Use
+[anti-patterns](anti-patterns.md) for excess copy, framing, generic composition,
+or unclear actions; [components](components.md) for component states and feel.
 
 ## `layout` / `reflow`
 

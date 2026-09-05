@@ -23,7 +23,7 @@ Expression, Density, Motion, and Warmth values must have concrete consequences.
 
 ## Interaction
 
-- Repeated motion is 90-180 ms and interruptible.
+- Repeated actions respond immediately; useful motion is brief and interruptible.
 - Structural transitions are normally 160-320 ms.
 - Reduced motion preserves all meaning and input.
 - Focus is visible; keyboard order follows reading and task order.
@@ -37,6 +37,9 @@ Expression, Density, Motion, and Warmth values must have concrete consequences.
 
 ## Content contract
 
-- Local UX copy can improve when meaning remains intact.
+- Local UX copy can improve when meaning remains intact. Cut repetition, not
+  necessary evidence or recovery instructions.
+- Headings identify real sections; eyebrows add context instead of repeating titles.
+- Main and supporting actions are clear within each decision area.
 - Legal text, claims, prices, and business rules are protected.
 - Long labels, locale-aware values, and 200% zoom must remain usable.

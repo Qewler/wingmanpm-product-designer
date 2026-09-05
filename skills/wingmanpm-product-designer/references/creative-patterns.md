@@ -41,6 +41,7 @@ not force novelty when an established pattern best serves the task.
 Share data, copy, assets, and brand constants across variants. Keep discarded
 ideas to one line; save full reasoning only for a consequential decision. Load
 one active pattern plus at most one supporting pattern. Spend remaining effort
-on execution: typography, alignment, long content, feedback, keyboard use, and
+on execution: [component detail](components.md), alignment, long content,
+[clear actions and lean framing](anti-patterns.md), keyboard use, and
 mobile translation. Stop after the agreed comparison; don't generate endless
 variants to chase a subjective score.

@@ -24,7 +24,8 @@ Default level: **Refine**.
 1. Find the three most visible sources of roughness in the requested surface.
 2. Repair rhythm, hierarchy, control states, type roles, icon alignment, color
    use, and responsive edges using the established system.
-3. Remove accidental inconsistency. Do not introduce a new visual thesis.
+3. Remove accidental inconsistency and [needless framing](anti-patterns.md).
+   For component behavior, use [components](components.md). Preserve the thesis.
 4. Apply [minimum craft](craft.md): measure text contrast and verify the mobile
    replacement for every existing route and task action. Compare both widths.
 

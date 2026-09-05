@@ -353,3 +353,29 @@ and output tokens, cache use, tool calls, and repair rounds.
 A useful result improves preferred design quality without increasing failure
 rates. Report tradeoffs and uncertainty. More commands, more rules, and a higher
 word-match score do not establish that Wingman is better.
+
+## Follow-up: editorial judgment and component detail
+
+The component guidance takes inspiration from Emil Kowalski's emphasis on
+repeated-use behavior, coherent defaults, interruption, and small state changes.
+The Wingman references are independently written; no source skill, code, timing
+table, or required response format is copied or added as a runtime dependency.
+We do not adopt universal rules about keyboard animation, button scaling,
+staggers, or hardware acceleration.
+
+Five contextual anti-patterns now cover excess copy, excessive h2/h3 structure,
+repeated eyebrow labels, unclear action priority, and generic shadcn/Tailwind
+composition. They guide rendered judgment rather than impose quotas or reject
+frameworks. Required text, real document outlines, accessible names, independent
+row actions, and existing primitives remain protected.
+
+Component guidance covers pending actions, anchored surfaces, toolbar help,
+selection, notifications, and gestures. Generated component contracts begin with
+unchecked coverage and require observed proof. The motion guide uses frequency,
+input responsiveness, interruption, and context before choosing an effect.
+
+A small independent source-review trial identified repeated labels and competing
+actions while retaining the legal disclosure and meaningful help-document
+outline. This checks instruction behavior, not visual superiority. The earlier
+four-run Impeccable comparison predates these follow-up changes and must not be
+presented as a benchmark of this new revision.

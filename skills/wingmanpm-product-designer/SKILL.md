@@ -51,6 +51,7 @@ Use the `reference` and relevant `supportingReferences` returned by `explain`.
 For general work: [system](references/system.md) for a new system or redesign;
 [explore](references/explore.md) for visual choices;
 [product craft](references/product-craft.md) for a focused design dimension;
+[components](references/components.md) for component behavior and detail;
 [product UI](references/product-ui.md) for several product patterns;
 [marketing](references/marketing.md) for product marketing.
 Read [minimum craft](references/craft.md) for every UI delivery, including polish
@@ -72,6 +73,11 @@ Skip this for a precise repair.
 Explore structure and interaction as well as appearance. Keep identical content
 and constraints across variants; give each the same detail pass. Reuse common
 assets and data, then spend effort on the differences that help the user choose.
+
+Keep copy lean, headings useful, eyebrows meaningful, and primary versus
+secondary actions clear. Avoid generic component-library composition. Apply
+[anti-patterns](references/anti-patterns.md) when building a surface or when these
+problems appear; preserve useful semantics, required text, and proven primitives.
 
 Protect business rules, permissions, legal copy, facts, and data relationships.
 Label invented content Sample or Mock. AI changes expose scope, sources,

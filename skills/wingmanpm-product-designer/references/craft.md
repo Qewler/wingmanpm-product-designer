@@ -13,6 +13,9 @@ and brand rules. Preserve them unless the brief authorizes a change.
 - At mobile width, retain every route and task action through a visible control
   or a keyboard-operable menu. Hiding a desktop row is not a mobile design.
   Open the replacement menu and follow a route. Preserve clear current location.
+- Check copy, heading structure, eyebrow labels, and action priority with the
+  [anti-pattern guidance](anti-patterns.md) when relevant. This is rendered
+  judgment; the browser helper does not measure these qualities.
 - Align related controls to a shared height and baseline. Test real long labels,
   wrapped toolbars, selected states, empty states, and one error or hard state.
   Do not crop labels to make an attractive screenshot.
