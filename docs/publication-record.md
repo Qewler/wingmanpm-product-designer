@@ -1,4 +1,51 @@
-# Version 1 publication record
+# Publication record
+
+Last verified: September 5, 2026
+
+Current code and GitHub release: `1.1.0`
+
+Publisher: Wingman.PM / Qewler
+
+## Current channels
+
+| Channel | Verified state |
+| --- | --- |
+| GitHub | [PR #4](https://github.com/Qewler/wingmanpm-product-designer/pull/4) merged; [v1.1.0](https://github.com/Qewler/wingmanpm-product-designer/releases/tag/v1.1.0) published with all five release assets; downloaded checksums passed |
+| npm | `1.1.0` staged by trusted GitHub publishing; owner approval is still required. Public `latest` remains `1.0.0` until approval succeeds |
+| skills.sh | A fresh install from the public repository returned `1.1.0`, with all 88 portable files identical to the source bundle |
+| Codex own marketplace | `wingmanpm-product-designer@wingmanpm` updated to `1.1.0`; publisher metadata verified as Wingman.PM / Qewler |
+| Claude Code own marketplace | Updated from `1.0.0` to `1.1.0`; restart required to load the update |
+| Claude reviewed catalog | Console still shows Submitted and pending review. Own-marketplace installation is separate from catalog approval |
+| Cursor | Standalone installed skill updated to `1.1.0`; public marketplace approval is not verified. A previous application was submitted; no duplicate was sent |
+| OpenAI directory | No separate published entry was confirmed. Organization settings show individual verification Approved, but skills-only creation still displays an identity-verification gate. Creation is paused pending clarification of the existing listing |
+
+Existing standalone Codex, Cursor, and skills.sh-managed copies were backed up
+locally and updated through their owning installers. All four skill paths,
+including the Claude symlink, contain the same 88-file `1.1.0` bundle. Native
+plugin caches also contain `1.1.0`; running hosts may need a restart.
+
+## Release evidence
+
+The release code passed all ten CI jobs, including 119 regression tests,
+14 routing fixtures, the generated UI browser suite, showcase, package
+lifecycles on Linux/macOS/Windows, and complete skills.sh installation checks.
+
+The [release run](https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33970329088)
+built and published the GitHub assets. Its initial npm step failed because a
+relative archive path was parsed as a GitHub repository. The corrected
+[npm-only retry](https://github.com/Qewler/wingmanpm-product-designer/actions/runs/33971555094)
+staged the checksum-verified existing archive successfully, without rebuilding
+or replacing the public assets.
+
+The npm stage ID is `1abcd981-0880-40eb-887b-ba772a1a7cb0`; its SHA-1 is
+`d790a18be20cc77c94a0123cac80cf3974f38d73`. The owner can approve it in
+[npm Staged Packages](https://www.npmjs.com/settings/qewler/staged-packages).
+At the last attempt, npm redirected approval to a 2FA configuration notice
+despite an existing security key. Publication is not marked complete.
+
+Historical records below describe earlier checkpoints, not current availability.
+
+## Historical version 1.0.0 publication record
 
 Last updated: August 31, 2026
 
@@ -59,7 +106,7 @@ pending until their public listings are approved and verified. OpenAI remains
 blocked only by developer identity verification. Do not mark a reviewed channel
 as published until its public page and clean install are verified.
 
-## September 5 distribution check
+## September 5 pre-release distribution check (historical)
 
 The public v1 record above is historical. On September 5, 2026:
 

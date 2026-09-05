@@ -56,8 +56,12 @@ read-only unless the user asks for changes or supplies `--fix`.
 
 ## Publication status
 
-Public version `1.0.0`, its npm package, release archives, and skills.sh listing
-are live. The Claude community and Cursor marketplace submissions are pending
-review. OpenAI submission is blocked only by developer identity verification.
-The user explicitly deferred the Claude Code and Cursor live runs, so they are
-not reported as passes.
+GitHub `v1.1.0`, public-repository skills.sh installs, and the direct Codex and
+Claude marketplace installs are verified. Existing standalone skills, including
+Cursor, are updated to `1.1.0`. npm `1.1.0` is staged and awaits owner approval;
+public `latest` is still `1.0.0` at the recorded check.
+
+Reviewed catalog approval is separate from direct installation. See the
+[current publication record](publication-record.md) for Claude, Cursor, OpenAI,
+and the exact remaining authentication or approval steps. Deferred live Claude
+and Cursor behavior benchmarks are not reported as passes.
