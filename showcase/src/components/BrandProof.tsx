@@ -47,18 +47,40 @@ export function ReadmeHero({ mode = 'light' }: { mode?: 'light' | 'dark' }) {
   );
 }
 
+const responsiveViews = [
+  { name: 'Desktop', width: 1280, height: 720, detail: 'The complete operating view', className: 'desktop' },
+  { name: 'Tablet', width: 768, height: 760, detail: 'More room for the work', className: 'tablet' },
+  { name: 'Mobile', width: 390, height: 880, detail: 'Every site. Every action.', className: 'mobile' },
+];
+
 export function ResponsiveProof() {
   return (
     <main className="responsive-proof">
       <header>
-        <div><ProductDesignerLockup compact /><h1>One system. Every viewport.</h1></div>
-        <span>Desktop, tablet, and mobile proof from the same runnable story.</span>
+        <div><ProductDesignerLockup compact /><h1>One workspace. Every screen.</h1></div>
+        <span>Same sample data and controls.<br />Rendered at three real viewport sizes.</span>
       </header>
       <section className="responsive-proof__stage" aria-label="Responsive product previews">
-        <div className="device device--desktop"><div className="device__bar"><i /><i /><i /></div><div className="device__canvas"><OperationalAfter /></div></div>
-        <div className="device device--tablet"><div className="device__bar"><i /><i /><i /></div><div className="device__canvas"><OperationalAfter /></div></div>
-        <div className="device device--mobile"><div className="device__bar"><i /></div><div className="device__canvas"><OperationalAfter /></div></div>
+        {responsiveViews.map(view => (
+          <figure className={`device-study device-study--${view.className}`} key={view.name}>
+            <div className={`device device--${view.className}`}>
+              <div className="device__bar" aria-hidden="true"><i /><i /><i /></div>
+              <div className="device__canvas">
+                <iframe
+                  title={`${view.name} FieldOps preview at ${view.width} pixels`}
+                  src="./iframe.html?viewMode=story&id=proof-operational-workspace--after&globals=theme:light"
+                  width={view.width}
+                  height={view.height}
+                  data-viewport={view.width}
+                  loading="eager"
+                />
+              </div>
+            </div>
+            <figcaption><span><strong>{view.name}</strong><small>{view.detail}</small></span><span>{view.width} px</span></figcaption>
+          </figure>
+        ))}
       </section>
+      <footer>Runnable React views, not static mockups. <span>Tamarack FieldOps / Concept demo</span></footer>
     </main>
   );
 }

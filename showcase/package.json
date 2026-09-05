@@ -7,7 +7,8 @@
     "storybook": "storybook dev -p 7007",
     "build": "storybook build",
     "capture": "node ./scripts/capture.mjs",
-    "check": "npm run build && node ./scripts/check-assets.mjs"
+    "check": "npm run build && node ./scripts/check-assets.mjs",
+    "test:responsive": "node ./scripts/capture.mjs --only readme-brand--responsive --verify-only"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

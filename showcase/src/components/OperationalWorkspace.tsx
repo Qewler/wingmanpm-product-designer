@@ -20,7 +20,7 @@ const typeIcons = {
 
 export function OperationalBefore() {
   return (
-    <div className="operational operational--before">
+    <div className="operational-viewport"><div className="operational operational--before">
       <header className="plain-header">
         <div>
           <ConceptLabel />
@@ -76,13 +76,13 @@ export function OperationalBefore() {
           </table>
         </section>
       </main>
-    </div>
+    </div></div>
   );
 }
 
 export function OperationalAfter() {
   return (
-    <div className="operational operational--after">
+    <div className="operational-viewport"><div className="operational operational--after">
       <aside className="ops-rail" aria-label="Primary navigation">
         <div className="ops-identity">
           <span className="ops-identity__mark">T</span>
@@ -169,6 +169,6 @@ export function OperationalAfter() {
           </div>
         </section>
       </main>
-    </div>
+    </div></div>
   );
 }

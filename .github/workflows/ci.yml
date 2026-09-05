@@ -139,6 +139,13 @@ jobs:
       - name: Build and verify public showcase assets
         run: npm run test:showcase
 
+      - name: Install showcase Chromium
+        working-directory: showcase
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify responsive README viewports
+        run: npm --prefix showcase run test:responsive
+
   package-smoke:
     name: Package lifecycle (${{ matrix.os }}, Node ${{ matrix.node }})
     runs-on: ${{ matrix.os }}
