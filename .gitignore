@@ -8,3 +8,6 @@ storybook-static/
 .DS_Store
 *.log
 .tmp/
+
+# Design benchmark run outputs
+evals/design-bench/runs/

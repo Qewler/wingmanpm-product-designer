@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "constraints": "Deliver exactly one self-contained HTML file at the given output path. Inline all CSS and JS. You may load fonts from fonts.googleapis.com and one icon set from cdn.jsdelivr.net or unpkg.com; nothing else external. No image generation, no stock photo URLs. Work unattended: never ask questions, never wait for a choice, never open a decision page; when a skill asks for user input, choose the option the skill recommends and continue. Label invented data 'Sample'. Do not invent customer logos, testimonials, usage numbers, or performance claims. Every interactive control described must actually work with mouse and keyboard. The page must work at 390, 768, 1280 and 1440 CSS px wide and support light mode at minimum.",
+  "prompts": [
+    {
+      "id": "landing-saas",
+      "mode": "persuade",
+      "brief": "Landing page for Relay, a customer-feedback inbox for B2B product teams. Relay pulls feedback from Intercom, Slack, Zendesk and a forwarding email address, clusters it into themes with AI, and links each theme to roadmap items so PMs can see revenue attached to every request. Audience: heads of product at 50-500 person SaaS companies. Primary action: 'Start free'. Secondary: 'Book a demo'. Pricing: Free (1 source, 2 seats), Team $29 per seat per month (unlimited sources, AI themes, Linear and Jira sync), Business (custom, SSO, audit log). Include a navigation bar, a way to see the product working, how it works, pricing, a short FAQ (4 questions), and a footer."
+    },
+    {
+      "id": "landing-devtool",
+      "mode": "persuade",
+      "brief": "Landing page for Tracewell, open-source local-first tracing for Node.js services. Install with `npm i tracewell` and one line `import 'tracewell/auto'`. It records spans locally, shows flame graphs, slow database queries and N+1 detection in a local UI at localhost:4317, and never sends data anywhere unless you enable Tracewell Cloud. Pricing: Open source (MIT, free forever), Cloud $19 per month per project (share traces with your team, 30-day retention). Primary action: 'Copy install command' (must copy to clipboard with feedback). Secondary: 'Star on GitHub'. Include navigation, a demonstration of the local UI, a feature section, a quick-start code block with tabs for npm / pnpm / yarn, pricing, and a footer."
+    },
+    {
+      "id": "settings",
+      "mode": "operate",
+      "brief": "Workspace settings screen inside the Relay app (app shell with left sidebar navigation: Inbox, Themes, Roadmap, Reports, Settings). Settings has sub-navigation: General, Members, Notifications, Billing, Danger zone. Build General, Members and Notifications fully; Billing can be a stub; Danger zone has 'Delete workspace' with a confirmation dialog requiring the workspace name to be typed. General: workspace name, URL slug with prefix 'relay.app/', timezone (searchable select, at least 20 zones), default language (select), workspace icon upload control. Members: table of 8 Sample members with avatar, name, email, role dropdown per row (Owner, Admin, Member, Viewer), last active, and a row overflow menu (Resend invite, Remove); an 'Invite members' button opening a dialog with email input and role select. Notifications: 6 toggles grouped sensibly and a digest frequency select (Off, Daily, Weekly). Changes show an unsaved-changes bar with Discard and Save."
+    },
+    {
+      "id": "data-table",
+      "mode": "operate",
+      "brief": "Feedback inbox screen inside the Relay app (app shell with sidebar). A dense data table of 40 Sample feedback items with columns: feedback excerpt, source (Intercom, Slack, Zendesk, Email), customer, ARR, theme, sentiment, status (New, Triaged, Linked, Archived), received date. Toolbar: search, source filter (multi-select dropdown with checkboxes and counts), status filter, date range preset dropdown (Last 7 days, Last 30 days, This quarter, Custom), a 'Columns' menu to toggle column visibility, and a density toggle. Sortable columns. Row selection with a select-all checkbox; when rows are selected show a bulk action bar (Assign theme dropdown, Change status, Archive) with a selection count and clear. Row overflow menu (Open, Copy link, Archive). Pagination 20 per page. Empty result state when filters match nothing."
+    },
+    {
+      "id": "ai-review",
+      "mode": "operate",
+      "brief": "AI theme suggestion review screen inside the Relay app. The AI proposes merging 14 Sample feedback items into a new theme named 'Bulk export to CSV'. Show the proposal with: overall confidence, the source of each item (Intercom, Slack, Zendesk, Email) with customer and ARR, a per-item confidence, 3 items flagged as uncertain with the reason, per-item include/exclude, an editable theme name and description, and the total ARR affected. 'Regenerate' shows a progress state with a working Cancel. 'Apply theme' requires a confirmation step that states exactly what will change (items moved, roadmap link created). Include a filter dropdown for item confidence (All, High, Uncertain) and a sort dropdown."
+    },
+    {
+      "id": "onboarding",
+      "mode": "operate",
+      "brief": "First-run home screen inside the Relay app for a brand-new workspace with no data yet (app shell with sidebar). Show a setup checklist: connect a source (Intercom, Slack, Zendesk, Email forwarding address with copy button), invite teammates, create first theme, connect Linear or Jira. Each step can be completed in place (simulate connection with a short pending state then success). Include a team-size select and a role select in a short 'Tell us about your team' step, an 'Invite' split button with a dropdown (Invite by email, Copy invite link), progress indication, empty states for the Inbox preview and Themes preview that explain what will appear, and a way to dismiss the checklist."
+    },
+    {
+      "id": "landing-hardware",
+      "mode": "persuade",
+      "brief": "Landing page for Aera, a home air-quality monitor that measures CO2, PM2.5, VOCs, humidity and temperature. A light ring on the device changes colour with the air, and the iOS and Android app sends alerts and a weekly report. No subscription. Audience: parents and remote workers living in apartments. Primary action: 'Buy Aera, $149'. Secondary: 'See how it measures'. Pricing: one device $149, three-pack $399, free shipping in the EU. Include navigation, a way to see readings change through a Sample day at home, what each sensor measures, specs, pricing, a short FAQ (4 questions), and a footer.",
+      "seen": "round 4 results informed v6"
+    },
+    {
+      "id": "landing-finance",
+      "mode": "persuade",
+      "brief": "Landing page for Tally, invoicing and VAT bookkeeping for freelancers in the EU. Tally applies the right VAT rule for each client country (domestic, reverse charge, OSS), matches bank payments to invoices, and prepares a quarterly VAT summary for your accountant. Audience: EU freelancers and one-person companies. Primary action: 'Start free trial' (30 days). Secondary: 'See a sample invoice'. Pricing: Solo 9 EUR per month (unlimited invoices, 1 bank connection), Plus 19 EUR per month (3 bank connections, accountant access, OSS report). Include navigation, a way to see an invoice being made with its VAT rule, how payment matching works, pricing, a short FAQ (4 questions), and a footer.",
+      "seen": "round 4 results informed v6"
+    },
+    {
+      "id": "landing-food",
+      "mode": "persuade",
+      "brief": "Landing page for Larder, weekly meal planning for families. Larder plans five dinners from what is already in your fridge and cupboard, writes one shopping list sorted by supermarket aisle, and scales every recipe to the number of people eating. Audience: parents who cook on weeknights. Primary action: 'Plan this week'. Secondary: 'See a sample week'. Pricing: Solo 6 EUR per month, Family 9 EUR per month (up to 6 people, shared list), 14-day free trial. Include navigation, a way to see a week planned from Sample fridge contents, how the shopping list works, pricing, a short FAQ (4 questions), and a footer.",
+      "seen": "round 5 results informed v7"
+    },
+    {
+      "id": "landing-energy",
+      "mode": "persuade",
+      "brief": "Landing page for Gridline, energy monitoring for small manufacturers in the EU. Clamp sensors on the main panel measure each machine, Gridline shows kWh per machine and per shift, flags machines left idling after hours, and estimates cost at the day's spot price. Audience: owners and plant managers of workshops with 10-80 people. Primary action: 'Book a site survey'. Secondary: 'See a sample week'. Pricing: Starter kit 490 EUR one-off plus 39 EUR per month per site (up to 12 circuits), Multi-site custom. Include navigation, a way to see a Sample week of one workshop, how installation works, pricing, a short FAQ (4 questions), and a footer.",
+      "seen": "round 5 results informed v7"
+    },
+    {
+      "id": "landing-rail",
+      "mode": "persuade",
+      "brief": "Landing page for Platform, one booking for train trips across Europe. Platform searches national rail operators, combines tickets into one itinerary, shows how much time each connection gives you, and rebooks the next train if a delay makes you miss one. Audience: people who travel by train in Europe for work and holidays. Primary action: 'Plan a trip'. Secondary: 'See a sample journey'. Pricing: free to search, 2 EUR booking fee per trip; Platform Plus 39 EUR per year (no booking fees, connection guarantee). Include navigation, a way to see a Sample journey with its connections, how rebooking works, pricing, a short FAQ (4 questions), and a footer.",
+      "seen": "round 6 results informed v8"
+    },
+    {
+      "id": "landing-legal",
+      "mode": "persuade",
+      "brief": "Landing page for Clause, contract review for small agencies and studios. Upload a client contract and Clause highlights risky clauses (payment terms, IP ownership, liability, termination), compares each with your own standard terms, and tracks renewal and notice dates. Audience: founders and operations leads at agencies with 5-50 people. Primary action: 'Review a contract free'. Secondary: 'See a sample review'. Pricing: Starter 49 EUR per month (10 contracts), Studio 129 EUR per month (unlimited contracts, 5 seats, shared clause library). Include navigation, a way to see a Sample contract reviewed, how comparison with your terms works, pricing, a short FAQ (4 questions), and a footer.",
+      "seen": "round 6 results informed v8"
+    },
+    {
+      "id": "landing-clinic",
+      "mode": "persuade",
+      "brief": "Landing page for Vetline, appointment booking and records for independent veterinary clinics. Vetline puts every pet's vaccinations, visits, and prescriptions on one record, sends owners reminders before boosters are due, and lets owners book open slots online. Audience: practice managers at clinics with 2-10 vets. Primary action: 'Start a free month'. Secondary: 'See a sample pet record'. Pricing: Clinic 89 EUR per month (up to 3 vets), Practice 189 EUR per month (up to 10 vets, SMS reminders included). Include navigation, a way to see a Sample pet record, how reminders work, pricing, a short FAQ (4 questions), and a footer.",
+      "seen": "round 7 results informed v9"
+    },
+    {
+      "id": "landing-studio",
+      "mode": "persuade",
+      "brief": "Landing page for Stemroom, a browser tool that splits any song into vocals, drums, bass, and other stems so musicians can practice along or remix. Upload a track, Stemroom separates it in about a minute, and you can mute, solo, slow down, or loop any part. Audience: hobby and session musicians. Primary action: 'Split a song free'. Secondary: 'Hear a sample split'. Pricing: Free (3 songs per month), Pro 9 EUR per month (unlimited songs, lossless export, tempo and key change). Include navigation, a way to hear a Sample split with its stems, how practicing with stems works, pricing, a short FAQ (4 questions), and a footer.",
+      "seen": "round 7 results informed v9"
+    },
+    {
+      "id": "landing-climb",
+      "mode": "persuade",
+      "heldout": true,
+      "brief": "Landing page for Routebook, a logbook for indoor climbers. Climbers log every route they send by grade and wall, see their grade pyramid fill in over weeks, and get notified when their gym resets a wall. Audience: regular indoor climbers and boulderers. Primary action: 'Start your logbook'. Secondary: 'See a sample logbook'. Pricing: Free (unlimited logging, one gym), Plus 4 EUR per month (all gyms, reset alerts, grade pyramid history). Include navigation, a way to see a Sample logbook, how the grade pyramid works, pricing, a short FAQ (4 questions), and a footer."
+    },
+    {
+      "id": "landing-freight",
+      "mode": "persuade",
+      "heldout": true,
+      "brief": "Landing page for Dockslot, dock appointment scheduling for warehouses. Carriers book a loading-dock slot online, the warehouse sees every truck on one timeline by door, and late arrivals are moved to the next free door automatically. Audience: warehouse and logistics managers at sites with 4-40 dock doors. Primary action: 'Book a site demo'. Secondary: 'See a sample dock day'. Pricing: Site 290 EUR per month (up to 12 doors), Network 690 EUR per month (up to 40 doors, multiple sites, carrier API). Include navigation, a way to see a Sample dock day, how rescheduling works, pricing, a short FAQ (4 questions), and a footer."
+    }
+  ]
+}

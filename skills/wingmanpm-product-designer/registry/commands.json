@@ -441,6 +441,64 @@
       "mutationPolicy": "implementation"
     },
     {
+      "id": "landing",
+      "aliases": [
+        "landing-page",
+        "marketing-page"
+      ],
+      "naturalPhrases": [
+        "build a landing page",
+        "design a landing page",
+        "make a landing page"
+      ],
+      "category": "saas-pattern",
+      "summary": "Persuade surfaces: one thesis, a working product scene, copy and heading budgets, committed type and color.",
+      "defaultLevel": "elevate",
+      "reference": "references/marketing.md",
+      "naturalPhrasePicker": false,
+      "protectedScope": [
+        "prices",
+        "legal terms",
+        "factual claims",
+        "measurement hooks"
+      ],
+      "verification": [
+        "persuade gate",
+        "first-viewport test",
+        "mobile navigation"
+      ],
+      "mutationPolicy": "implementation"
+    },
+    {
+      "id": "controls",
+      "aliases": [
+        "dropdowns",
+        "menus"
+      ],
+      "naturalPhrases": [
+        "fix the dropdowns",
+        "polish the menus",
+        "align the buttons"
+      ],
+      "category": "saas-pattern",
+      "summary": "One control geometry, styled popups with the full keyboard contract, and aligned rows.",
+      "defaultLevel": "refine",
+      "reference": "references/controls.md",
+      "naturalPhrasePicker": false,
+      "protectedScope": [
+        "component APIs",
+        "events",
+        "data contracts",
+        "accessible primitives"
+      ],
+      "verification": [
+        "menu probe",
+        "row alignment",
+        "state coverage"
+      ],
+      "mutationPolicy": "implementation"
+    },
+    {
       "id": "explore",
       "aliases": [
         "variants"

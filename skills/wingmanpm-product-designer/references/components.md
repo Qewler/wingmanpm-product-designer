@@ -2,7 +2,9 @@
 
 Use when creating or refining a component or its interaction. Preserve the
 project's accessible primitives, public props, events, and data contracts. A
-component is a small task with changing states, not a decorated rectangle.
+component is a small task with changing states, not a decorated rectangle. For
+control geometry, popup anatomy, and the keyboard contract, load
+[controls](controls.md); this file covers interaction detail beyond it.
 
 ## Choose the response before the effect
 
