@@ -15,8 +15,8 @@ tokens to the product, and keep the geometry.
 | Control height | 28 / **32** / 40px | 28 for dense toolbars and table rows, 32 for app default, 40 for landing actions and touch-first forms |
 | Radius | control 8, popup 12, item 8 | Item radius = popup radius − popup padding |
 | Icon | 16px (18px in 40px controls) | One stroke weight and one library |
-| Type | 12 / 13–14 / 18–20px | Metadata, UI and body, page title. Weights 400, 500, 600 only |
-| Gap | 6–8px inside controls and rows | Search fields grow; icon buttons are square |
+| Type | 12 / 13-14 / 18-20px | Metadata, UI and body, page title. Weights 400, 500, 600 only |
+| Gap | 6-8px inside controls and rows | Search fields grow; icon buttons are square |
 | Touch | 40px controls and items | `(pointer: coarse), (max-width: 640px)` raises the scale; the template does it |
 
 Every control in a row shares one height and one vertical center. This includes the
@@ -28,12 +28,12 @@ heights per screen.
 
 - **Menu** (`role="menu"`): actions such as row overflow, "Invite ▾", and bulk actions.
 - **Select** (`role="listbox"` behind a `.select-trigger` button): one value from
-  2–9 options. Use 10 or more options, or any list someone must search, and the
+  2-9 options. Use 10 or more options, or any list someone must search, and the
   listbox gets a search field (combobox pattern).
 - **Multi-select filter**: items show a checkbox and a count, and the trigger
   summarizes the choice ("Source · 2"). Put a "Clear" item last, and keep the
   selection while the menu reopens.
-- **Segmented control** for 2–4 modes such as density, period, or view. A **switch**
+- **Segmented control** for 2-4 modes such as density, period, or view. A **switch**
   applies immediately; a **checkbox** waits for a submit.
 - **Split button**: a primary part, a 1px divider, and a chevron part at the same
   height, with joined radii.
@@ -85,7 +85,7 @@ Polish is felt in how a screen answers. Each of these is expected, not extra:
   moment: a check that draws in over 240ms, a progress fill that animates, a
   count that ticks, plus a toast with Undo when the action is reversible.
 - **Change in place**: sorting, reordering, and inserting animate position
-  (FLIP, 200–260ms, ease-out) so people see where things went; numbers that
+  (FLIP, 200-260ms, ease-out) so people see where things went; numbers that
   change count to their new value. Reduced motion swaps to an instant change
   with a brief highlight.
 - **Every mode is a state**: compact density, bulk selection, open dialogs,
@@ -93,9 +93,9 @@ Polish is felt in how a screen answers. Each of these is expected, not extra:
 
 ## Operate layouts
 
-- **App shell**: the sidebar is 232–248px with 32px items. The active item gets a
+- **App shell**: the sidebar is 232-248px with 32px items. The active item gets a
   tinted background and full-strength text. The page header is 56px with an `h1` of
-  18–20px at weight 600 and the page actions on the right. Settings content stays
+  18-20px at weight 600 and the page actions on the right. Settings content stays
   at or under 1040px; tables run full width.
 - **Settings**: show rows with the label and a one-line helper on the left (one
   third) and the control on the right, stacked on mobile. Separate groups with
@@ -107,7 +107,7 @@ Polish is felt in how a screen answers. Each of these is expected, not extra:
   into search, then a 2-column grid of filter triggers. Settings rows stack the
   label above a full-width control. Sub-navigation becomes a horizontally
   scrolling tab strip whose last tab is reachable and visibly cut, or a select.
-- **Tables**: the header is 32px, 12–13px, weight 500, and muted. Rows are 40px
+- **Tables**: the header is 32px, 12-13px, weight 500, and muted. Rows are 40px
   comfortable or 32px compact. Numbers are right-aligned with `tabular-nums`. The
   header is sticky; rows show a hover tint and an accent-soft tint when selected.
   The bulk bar replaces the toolbar in place at the same height, with no layout

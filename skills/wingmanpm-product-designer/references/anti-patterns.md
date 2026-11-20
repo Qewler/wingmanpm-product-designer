@@ -9,7 +9,7 @@ asked for changes.
 | Slop | Fix | Budget |
 | --- | --- | --- |
 | Wall of text | Delete welcome filler, restated labels, and "this section lets you" sentences. Move optional help behind an inline disclosure next to the control. | Persuade: 35 words in the first viewport, 450 on the page. Operate: 150 words of prose per screen. Card paragraphs: 3 lines. |
-| Heading soup (`h1`–`h4` everywhere) | One `h1`. One `h2` per section. Repeated item titles (tiers, features, rows) are `h3` at most on Persuade, labels on Operate. Merge tiny sections. | Persuade: up to `h3` and 16 headings below the `h1`. Operate: up to `h4` and 8 headings in the first viewport. |
+| Heading soup (`h1`-`h4` everywhere) | One `h1`. One `h2` per section. Repeated item titles (tiers, features, rows) are `h3` at most on Persuade, labels on Operate. Merge tiny sections. | Persuade: up to `h3` and 16 headings below the `h1`. Operate: up to `h4` and 8 headings in the first viewport. |
 | Stacked headings | A heading followed directly by a smaller heading means a missing sentence or an extra level. Delete one. | Zero. |
 | Eyebrow or kicker labels | Delete the small uppercase label. Let the heading carry the meaning. A real date, status, or category goes in metadata next to the heading. | Zero on Persuade; advisory on Operate. |
 | Template composition | Start from the product's object and decision, not from hero, three cards, testimonials, and CTA. Change the structure, not the paint. | See the [marketing](marketing.md) compositions. |

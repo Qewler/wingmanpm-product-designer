@@ -159,7 +159,7 @@ export function collectSlopDOM() {
   const h1Vis = firstH1 && visible(firstH1) ? firstH1 : null;
   const h1Px = h1Vis ? px(getComputedStyle(h1Vis).fontSize) : 0;
   const h1Family = h1Vis ? familyOf(getComputedStyle(h1Vis)) : '';
-  const typeEls = [...document.querySelectorAll('body *')].filter(el => ownText(el).replace(/[\s·•|/–—-]/g, '').length > 1 && visible(el) && !el.closest('script,style,noscript,[aria-hidden="true"],svg'));
+  const typeEls = [...document.querySelectorAll('body *')].filter(el => ownText(el).replace(/[\s\p{Pd}·•|/]/gu, '').length > 1 && visible(el) && !el.closest('script,style,noscript,[aria-hidden="true"],svg'));
   const famChars = {}; const fvLarge = new Set(); const fvFamilies = new Set(); const outsized = []; const characterUse = []; let proseChars = 0, monoProse = 0;
   for (const el of typeEls) {
     const s = getComputedStyle(el), r = el.getBoundingClientRect(), fam = familyOf(s), size = px(s.fontSize), n = ownText(el).length;

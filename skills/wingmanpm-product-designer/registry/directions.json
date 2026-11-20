@@ -64,9 +64,9 @@
     {
       "id": "type-wall",
       "name": "Typographic wall",
-      "move": "Display type at 11–16vw owns the first viewport as one unbroken block, set on or cut into the artifact; the live product moment sits directly beneath it or behind it, never between its lines.",
+      "move": "Display type at 11-16vw owns the first viewport as one unbroken block, set on or cut into the artifact; the live product moment sits directly beneath it or behind it, never between its lines.",
       "rhythm": "Each section opens with one oversized word that carries meaning, then the artifact.",
-      "mobile": "Type sets at 18–22vw on two to four lines; the product moment follows the headline as one full-width strip.",
+      "mobile": "Type sets at 18-22vw on two to four lines; the product moment follows the headline as one full-width strip.",
       "suits": [
         "devtool",
         "finance",
@@ -496,7 +496,7 @@
     {
       "id": "assembly",
       "name": "Assembly",
-      "rule": "Parts of the object or document assemble into place once, as the section enters, in a 600–900ms choreographed stagger.",
+      "rule": "Parts of the object or document assemble into place once, as the section enters, in a 600-900ms choreographed stagger.",
       "suits": [
         "finance",
         "hardware",

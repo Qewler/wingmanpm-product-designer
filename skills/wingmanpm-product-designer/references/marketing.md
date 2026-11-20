@@ -25,10 +25,10 @@ Polish without identity loses to a bold page with rough edges. Before any code:
      `name`, `who` (who handles it, when), `looks` (ground, colours, type voice,
      the one mark that makes it recognisable), `family` (the nearest catalog
      family for form vocabulary, or `none`), and `scores`:
-     `native` 0–2 (handled weekly by the audience), `verb` 0–2 (its own verb
-     states the promise: posts, itemizes, files, records), `unswappable` 0–2
-     (no other industry could front with it), `operable` 0–1 (a part the
-     visitor can work: dial, tab, fader, stamp), `silhouette` 0–1 (recognisable
+     `native` 0-2 (handled weekly by the audience), `verb` 0-2 (its own verb
+     states the promise: posts, itemizes, files, records), `unswappable` 0-2
+     (no other industry could front with it), `operable` 0-1 (a part the
+     visitor can work: dial, tab, fader, stamp), `silhouette` 0-1 (recognisable
      at 200px: a disc, a wall drawing, a shelf of colour blocks, not rows in a
      box). Score honestly; the first idea is usually the category's obvious one.
 
@@ -123,7 +123,7 @@ Never build these, whatever the palette (`direction` prints them too):
 - One `h1`, at most 8 words, in the product's own language. Ban: unlock, supercharge,
   seamless, revolutionize, effortless, next-generation, all-in-one, "AI-powered".
 - One supporting sentence of at most 20 words. Two actions at most, the same height
-  (40–48px), primary filled and secondary quiet. 35 words is the ceiling for all
+  (40-48px), primary filled and secondary quiet. 35 words is the ceiling for all
   copy in the first viewport outside the product scene.
 - Show the product working in the first viewport: an HTML scene with real-looking
   Sample data that shows input, transformation, and outcome. Wrap it in
@@ -132,7 +132,7 @@ Never build these, whatever the palette (`direction` prints them too):
 - One element at an extreme scale: the headline at 9vw or more, or the artifact
   cropping off the viewport edge. The headline is always the largest text in the
   first viewport; a total, price, or counter inside the artifact stays smaller
-  than it (the gate fails `outsized-display`). Line-height 0.9–1.05, tracking
+  than it (the gate fails `outsized-display`). Line-height 0.9-1.05, tracking
   −0.02 to −0.05em, `text-wrap: balance`. Break lines where the meaning breaks.
   A cropped artifact starts on the content grid and loses a decisive share (a
   quarter or more) off one edge, never a sliver that reads as an overflow.
@@ -183,7 +183,7 @@ padding is `clamp(4rem, 9vw, 8rem)`, with more space above a heading than below 
 
 These are behaviour contracts. Their look comes from the world.
 
-- **Nav**: 60–64px tall. Logo, at most 5 links, and one action at the same height
+- **Nav**: 60-64px tall. Logo, at most 5 links, and one action at the same height
   as the secondary button. It is sticky and gains a border or surface only after
   scrolling. On mobile a menu button opens a sheet with every link and the action.
   The hero clears it by at least 0.4× the headline size. Logo, links, and action
@@ -198,7 +198,7 @@ These are behaviour contracts. Their look comes from the world.
 - **Code** (developer tools): a palette-derived syntax theme. The copy button shows a
   "Copied" state for 1.5s with an `aria-live` announcement. Tabs are a segmented
   control.
-- **Footer**: compact and muted, with 2–4 link columns and small legal text.
+- **Footer**: compact and muted, with 2-4 link columns and small legal text.
 
 ## Type and color
 
@@ -214,7 +214,7 @@ These are behaviour contracts. Their look comes from the world.
   Space Grotesk, Plus Jakarta Sans, Instrument Sans or Serif, Fraunces,
   Playfair. Use the display face's axes (width, optical size, weight) to make
   the extreme-scale moment feel drawn, not just enlarged.
-- Body text is 16–18px with line-height 1.5–1.6, a measure of at most 68ch, and
+- Body text is 16-18px with line-height 1.5-1.6, a measure of at most 68ch, and
   muted text at a contrast of at least 4.5:1.
 - Apply the direction's colour strategy at page scale, with hues taken from the
   world. A white page with one blue button is the category default. Choose light
@@ -229,7 +229,7 @@ Make one authored moment from the direction's motion signature, tied to the
 signature control. If anything plays by itself, give it a pause control; every
 moment has a complete static end state under `prefers-reduced-motion`. Content is visible by
 default; never leave content at `opacity: 0` waiting for an observer. Section
-reveals, if any, move 12px over 400ms, once. Hovers take 120–180ms with an
+reveals, if any, move 12px over 400ms, once. Hovers take 120-180ms with an
 exponential ease-out.
 
 ## Banned here (enforced by the gate)

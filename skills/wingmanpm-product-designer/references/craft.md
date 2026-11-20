@@ -9,7 +9,7 @@ actions, content, and brand rules, and keep them unless the brief says otherwise
 
 - **Mode.** Persuade (landing, pricing, launch): [marketing](marketing.md).
   Operate (app screens, settings, tables, tools): [controls](controls.md).
-  Read (docs, articles, changelogs): structure for comprehension, 65–75ch measure.
+  Read (docs, articles, changelogs): structure for comprehension, 65-75ch measure.
 - **Copy budget.** Persuade: at most 35 words in the first viewport, at most 450
   words of body copy. Operate: at most 150 words of explanatory prose per screen,
   helpers one line. Labels, data, and states carry meaning; paragraphs rarely do.
@@ -17,13 +17,13 @@ actions, content, and brand rules, and keep them unless the brief says otherwise
   section. Never a heading followed directly by a smaller heading. No eyebrow or
   kicker labels above headings. Item titles in repeated rows are labels, not
   headings.
-- **Composition.** At 1280–1440px content fills a fluid grid or sits centered in
+- **Composition.** At 1280-1440px content fills a fluid grid or sits centered in
   one container; no columns stopping short with a dead gutter. In a split hero,
   align the supporting column to the headline's top or last baseline, never
   floating at its vertical center.
 - **Geometry.** One spacing scale (4px base). One control-height scale (28/32/40).
   Every control in a row shares height and center within 1px. Body copy is 16px on
-  Persuade and 13–14px on Operate. Prose measure is at most 75ch.
+  Persuade and 13-14px on Operate. Prose measure is at most 75ch.
 - **Components.** Every dropdown is a styled popup with the full keyboard contract in
   [controls](controls.md). No unstyled native selects or checkboxes. Every
   button-like element has hover, focus-visible, active, and disabled styles.
