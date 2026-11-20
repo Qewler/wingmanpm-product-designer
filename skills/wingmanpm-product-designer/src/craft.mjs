@@ -3,6 +3,7 @@ import { pathToFileURL } from 'node:url';
 import { readFile, realpath, mkdir, writeFile, rename } from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
+import { assessSlop, collectSlopDOM, probeMenus } from './slop.mjs';
 
 const inside = (root, target) => { const r = path.relative(root, target); return !r.startsWith('..' + path.sep) && r !== '..' && !path.isAbsolute(r); };
 const localURL = (value) => { const u = new URL(value); if (!['http:', 'https:'].includes(u.protocol) || !['localhost', '127.0.0.1', '[::1]'].includes(u.hostname) || u.username || u.password) throw new Error('Craft only accepts loopback HTTP URLs.'); return u; };
@@ -60,7 +61,7 @@ export function assessCraftDOM(snapshot) {
   return findings;
 }
 
-export async function runCraft({ project = process.cwd(), file, url, browserModule, cdp, out, viewports = [{ width: 1440, height: 960 }, { width: 390, height: 844 }] }) {
+export async function runCraft({ project = process.cwd(), file, url, browserModule, cdp, out, mode = 'auto', slop = true, viewports = [{ width: 1440, height: 960 }, { width: 390, height: 844 }] }) {
   if (Boolean(file) === Boolean(url)) throw new Error('Provide exactly one of file or url.');
   project = await realpath(project);
   let target;
@@ -73,7 +74,7 @@ export async function runCraft({ project = process.cwd(), file, url, browserModu
     for (;;) { try { if (!inside(project, await realpath(parent))) throw new Error('Craft output parent escapes the project.'); break; } catch (error) { if (error.code !== 'ENOENT') throw error; parent = path.dirname(parent); } }
     await mkdir(path.dirname(out), { recursive: true });
   }
-  const report = { status: 'unverified', findings: [], viewports: [], scope: 'Quick rendered craft check. Not a full accessibility audit, interaction test, or shipping gate.' };
+  const report = { status: 'unverified', findings: [], viewports: [], scope: 'Rendered craft and anti-slop check: contrast, overflow, navigation, copy and heading budgets, control alignment, component states, and popup keyboard behavior. Not a full accessibility audit or shipping gate.' };
   let server, browser, context, page;
   try {
     let modulePath = browserModule;
@@ -98,6 +99,14 @@ export async function runCraft({ project = process.cwd(), file, url, browserModu
       await page.setViewportSize(viewport); const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 20000 }); await page.evaluate(() => document.fonts.ready);
       const snapshot = await page.evaluate(collectCraftDOM);
       const findings = assessCraftDOM(snapshot);
+      if (slop) {
+        const slopSnapshot = await page.evaluate(collectSlopDOM);
+        const wide = !desktop;
+        const probe = wide ? await page.evaluate(probeMenus) : null;
+        const assessed = assessSlop(slopSnapshot, probe, mode);
+        report.mode = report.mode || assessed.mode;
+        findings.push(...(wide ? assessed.findings : assessed.findings.filter(f => ['control-misalign', 'card-paragraph', 'small-target', 'clipped-control', 'covered-text', 'cramped-hero', 'outsized-display', 'split-headline', 'edge-cut-text', 'hidden-visible', 'clipped-text', 'control-contrast', 'truncated-text'].includes(f.code))).filter(f => f.code !== 'page-overflow'));
+      }
       if (response && !response.ok()) findings.push({ code: 'http-error', severity: 'failure', message: `The requested page returned HTTP ${response.status()}.` });
       if (!snapshot.texts.length) findings.push({ code: 'no-readable-content', severity: 'unverified', message: 'No readable HTML text was observed; inspect custom rendering or the loading state with the host browser.' });
       if (new URL(page.url()).origin !== new URL(url).origin) findings.push({ code: 'target-changed', severity: 'unverified', message: 'The browser redirected away from the requested app.' });
@@ -117,7 +126,7 @@ export async function runCraft({ project = process.cwd(), file, url, browserModu
       report.findings.push(...findings.map(f => ({ ...f, width: viewport.width })));
     }
     for (const message of new Set(errors)) report.findings.push({ code: 'browser-error', severity: 'failure', message });
-    report.status = report.findings.some(f => f.severity === 'failure') ? 'failed' : report.findings.length ? 'unverified' : 'passed';
+    report.status = report.findings.some(f => f.severity === 'failure') ? 'failed' : report.findings.some(f => f.severity === 'unverified') ? 'unverified' : 'passed';
   } catch (error) { report.findings.push({ code: 'browser-check-incomplete', severity: 'unverified', message: error.message }); report.status = report.findings.some(f => f.severity === 'failure') ? 'failed' : 'unverified'; }
   finally {
     await page?.close().catch(() => {});
