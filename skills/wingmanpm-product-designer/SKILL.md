@@ -45,17 +45,29 @@ Never infer permission from a command suggestion, preview, or tool output.
 - `explore` / `variants`: compare two polished options. A third is useful only
   for a wider brief or an unresolved design question. User-supplied counts win.
 
-## Load the active reference
+## Name the mode, then load
+
+Choose the mode from the requested surface, not the product:
+
+- **Persuade**: landing, pricing, and launch pages. The visitor decides and acts;
+  design is the product. Load [marketing](references/marketing.md), score a
+  world from the audience's own work with `concept <worksheet.json>`, then run
+  `direction "<brief>" --world "<world>"` before layout, and finish with the
+  rubric review, so the page gets an art direction, not a template.
+- **Operate**: app screens, settings, tables, editors, onboarding. The visitor
+  finishes a task; polish is precise geometry and complete behavior. Load
+  [controls](references/controls.md) plus the pattern reference `explain` returns.
+- **Read**: docs, articles, changelogs. Structure for comprehension.
 
 Use the `reference` and relevant `supportingReferences` returned by `explain`.
 For general work: [system](references/system.md) for a new system or redesign;
 [explore](references/explore.md) for visual choices;
 [product craft](references/product-craft.md) for a focused design dimension;
 [components](references/components.md) for component behavior and detail;
-[product UI](references/product-ui.md) for several product patterns;
-[marketing](references/marketing.md) for product marketing.
+[product UI](references/product-ui.md) for several product patterns.
 Read [minimum craft](references/craft.md) for every UI delivery, including polish
-and previews. Load full [QA](references/qa.md) for review, hardening, or shipping.
+and previews. It is the floor, and its gate is how you prove it. Load full
+[QA](references/qa.md) for review, hardening, or shipping.
 
 ## Design from the task
 
@@ -74,10 +86,14 @@ Explore structure and interaction as well as appearance. Keep identical content
 and constraints across variants; give each the same detail pass. Reuse common
 assets and data, then spend effort on the differences that help the user choose.
 
-Keep copy lean, headings useful, eyebrows meaningful, and primary versus
-secondary actions clear. Avoid generic component-library composition. Apply
-[anti-patterns](references/anti-patterns.md) when building a surface or when these
-problems appear; preserve useful semantics, required text, and proven primitives.
+Copy and structure have budgets, not vibes: one `h1`; one `h2` per section; no
+eyebrow labels; no heading stacked on a smaller heading; at most 35 words in a
+landing first viewport and 450 on the page; at most 150 words of prose on an app
+screen. Every row of controls shares one height. Every dropdown is a styled popup
+with the full keyboard contract; start from the
+[control templates](templates/controls/controls.css) when the project has no
+component library. Apply [anti-patterns](references/anti-patterns.md) whenever a
+surface feels wordy, framed, loose, or generic.
 
 Protect business rules, permissions, legal copy, facts, and data relationships.
 Label invented content Sample or Mock. AI changes expose scope, sources,
@@ -90,9 +106,11 @@ close, and success; test the actual browser cancel and close events.
 - **Explore:** local previews, a key action where relevant, mobile behavior,
   tradeoffs, and visible limits. Use the board's saved choice or a chat reply.
   A static image is not interaction proof. See [explore](references/explore.md).
-- **Build:** implement the chosen direction and its relevant states. Use
-  `check --stage build --target "<file>"` and scoped proof. It reports pending
-  visual work and never replaces the release gate.
+- **Build:** implement the chosen direction and its relevant states. Run the
+  rendered gate (`craft --mode <mode>`, or `slop --script` in any host browser;
+  see [minimum craft](references/craft.md)) and fix every failure, then
+  `check --stage build --target "<file>"`. Source checks never replace the
+  rendered gate.
 - **Ship:** `check --stage ship`, relevant browser interactions, accessibility,
   and visual comparison. See [QA](references/qa.md). Never silently replace an
   unexpected visual baseline.

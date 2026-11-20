@@ -47,7 +47,7 @@ test('help lists the five lifecycle commands', () => {
   for (const command of ['install', 'init', 'check', 'doctor', 'uninstall']) assert.match(result.stdout, new RegExp(command));
 });
 
-test('commands exposes the 19 intent families as text and JSON', () => {
+test('commands exposes the 21 intent families as text and JSON', () => {
   const textResult = run(['commands'], root);
   assert.equal(textResult.status, 0, textResult.stderr);
   assert.match(textResult.stdout, /polish \/ beautiful/);
@@ -57,7 +57,7 @@ test('commands exposes the 19 intent families as text and JSON', () => {
   const jsonResult = run(['commands', '--json'], root);
   assert.equal(jsonResult.status, 0, jsonResult.stderr);
   const commands = JSON.parse(jsonResult.stdout);
-  assert.equal(commands.length, 19);
+  assert.equal(commands.length, 21);
   assert.equal(commands.find(({ id }) => id === 'standout').aliases[0], 'stunning');
 });
 
