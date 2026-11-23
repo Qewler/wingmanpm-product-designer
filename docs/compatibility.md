@@ -1,6 +1,6 @@
 # Compatibility and current evidence
 
-Version `1.2.0` is prepared for release on 2026-11-23; the current public version is `1.1.0`, released on 2026-09-05. The detailed
+The current public version is `1.2.0`, released on 2026-11-23. The detailed
 fixture baseline below was recorded for version `1.0.0` on 2026-08-31 with
 Node.js 24.18.0 and npm 11.16.0. Public fixture evidence comes only from the
 committed Tamarack FieldOps fixture, which is always marked `Concept demo`.
