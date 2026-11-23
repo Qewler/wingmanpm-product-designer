@@ -61,7 +61,7 @@ try {
       }
       const cli = path.join(installed, 'bin', 'wingman-design.mjs');
       assert.match(run(process.execPath, [cli, '--help'], consumer), /wingman-design init/);
-      assert.equal(JSON.parse(run(process.execPath, [cli, 'commands', '--json'], consumer)).length, 19);
+      assert.equal(JSON.parse(run(process.execPath, [cli, 'commands', '--json'], consumer)).length, 21);
       run(process.execPath, [cli, 'search', 'contrast'], consumer);
     }
 
