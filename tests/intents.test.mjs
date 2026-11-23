@@ -14,14 +14,14 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-test('registry exposes all 19 unique SaaS intent families and aliases', () => {
+test('registry exposes all 21 unique SaaS intent families and aliases', () => {
   const expected = [
     'polish', 'standout', 'amplify', 'calm', 'simplify', 'layout',
     'typography', 'color', 'motion', 'responsive', 'harden', 'review',
-    'data-table', 'forms', 'onboarding', 'ai-flow', 'navigation', 'design-system', 'explore'
+    'data-table', 'forms', 'onboarding', 'ai-flow', 'navigation', 'design-system', 'landing', 'controls', 'explore'
   ];
   assert.deepEqual(COMMANDS.map(({ id }) => id), expected);
-  assert.equal(new Set(COMMANDS.flatMap(({ id, aliases }) => [id, ...aliases]).map(normalizeAlias)).size, 38);
+  assert.equal(new Set(COMMANDS.flatMap(({ id, aliases }) => [id, ...aliases]).map(normalizeAlias)).size, 44);
   assert.deepEqual(COMMAND_LEVELS, ['refine', 'elevate', 'reimagine']);
   assert.equal(listCommands().length, expected.length);
 });
@@ -128,7 +128,7 @@ test('command registry carries progressive references and source citations', asy
   assert.equal(packageLock.version, registry.version);
   assert.equal(packageLock.packages[''].version, registry.version);
   assert.match(skill, /version: 1\.1\.0/);
-  assert.equal(registry.intents.length, 19);
+  assert.equal(registry.intents.length, 21);
   assert.ok(registry.sources.every(({ url }) => url.startsWith('https://')));
   assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
   for (const command of registry.intents) {

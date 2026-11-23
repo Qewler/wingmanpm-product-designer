@@ -18,6 +18,8 @@ const frame = (title, styles, body, script = '') => `<!doctype html>
     header, main { width: min(900px, 100%); margin: auto; padding: 24px; }
     nav { display: flex; align-items: center; gap: 20px; }
     nav a { color: rgb(20, 20, 20); }
+    a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid rgb(31, 41, 55); outline-offset: 2px; }
+    ::selection { background: rgb(31, 41, 55); color: rgb(255, 255, 255); }
     ${styles}
   </style>
 </head>

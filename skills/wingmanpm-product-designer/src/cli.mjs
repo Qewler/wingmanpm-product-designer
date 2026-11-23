@@ -1,8 +1,11 @@
 import { updateSkill } from './update.mjs';
 import { readContext } from './context.mjs';
 import { runCraft } from './craft.mjs';
+import { assessSlop, slopScript } from './slop.mjs';
 import { createExploration, inspectExploration, chooseExploration, serveExploration } from './explore.mjs';
 import { getPattern, searchPatterns } from './patterns.mjs';
+import { drawDirections, formatDirections } from './direction.mjs';
+import { checkConcept, formatConcept } from './concept.mjs';
 import { checkStage, runProof } from './stages.mjs';
 import { evidencePlan } from './evidence.mjs';
 import { cp, lstat, mkdir, readFile, readdir, realpath, rm, rmdir, stat } from 'node:fs/promises';
@@ -52,8 +55,12 @@ Usage:
   wingman-design commands [--json]
   wingman-design explain PHRASE [--explicit] [--level refine|elevate|reimagine] [--fix] [--json]
   wingman-design search TERMS [--domain NAME] [--json]
-  wingman-design craft --file PATH|--url URL [--browser-module PATH] [--cdp URL] [--out PATH] [--project PATH] [--json]
+  wingman-design craft --file PATH|--url URL [--mode auto|persuade|operate|read] [--browser-module PATH] [--cdp URL] [--out PATH] [--project PATH] [--json]
+  wingman-design slop --script [--no-probe]   (print a browser-evaluable gate script for any host browser)
+  wingman-design slop --snapshot FILE [--mode auto|persuade|operate|read] [--json]
   wingman-design patterns [QUERY WORDS] [--id ID] [--limit 1..5] [--json]
+  wingman-design concept WORKSHEET.json [--seed N] [--json]   (score audience-native world candidates and deal the art-direction world)
+  wingman-design direction BRIEF WORDS [--world "OBJECT"] [--family ID] [--seed N] [--count 2..4] [--json]   (draw composition, type, colour, and motion for that world)
 
 Required review confirmation list:
   keyboard,zoom200,reducedMotion,longContent,light,dark,axe,responsiveStates,structureUnique,dropdownContrast
@@ -1206,6 +1213,24 @@ function formatFinding(finding) {
   return label ? `${label}: ${message}` : message;
 }
 
+async function slopCommand(positional, flags) {
+  if (positional.length) throw new Error('Slop accepts --script or --snapshot, not positional input.');
+  if (flags.script !== undefined) { console.log(slopScript({ probe: flags['no-probe'] === undefined })); return; }
+  if (flags.snapshot === undefined) throw new Error('Slop needs --script or --snapshot FILE.');
+  const mode = flags.mode ?? 'auto';
+  if (!['auto', 'persuade', 'operate', 'read'].includes(mode)) throw new Error('Slop --mode must be auto, persuade, operate, or read.');
+  let data = JSON.parse(await readFile(path.resolve(String(flags.snapshot)), 'utf8'));
+  if (typeof data === 'string') data = JSON.parse(data);
+  const snapshot = data.snapshot ?? data;
+  if (!snapshot || !Array.isArray(snapshot.headings)) throw new Error('Slop snapshot must come from the slop --script output.');
+  const result = assessSlop(snapshot, data.probe ?? null, mode);
+  logJsonOrText(result, Boolean(flags.json), (value) => [
+    `Slop ${value.status} (${value.mode}): ${value.findings.length} finding${value.findings.length === 1 ? '' : 's'}.`,
+    ...value.findings.map((finding) => `  ${finding.severity} ${finding.code}: ${finding.message}`)
+  ].join('\n'));
+  if (result.status === 'failed') process.exitCode = 1;
+}
+
 async function craftCommand(positional, flags) {
   if (positional.length) throw new Error('Craft accepts --file or --url, not positional input.');
   const hasFile = flags.file !== undefined;
@@ -1225,7 +1250,9 @@ async function craftCommand(positional, flags) {
     ? undefined
     : await validateProjectPath(project, flags.out, 'Craft --out');
 
-  const result = await runCraft({ project, file, url, browserModule, cdp, out });
+  const mode = flags.mode ?? 'auto';
+  if (!['auto', 'persuade', 'operate', 'read'].includes(mode)) throw new Error('Craft --mode must be auto, persuade, operate, or read.');
+  const result = await runCraft({ project, file, url, browserModule, cdp, out, mode });
   if (!['passed', 'failed', 'unverified'].includes(result?.status)) {
     throw new Error('Craft returned an invalid status.');
   }
@@ -1277,6 +1304,30 @@ function patternsCommand(positional, flags) {
     ? items.map(formatPattern).join('\n')
     : 'No matching pattern.');
   return patterns;
+}
+
+function directionCommand(positional, flags) {
+  const toInt = (value, fallback) => value === undefined ? fallback
+    : typeof value === 'number' ? value : /^\d+$/.test(String(value)) ? Number(value) : NaN;
+  const seed = toInt(flags.seed, 0);
+  const count = toInt(flags.count, 3);
+  if (!Number.isInteger(seed)) throw new Error('Direction --seed must be a non-negative integer.');
+  const result = drawDirections(positional.join(' '), { seed, count, world: flags.world ? String(flags.world) : null, family: flags.family ? String(flags.family) : null });
+  logJsonOrText(result, Boolean(flags.json), formatDirections);
+  return result;
+}
+
+async function conceptCommand(positional, flags) {
+  const file = positional[0];
+  if (!file) throw new Error('Concept needs a worksheet: concept worksheet.json (see references/marketing.md, "Art direction before layout").');
+  let sheet;
+  try { sheet = JSON.parse(await readFile(path.resolve(file), 'utf8')); } catch (error) { throw new Error(`Could not read the worksheet ${file}: ${error.message}`); }
+  const seed = flags.seed === undefined ? 0 : Number(flags.seed);
+  if (!Number.isInteger(seed) || seed < 0) throw new Error('Concept --seed must be a non-negative integer.');
+  const result = checkConcept(sheet, { seed });
+  logJsonOrText(result, Boolean(flags.json), formatConcept);
+  if (!result.ok) process.exitCode = 2;
+  return result;
 }
 
 function commandCatalog(flags) {
@@ -1392,6 +1443,9 @@ export async function runCli(argv = process.argv.slice(2)) {
   if (command === 'explain') return explainCommand(positional, flags);
   if (command === 'search') return searchRegistry(positional, flags);
   if (command === 'craft') return craftCommand(positional, flags);
+  if (command === 'slop') return slopCommand(positional, flags);
   if (command === 'patterns') return patternsCommand(positional, flags);
+  if (command === 'direction') return directionCommand(positional, flags);
+  if (command === 'concept') return conceptCommand(positional, flags);
   throw new Error(`Unknown command: ${command}\n\n${help}`);
 }

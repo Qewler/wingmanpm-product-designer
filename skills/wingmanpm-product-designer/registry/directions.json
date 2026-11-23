@@ -1,0 +1,794 @@
+{
+  "version": 1,
+  "banned": [
+    {
+      "id": "split-straddle",
+      "fingerprint": "A two-line headline on the left, the lede and two buttons in a right column, and a framed app window straddling a full-bleed colour band below.",
+      "why": "Every SaaS page since 2019. A new palette does not make it new."
+    },
+    {
+      "id": "centered-stack",
+      "fingerprint": "A centered headline and buttons over a centered screenshot, followed by three equal icon cards.",
+      "why": "The template that templates are made from."
+    },
+    {
+      "id": "headline-left-object-right",
+      "fingerprint": "A big headline with lede and buttons on the left and a product card, device render, or document on the right.",
+      "why": "The second most common hero after the split-straddle; the object is a prop, not the world."
+    },
+    {
+      "id": "accent-last-line",
+      "fingerprint": "The last line or word of the headline switched to the accent colour.",
+      "why": "A colour swap is the cheapest emphasis there is; take emphasis from the world instead."
+    },
+    {
+      "id": "section-kit",
+      "fingerprint": "Numbered how-it-works rows, rounded pricing cards with one dark recommended plan, a plain chevron FAQ list, and a two-column footer in sequence.",
+      "why": "The kit makes every product page a sibling of every other."
+    },
+    {
+      "id": "headline-stack",
+      "fingerprint": "A giant full-width headline, then the lede on the left with buttons on the right, then the demo panel below.",
+      "why": "The template that replaced the split-straddle once colours and worlds changed."
+    },
+    {
+      "id": "borrowed-motifs",
+      "fingerprint": "Torn edges, perforations, barcodes, sprocket holes, or screw heads on a page whose world is not that artifact.",
+      "why": "The default 'material' costume; it blurs the one world the page commits to."
+    },
+    {
+      "id": "split-headline",
+      "fingerprint": "A headline broken in two with a product band, card, or strip laid between its lines.",
+      "why": "Round 7 judges blamed it for every hierarchy point lost; the variety review saw it repeated across pages."
+    },
+    {
+      "id": "pale-panel",
+      "fingerprint": "A giant headline at top left on a pale grey or off-white page over a framed app panel (border, shadow, title bar), whatever the world.",
+      "why": "Round 7 variety review: the shared Wingman skeleton."
+    }
+  ],
+  "compositions": [
+    {
+      "id": "stage-first",
+      "name": "Product as stage",
+      "move": "The working product scene fills the first viewport edge to edge; the headline is set inside the scene's own frame, like a window title, a plate, or a caption on the stage.",
+      "rhythm": "Later sections zoom into one region of the same scene at a larger scale, so the page reads as one continuous product.",
+      "mobile": "The scene shows one pane; the headline sits above it, and the pane tabs live inside the frame.",
+      "suits": [
+        "b2b",
+        "devtool",
+        "data"
+      ],
+      "risk": "Fails if the scene is a static screenshot or a dashboard collage."
+    },
+    {
+      "id": "type-wall",
+      "name": "Typographic wall",
+      "move": "Display type at 11-16vw owns the first viewport as one unbroken block, set on or cut into the artifact; the live product moment sits directly beneath it or behind it, never between its lines.",
+      "rhythm": "Each section opens with one oversized word that carries meaning, then the artifact.",
+      "mobile": "Type sets at 18-22vw on two to four lines; the product moment follows the headline as one full-width strip.",
+      "suits": [
+        "devtool",
+        "finance",
+        "b2b",
+        "creative"
+      ],
+      "risk": "Fails when the line breaks fall where the words do, not where the meaning does."
+    },
+    {
+      "id": "specimen-index",
+      "name": "Specimen index",
+      "move": "The page is a catalogue: a large title, then an index of the product's real parts (sensors, rules, capabilities), each row a specimen with its own small live scene at a different scale.",
+      "rhythm": "Rows alternate scale and density; one row expands into a full-bleed spread.",
+      "mobile": "Each specimen becomes a full-width card with its scene on top and a one-line label.",
+      "suits": [
+        "hardware",
+        "finance",
+        "devtool",
+        "data"
+      ],
+      "risk": "Fails if the rows become equal cards; vary scale or it is a feature grid."
+    },
+    {
+      "id": "object-hero",
+      "name": "Headline on the artifact",
+      "move": "One artifact of the world fills the first viewport at a scale that crops off at least one edge; the headline and actions are set on its surface: printed on the face, stamped on the sheet, posted on the board.",
+      "rhythm": "The artifact returns in later sections, cut away, annotated, or continued (the next page of the register, the rest of the roll).",
+      "mobile": "The artifact fills the width and keeps the headline on its surface; secondary detail moves below it.",
+      "suits": [
+        "hardware",
+        "finance",
+        "consumer"
+      ],
+      "risk": "Fails as clip art or as a render beside the headline; it must carry the headline and the product's output."
+    },
+    {
+      "id": "sticky-sequence",
+      "name": "Scroll sequence",
+      "move": "A sticky stage holds one product scene while the copy scrolls past it in steps; each step changes the scene (a day passes, a request is traced, an invoice is issued and paid).",
+      "rhythm": "The sequence is the how-it-works section; everything before it is short and everything after it is quiet.",
+      "mobile": "A stepper with the stage above and Previous / Next controls; never a long scroll past an empty pinned panel.",
+      "suits": [
+        "consumer",
+        "hardware",
+        "finance",
+        "b2b"
+      ],
+      "risk": "Fails with empty stretches; every step must change the stage, and the step list stays dense."
+    },
+    {
+      "id": "instrument",
+      "name": "The page is an instrument",
+      "move": "One large visitor-operated control (dial, slider, timeline scrubber, toggle) drives a full-width visualization of the product's result; the headline names what the control changes.",
+      "rhythm": "Later sections re-use the same control language at smaller scale (pricing seats, plan toggle).",
+      "mobile": "The control spans the full width at a 44px or larger hit area, directly under the visualization it drives.",
+      "suits": [
+        "hardware",
+        "data",
+        "finance",
+        "devtool"
+      ],
+      "risk": "Fails if the control changes nothing meaningful or needs instructions."
+    },
+    {
+      "id": "artifact-thread",
+      "name": "Artifact thread",
+      "move": "The story is told by real-looking artifacts in one column: messages, receipts, logs, tickets, at their native sizes and materials, each one annotated with a single line.",
+      "rhythm": "The column widens at two moments into full-bleed spreads where artifacts collect into the product's outcome.",
+      "mobile": "Native: the column is already phone-shaped; annotations move from the margin to above each artifact.",
+      "suits": [
+        "b2b",
+        "finance",
+        "consumer"
+      ],
+      "risk": "Fails if artifacts are generic cards; each needs its own material and anatomy."
+    },
+    {
+      "id": "broadsheet",
+      "name": "Broadsheet grid",
+      "move": "A strict 12-column editorial grid with a masthead, a lead story (the thesis with the product scene as its photograph), and secondary columns at different widths.",
+      "rhythm": "Column structure changes per section (8/4, 3/9, 6/6) while the baseline grid stays fixed.",
+      "mobile": "One column with the masthead compressed; secondary stories become collapsible sections.",
+      "suits": [
+        "finance",
+        "data",
+        "b2b"
+      ],
+      "risk": "Avoid italic serif with mono kicker labels; that is the AI editorial cluster."
+    }
+  ],
+  "type": [
+    {
+      "id": "archivo-expanded",
+      "display": "Archivo (wdth 125, wght 800)",
+      "text": "Archivo (wdth 100)",
+      "voice": "industrial, engineered, confident",
+      "suits": [
+        "devtool",
+        "hardware",
+        "b2b"
+      ],
+      "use": "The display face sets the h1 and section heads; prices, times, and body use the text face with tabular figures."
+    },
+    {
+      "id": "big-shoulders",
+      "display": "Big Shoulders Display (800)",
+      "text": "Onest",
+      "voice": "signage, civic, instruments",
+      "suits": [
+        "hardware",
+        "data",
+        "consumer"
+      ],
+      "use": "The display face sets the h1 and section heads; prices, times, and body use the text face with tabular figures."
+    },
+    {
+      "id": "gloock-schibsted",
+      "display": "Gloock",
+      "text": "Schibsted Grotesk",
+      "voice": "editorial authority without fuss",
+      "suits": [
+        "finance",
+        "b2b",
+        "data"
+      ],
+      "use": "The display face sets the h1 and section heads; prices, times, and body use the text face with tabular figures."
+    },
+    {
+      "id": "young-geologica",
+      "display": "Young Serif",
+      "text": "Geologica",
+      "voice": "warm, domestic, trustworthy",
+      "suits": [
+        "consumer",
+        "hardware",
+        "finance"
+      ],
+      "use": "The display face sets the h1 and section heads; prices, times, and body use the text face with tabular figures."
+    },
+    {
+      "id": "bodoni-familjen",
+      "display": "Bodoni Moda (opsz 96)",
+      "text": "Familjen Grotesk",
+      "voice": "precise, high contrast, premium",
+      "suits": [
+        "finance",
+        "consumer",
+        "creative"
+      ],
+      "use": "The display face sets the h1 and section heads; prices, times, and body use the text face with tabular figures."
+    },
+    {
+      "id": "funnel",
+      "display": "Funnel Display (800)",
+      "text": "Funnel Sans",
+      "voice": "contemporary, rounded, product-led",
+      "suits": [
+        "b2b",
+        "consumer",
+        "devtool"
+      ],
+      "use": "The display face sets the h1 and section heads; prices, times, and body use the text face with tabular figures."
+    },
+    {
+      "id": "bricolage-hanken",
+      "display": "Bricolage Grotesque (opsz 96, wght 700)",
+      "text": "Hanken Grotesk",
+      "voice": "characterful, friendly-technical",
+      "suits": [
+        "b2b",
+        "consumer",
+        "creative"
+      ],
+      "use": "The display face sets the h1 and section heads; prices, times, and body use the text face with tabular figures."
+    },
+    {
+      "id": "anybody",
+      "display": "Anybody (wdth 150, wght 800)",
+      "text": "Anybody (wdth 100)",
+      "voice": "elastic, playful-technical",
+      "suits": [
+        "devtool",
+        "creative",
+        "data"
+      ],
+      "use": "The display face sets the h1 and section heads; prices, times, and body use the text face with tabular figures."
+    },
+    {
+      "id": "newsreader-public",
+      "display": "Newsreader (opsz 72, wght 600)",
+      "text": "Public Sans",
+      "voice": "civic, documentary, plain-spoken",
+      "suits": [
+        "finance",
+        "b2b",
+        "consumer"
+      ],
+      "use": "The display face sets the h1 and section heads; prices, times, and body use the text face with tabular figures."
+    },
+    {
+      "id": "geist",
+      "display": "Geist (wght 600, tracking -0.04em)",
+      "text": "Geist, with Geist Mono only for code",
+      "voice": "quiet engineering",
+      "suits": [
+        "devtool",
+        "data"
+      ],
+      "use": "The display face sets the h1 and section heads; prices, times, and body use the text face with tabular figures."
+    },
+    {
+      "id": "dot-matrix",
+      "display": "Doto (wght 800)",
+      "text": "IBM Plex Sans, with Martian Mono for measured values",
+      "voice": "printed by a machine",
+      "suits": [
+        "devtool",
+        "finance",
+        "data"
+      ],
+      "character": true,
+      "use": "Doto sets the h1 and one signature line only. Section heads, prices, times, and body stay in IBM Plex Sans; Martian Mono only for measured values."
+    },
+    {
+      "id": "typewriter",
+      "display": "Courier Prime (700) at display size",
+      "text": "Archivo",
+      "voice": "typed form, clerical, exact",
+      "suits": [
+        "finance",
+        "b2b"
+      ],
+      "character": true,
+      "use": "Courier Prime sets the h1 and the artifact's own metadata (docket lines, form fields). Section heads and body stay in Archivo."
+    },
+    {
+      "id": "stencil",
+      "display": "Big Shoulders Stencil Display (800)",
+      "text": "Barlow",
+      "voice": "crated, shipped, industrial",
+      "suits": [
+        "hardware",
+        "devtool"
+      ],
+      "character": true,
+      "use": "The stencil sets the h1 and one label on the artifact. Section heads, prices, and body stay in Barlow."
+    }
+  ],
+  "color": [
+    {
+      "id": "drenched",
+      "name": "Drenched",
+      "rule": "The page is one saturated hue at 60% or more of its area; text is near-black or white at full contrast; one neutral surface holds the product scene.",
+      "suits": [
+        "consumer",
+        "b2b",
+        "creative",
+        "hardware"
+      ]
+    },
+    {
+      "id": "deep-stage",
+      "name": "Deep coloured stage",
+      "rule": "A dark field in a chromatic hue (ink blue, oxblood, forest, aubergine), never near-black with neon; the product scene is the brightest thing on the page.",
+      "suits": [
+        "devtool",
+        "hardware",
+        "data"
+      ]
+    },
+    {
+      "id": "paper-spot",
+      "name": "Paper, ink, one spot",
+      "rule": "The world's own paper (manila, newsprint, ledger buff, kraft) at a visible tint, true ink, and one spot colour used on 5% of the page or less, always on the thing that matters (the action, the alert, the total). Never a neutral near-white.",
+      "suits": [
+        "finance",
+        "b2b",
+        "creative"
+      ]
+    },
+    {
+      "id": "semantic-palette",
+      "name": "Semantic palette as brand",
+      "rule": "The product's own status scale (air quality bands, VAT rules, severity, sentiment) becomes the brand palette; every colour on the page means something.",
+      "suits": [
+        "hardware",
+        "finance",
+        "data",
+        "devtool"
+      ]
+    },
+    {
+      "id": "duotone",
+      "name": "Duotone",
+      "rule": "Two inks only, plus paper; every graphic, chart, and illustration is drawn in those two, including the product scene's accents.",
+      "suits": [
+        "creative",
+        "consumer",
+        "devtool"
+      ]
+    },
+    {
+      "id": "tonal",
+      "name": "Tonal monochrome",
+      "rule": "One hue in six or more tints and shades carries every surface; contrast comes from value, not from a second colour.",
+      "suits": [
+        "b2b",
+        "consumer",
+        "finance"
+      ]
+    },
+    {
+      "id": "committed-band",
+      "name": "Committed bands",
+      "rule": "Full-bleed bands of one saturated hue alternate with paper; the bands carry the product moments. Not under a straddling app window.",
+      "suits": [
+        "b2b",
+        "devtool",
+        "finance"
+      ]
+    }
+  ],
+  "devices": [
+    {
+      "id": "rulers",
+      "name": "Measurement rulers",
+      "rule": "Tick marks, scales, and axis labels with real units frame sections and the product scene.",
+      "suits": [
+        "hardware",
+        "devtool",
+        "data"
+      ]
+    },
+    {
+      "id": "numerals",
+      "name": "Numerals as ornament",
+      "rule": "One true number per section, set large inside the artifact with tabular figures in the text face (412 ms, 9 EUR, 800 ppm), and always smaller than that section's heading.",
+      "suits": [
+        "finance",
+        "data",
+        "hardware",
+        "devtool"
+      ]
+    },
+    {
+      "id": "cutaway",
+      "name": "Cutaway diagram",
+      "rule": "An SVG cutaway or exploded view of the object with leader lines and labels explains how it works.",
+      "suits": [
+        "hardware",
+        "devtool"
+      ]
+    },
+    {
+      "id": "paper-artifacts",
+      "name": "Paper artifacts",
+      "rule": "Receipt edges, perforations, stamps, and folds give documents a material; one artifact per section at most.",
+      "suits": [
+        "finance",
+        "b2b",
+        "consumer"
+      ]
+    },
+    {
+      "id": "annotations",
+      "name": "Margin annotations",
+      "rule": "Short handwritten-weight notes with leader lines point at exact parts of the product scene instead of separate feature copy.",
+      "suits": [
+        "b2b",
+        "devtool",
+        "finance",
+        "creative"
+      ]
+    },
+    {
+      "id": "signal",
+      "name": "Signal traces",
+      "rule": "Waveforms, sparklines, or level meters drawn from the Sample data run through the page as connective tissue.",
+      "suits": [
+        "hardware",
+        "data",
+        "devtool"
+      ]
+    },
+    {
+      "id": "grid-visible",
+      "name": "Visible grid",
+      "rule": "The layout grid is drawn as hairlines and becomes structure; content snaps to it and occasionally breaks it on purpose.",
+      "suits": [
+        "creative",
+        "data",
+        "finance"
+      ]
+    },
+    {
+      "id": "index-tabs",
+      "name": "Index tabs",
+      "rule": "Physical-looking tabs (folder, binder, ledger) organize sections and act as navigation.",
+      "suits": [
+        "finance",
+        "b2b"
+      ]
+    }
+  ],
+  "motion": [
+    {
+      "id": "scrubbed",
+      "name": "Scroll-scrubbed sequence",
+      "rule": "Scroll position drives one product sequence on a sticky stage; reduced motion shows each step inline.",
+      "suits": [
+        "consumer",
+        "hardware",
+        "b2b"
+      ]
+    },
+    {
+      "id": "instrument",
+      "name": "Visitor-driven instrument",
+      "rule": "The visitor drags, toggles, or scrubs one control and the scene responds within 100ms with eased interpolation.",
+      "suits": [
+        "hardware",
+        "data",
+        "finance",
+        "devtool"
+      ]
+    },
+    {
+      "id": "assembly",
+      "name": "Assembly",
+      "rule": "Parts of the object or document assemble into place once, as the section enters, in a 600-900ms choreographed stagger.",
+      "suits": [
+        "finance",
+        "hardware",
+        "b2b"
+      ]
+    },
+    {
+      "id": "variable-type",
+      "name": "Type with a pulse",
+      "rule": "A variable-font axis (width, weight, optical size) responds to scroll or to the scene's data; one headline, not every heading.",
+      "suits": [
+        "devtool",
+        "creative",
+        "data"
+      ]
+    },
+    {
+      "id": "live-ticker",
+      "name": "Live ticker",
+      "rule": "Numbers in the scene count and settle as Sample events arrive; the visitor can pause and replay.",
+      "suits": [
+        "b2b",
+        "data",
+        "devtool"
+      ]
+    },
+    {
+      "id": "view-transition",
+      "name": "Morph between states",
+      "rule": "View transitions or FLIP morph the scene between two states (before and after, raw and clustered, unpaid and paid).",
+      "suits": [
+        "b2b",
+        "finance",
+        "devtool"
+      ]
+    }
+  ],
+  "domains": {
+    "devtool": [
+      "npm",
+      "cli",
+      "api",
+      "sdk",
+      "open-source",
+      "open source",
+      "node",
+      "github",
+      "localhost",
+      "install",
+      "developer",
+      "trace",
+      "tracing",
+      "deploy",
+      "code"
+    ],
+    "hardware": [
+      "device",
+      "sensor",
+      "monitor",
+      "battery",
+      "shipping",
+      "ring",
+      "hardware",
+      "measures",
+      "specs",
+      "pack",
+      "factory",
+      "machines",
+      "warehouse",
+      "warehouses",
+      "trucks"
+    ],
+    "finance": [
+      "invoice",
+      "vat",
+      "tax",
+      "bank",
+      "payment",
+      "bookkeeping",
+      "accountant",
+      "billing",
+      "ledger",
+      "expense"
+    ],
+    "b2b": [
+      "team",
+      "seats",
+      "seat",
+      "roadmap",
+      "inbox",
+      "workspace",
+      "b2b",
+      "saas",
+      "sso",
+      "pm",
+      "product teams"
+    ],
+    "consumer": [
+      "home",
+      "parents",
+      "family",
+      "families",
+      "personal",
+      "apartment",
+      "kids",
+      "sleep",
+      "hobby",
+      "climbers",
+      "travellers",
+      "holidays",
+      "owners"
+    ],
+    "data": [
+      "analytics",
+      "dashboard",
+      "metrics",
+      "readings",
+      "chart",
+      "report",
+      "data"
+    ],
+    "creative": [
+      "design",
+      "studio",
+      "font",
+      "music",
+      "video",
+      "photo",
+      "creative",
+      "portfolio",
+      "musician",
+      "musicians"
+    ]
+  },
+  "worlds": [
+    {
+      "id": "register",
+      "name": "Register or ledger",
+      "examples": "ruled paper, numbered columns, posting lines, carried-forward totals, red rules",
+      "suits": [
+        "finance",
+        "b2b",
+        "data"
+      ],
+      "faces": [
+        "gloock-schibsted",
+        "typewriter",
+        "newsreader-public"
+      ],
+      "ground": "ledger green or buff stock with red and blue rules"
+    },
+    {
+      "id": "printout",
+      "name": "Printout or till roll",
+      "examples": "thermal paper, dot-matrix type, perforations, itemized lines, a printed total",
+      "suits": [
+        "devtool",
+        "finance",
+        "consumer"
+      ],
+      "faces": [
+        "dot-matrix",
+        "typewriter",
+        "geist"
+      ],
+      "ground": "a dark counter or desk under a white roll, so the paper is the bright thing"
+    },
+    {
+      "id": "instrument",
+      "name": "Instrument face",
+      "examples": "dials, gauges, scales, needles, bezels, calibration marks",
+      "suits": [
+        "hardware",
+        "data",
+        "devtool"
+      ],
+      "faces": [
+        "archivo-expanded",
+        "big-shoulders",
+        "geist"
+      ],
+      "ground": "enamel, anodised metal, or bakelite black behind the face"
+    },
+    {
+      "id": "dossier",
+      "name": "Dossier or binder",
+      "examples": "divider tabs, rubber stamps, folders, index cards, paper clips",
+      "suits": [
+        "finance",
+        "b2b"
+      ],
+      "faces": [
+        "typewriter",
+        "newsreader-public",
+        "gloock-schibsted"
+      ],
+      "ground": "manila, kraft, or folder board"
+    },
+    {
+      "id": "board",
+      "name": "Departure or signal board",
+      "examples": "split-flap rows, LED segments, status lamps, platform signage",
+      "suits": [
+        "data",
+        "devtool",
+        "b2b"
+      ],
+      "faces": [
+        "dot-matrix",
+        "big-shoulders",
+        "archivo-expanded"
+      ],
+      "ground": "signage black, station blue, or platform enamel"
+    },
+    {
+      "id": "plate",
+      "name": "Label, carton, or spec plate",
+      "examples": "engraved plates, product labels, shipping cartons, warning stickers, rating plates",
+      "suits": [
+        "hardware",
+        "consumer"
+      ],
+      "faces": [
+        "stencil",
+        "archivo-expanded",
+        "big-shoulders"
+      ],
+      "ground": "anodised metal or carton kraft"
+    },
+    {
+      "id": "chart",
+      "name": "Chart, survey, or blueprint",
+      "examples": "grid sheets, legends, soundings, contour lines, title blocks",
+      "suits": [
+        "devtool",
+        "data",
+        "hardware"
+      ],
+      "faces": [
+        "archivo-expanded",
+        "geist",
+        "anybody"
+      ],
+      "ground": "blueprint cyan or survey buff with a printed grid"
+    },
+    {
+      "id": "panel",
+      "name": "Control panel or patch bay",
+      "examples": "switches, jacks, cables, labelling tape, indicator lights",
+      "suits": [
+        "b2b",
+        "devtool",
+        "hardware"
+      ],
+      "faces": [
+        "big-shoulders",
+        "archivo-expanded",
+        "funnel"
+      ],
+      "ground": "rack grey-black or console enamel"
+    },
+    {
+      "id": "wire",
+      "name": "Newspaper or wire service",
+      "examples": "mastheads, column rules, bulletins, teletype strips, datelines",
+      "suits": [
+        "b2b",
+        "data",
+        "creative"
+      ],
+      "faces": [
+        "gloock-schibsted",
+        "newsreader-public",
+        "bodoni-familjen"
+      ],
+      "ground": "newsprint tint with ink-blue or black bands"
+    },
+    {
+      "id": "notebook",
+      "name": "Field notebook",
+      "examples": "graph paper, pencil annotations, taped specimens, measurements in the margin",
+      "suits": [
+        "consumer",
+        "creative",
+        "hardware"
+      ],
+      "faces": [
+        "young-geologica",
+        "bricolage-hanken",
+        "newsreader-public"
+      ],
+      "ground": "graph-paper buff with pencil grey"
+    }
+  ]
+}

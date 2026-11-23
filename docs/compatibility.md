@@ -25,7 +25,7 @@ The machine-readable record is
 
 ## Agent interface
 
-Version 1.1.0 uses one skill and 19 command families, including `explore`. The version-1.0 evidence in this document remains historical.
+Version 1.1.0 uses one skill and 21 command families, including `explore`. The version-1.0 evidence in this document remains historical.
 
 The 1.1.0 PR passed all 10 CI jobs: Node 20/22/24, generated fixture browser
 checks, public showcase, and package lifecycles on Linux, macOS, and Windows.
