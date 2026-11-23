@@ -30,7 +30,7 @@ const SKILL_NAME = 'wingmanpm-product-designer';
 const POINTER_LABEL = SKILL_NAME;
 const PROJECT_MANIFEST = '.wingmanpm-design/manifest.json';
 const BROWSER_EVIDENCE = '.wingmanpm-design/browser-evidence.json';
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 const PROJECT_SCHEMA_VERSION = 2;
 const DEFAULT_SCAN_ROOTS = ['src', 'app', 'pages', 'components', 'stories', 'design-system/examples'];
 

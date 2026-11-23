@@ -22,7 +22,7 @@ test('share safety accepts clean text and rejects forbidden long-dash output', a
   const directory = await mkdtemp(path.join(os.tmpdir(), 'wingman-share-test-'));
   await mkdir(path.join(directory, 'scripts'), { recursive: true });
   await writeFile(path.join(directory, 'scripts', 'check-share-safety.mjs'), await readFile(path.join(root, 'scripts', 'check-share-safety.mjs')));
-  await writeFile(path.join(directory, 'package.json'), `${JSON.stringify({ name: 'wingmanpm-product-designer', version: '1.1.0', files: [] }, null, 2)}\n`);
+  await writeFile(path.join(directory, 'package.json'), `${JSON.stringify({ name: 'wingmanpm-product-designer', version: '1.2.0', files: [] }, null, 2)}\n`);
   await writeFile(path.join(directory, 'README.md'), '# Safe repository\n');
   assert.equal(run('git', ['init', '-b', 'main'], directory).status, 0);
   await mkdir(path.join(directory, 'tests'));
@@ -62,7 +62,7 @@ test('share safety handles Git history larger than the Node default buffer', asy
   const directory = await mkdtemp(path.join(os.tmpdir(), 'wingman-share-history-'));
   await mkdir(path.join(directory, 'scripts'), { recursive: true });
   await writeFile(path.join(directory, 'scripts', 'check-share-safety.mjs'), await readFile(path.join(root, 'scripts', 'check-share-safety.mjs')));
-  await writeFile(path.join(directory, 'package.json'), `${JSON.stringify({ name: 'wingmanpm-product-designer', version: '1.1.0', files: [] }, null, 2)}\n`);
+  await writeFile(path.join(directory, 'package.json'), `${JSON.stringify({ name: 'wingmanpm-product-designer', version: '1.2.0', files: [] }, null, 2)}\n`);
   await writeFile(path.join(directory, 'README.md'), '# Safe history fixture\n');
   assert.equal(run('git', ['init', '-b', 'main'], directory).status, 0);
   await commit(directory, 'initial safe fixture');

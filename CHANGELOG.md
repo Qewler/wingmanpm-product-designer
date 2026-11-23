@@ -7,6 +7,31 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-23
+
+### Added
+
+- A rendered anti-slop gate (`slop`, also run by `craft`) with Persuade,
+  Operate, and Read modes. It checks copy and heading budgets, eyebrow labels,
+  control row alignment, native or keyboard-broken dropdowns, focus and hover
+  states, display type scale, font sprawl, split headlines, neutral grounds,
+  text cut at the viewport edge, and hidden content inside closed dialogs, at
+  1440 and 390 pixels.
+- A controls reference and copyable `templates/controls/` (CSS and JS) for one
+  control height per row and styled popups with the full keyboard contract.
+- Landing-page art direction: `concept` scores a worksheet of objects the
+  audience handles in its own work and never deals the first idea or the
+  category rut; `direction` draws composition, type, colour, device, and motion
+  for that world and prints the banned template fingerprints.
+- A blind design benchmark harness in `evals/design-bench/`.
+
+### Changed
+
+- `marketing.md` now walks the concept worksheet, the working lines, world
+  material, first-viewport rules, and a closing rubric review.
+- `anti-patterns.md` budgets are enforced on rendered output.
+- The registry has 21 command families.
+
 ## [1.1.0] - 2026-09-05
 
 ### Added
@@ -72,6 +97,7 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   code loader, or install-time lifecycle script.
 - Content-hash protection for user-modified installed files.
 
-[Unreleased]: https://github.com/Qewler/wingmanpm-product-designer/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/Qewler/wingmanpm-product-designer/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/Qewler/wingmanpm-product-designer/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Qewler/wingmanpm-product-designer/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Qewler/wingmanpm-product-designer/releases/tag/v1.0.0

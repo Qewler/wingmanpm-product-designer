@@ -104,7 +104,7 @@ test('init creates a complete golden-stack contract and is idempotent', async ()
   ]) assert.equal(await readFile(path.join(directory, relative), 'utf8').then(() => true), true, relative);
   assert.match(await readFile(path.join(directory, 'AGENTS.md'), 'utf8'), /Existing instructions stay[\s\S]*wingmanpm-product-designer:start/);
   const initializedPackage = JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
-  assert.equal(initializedPackage.scripts['design:doctor'], 'npx --yes wingmanpm-product-designer@1.1.0 doctor --project .');
+  assert.equal(initializedPackage.scripts['design:doctor'], 'npx --yes wingmanpm-product-designer@1.2.0 doctor --project .');
   await appendFile(path.join(directory, 'design-system', 'PRODUCT.md'), '\nUser-owned fact.\n');
   const second = run(['init', '--project', directory], root);
   assert.equal(second.status, 0, second.stderr);
@@ -339,7 +339,7 @@ test('project-scoped all-agent install is portable, complete, repeatable, and sa
 
   for (const destination of destinations) {
     const manifest = JSON.parse(await readFile(path.join(destination, '.wingman-install.json'), 'utf8'));
-    assert.match(manifest.source, /^wingmanpm-product-designer@1\.1\.0$/);
+    assert.match(manifest.source, /^wingmanpm-product-designer@1\.2\.0$/);
     assert.equal(path.isAbsolute(manifest.source), false);
     assert.equal(JSON.stringify(manifest).includes(root), false);
     assert.equal(JSON.stringify(manifest).includes(directory), false);

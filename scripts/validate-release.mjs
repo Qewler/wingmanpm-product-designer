@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const skillRoot = path.join(root, 'skills', 'wingmanpm-product-designer');
-const expectedVersion = '1.1.0';
+const expectedVersion = '1.2.0';
 const wingmanDomain = ['https://wingman', '.pm'].join('');
 const privateRepositoryName = ['WingmanPM', 'Pure'].join('_');
 const localSchemaHost = ['wingmanpm', 'local'].join('.');

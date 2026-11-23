@@ -4,7 +4,7 @@ description: Design, explore, build, review, and verify SaaS interfaces. Use for
 license: Apache-2.0
 metadata:
   author: Wingman.PM / Qewler
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # WingmanPM Product Designer

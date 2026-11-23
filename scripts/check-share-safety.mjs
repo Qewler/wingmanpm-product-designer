@@ -152,7 +152,7 @@ if (privateProductPatterns.some((pattern) => pattern.test(history))) failures.pu
 
 const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 if (packageJson.name !== 'wingmanpm-product-designer') failures.push('package.json must use the public package name');
-if (packageJson.version !== '1.1.0') failures.push('package.json must use the public v1 version');
+if (packageJson.version !== '1.2.0') failures.push('package.json must use the public v1 version');
 if (packageJson.private !== undefined) failures.push('package.json must not set private for the public release');
 for (const excluded of ['evals', 'fixtures', 'tests']) {
   if ((packageJson.files ?? []).some((entry) => entry.replace(/\/$/, '') === excluded)) failures.push(`npm package allowlist includes ${excluded}`);

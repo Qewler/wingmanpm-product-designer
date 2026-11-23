@@ -1,6 +1,6 @@
 # Compatibility and current evidence
 
-The current public version is `1.1.0`, released on 2026-09-05. The detailed
+Version `1.2.0` is prepared for release on 2026-11-23; the current public version is `1.1.0`, released on 2026-09-05. The detailed
 fixture baseline below was recorded for version `1.0.0` on 2026-08-31 with
 Node.js 24.18.0 and npm 11.16.0. Public fixture evidence comes only from the
 committed Tamarack FieldOps fixture, which is always marked `Concept demo`.
@@ -25,9 +25,9 @@ The machine-readable record is
 
 ## Agent interface
 
-Version 1.1.0 uses one skill and 21 command families, including `explore`. The version-1.0 evidence in this document remains historical.
+Version 1.2.0 uses one skill and 21 command families, including `explore`, `slop`, and `direction`. The version-1.0 evidence in this document remains historical.
 
-The 1.1.0 PR passed all 10 CI jobs: Node 20/22/24, generated fixture browser
+The 1.2.0 code passed all 10 CI jobs on [PR #13](https://github.com/Qewler/wingmanpm-product-designer/pull/13), including 144 regression tests, 14 routing fixtures, and full skills.sh copy and symlink installs with all 95 portable files. The 1.1.0 PR passed all 10 CI jobs: Node 20/22/24, generated fixture browser
 checks, public showcase, and package lifecycles on Linux, macOS, and Windows.
 It passed 119 regression tests, 14 routing fixtures, and full skills.sh copy
 and symlink installs with all 88 portable files. For current publication and
