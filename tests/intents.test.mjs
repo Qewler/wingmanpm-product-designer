@@ -123,11 +123,11 @@ test('command registry carries progressive references and source citations', asy
   const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
   const packageLock = JSON.parse(await readFile(path.join(root, 'package-lock.json'), 'utf8'));
   const skill = await readFile(path.join(skillRoot, 'SKILL.md'), 'utf8');
-  assert.equal(registry.version, '1.1.0');
+  assert.equal(registry.version, '1.2.0');
   assert.equal(packageJson.version, registry.version);
   assert.equal(packageLock.version, registry.version);
   assert.equal(packageLock.packages[''].version, registry.version);
-  assert.match(skill, /version: 1\.1\.0/);
+  assert.match(skill, /version: 1\.2\.0/);
   assert.equal(registry.intents.length, 21);
   assert.ok(registry.sources.every(({ url }) => url.startsWith('https://')));
   assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
