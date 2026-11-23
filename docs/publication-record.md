@@ -1,12 +1,42 @@
 # Publication record
 
-Last verified: September 5, 2026
+Last verified: November 23, 2026
 
-Current code and GitHub release: `1.1.0`
+Current code and GitHub release: `1.2.0`
 
 Publisher: Wingman.PM / Qewler
 
 ## Current channels
+
+| Channel | Verified state |
+| --- | --- |
+| GitHub | [PR #13](https://github.com/Qewler/wingmanpm-product-designer/pull/13) and [PR #15](https://github.com/Qewler/wingmanpm-product-designer/pull/15) merged; [v1.2.0](https://github.com/Qewler/wingmanpm-product-designer/releases/tag/v1.2.0) published with the npm archive, three plugin and skills archives, and `SHA256SUMS` |
+| npm | [`1.2.0`](https://www.npmjs.com/package/wingmanpm-product-designer/v/1.2.0) published on November 23, 2026 after owner approval; public `latest` is `1.2.0`; registry SHA-1 is `407e7bed1d953c79ca9de5b2403019ffa5a644f0`, 130 files, with a signed provenance statement |
+| skills.sh | A fresh install from the public repository returned `1.2.0`, with all 95 portable files identical to the source bundle |
+| Codex and Claude Code own marketplaces | Manifests on `main` declare `1.2.0`; installed copies update through their owning managers and may need a restart |
+| Claude reviewed catalog, Cursor, OpenAI directory | No new submission was sent; states are unchanged from the 1.1.0 record below |
+
+## Release evidence
+
+The release code passed all ten CI jobs on PR #13 and PR #15, including 144
+regression tests, 14 routing fixtures, the generated UI browser suite,
+showcase, package lifecycles on Linux, macOS, and Windows, and complete
+skills.sh installation checks.
+
+The [tag run](https://github.com/Qewler/wingmanpm-product-designer/actions/runs/45180499791)
+repeated full validation, built the release archives, and published the
+GitHub release. The [npm staging run](https://github.com/Qewler/wingmanpm-product-designer/actions/runs/45182152864)
+staged the checksum-verified archive from that release without rebuilding it.
+The npm stage ID was `8c7096ba-691d-4245-bb9b-ca06610703f8`; owner approval
+published it as `latest` at `2026-11-23T13:35:56.700Z`.
+
+Historical records below describe earlier checkpoints, not current availability.
+
+## Historical version 1.1.0 publication record
+
+Last verified: September 5, 2026
+
+### Channels as recorded on September 5, 2026
 
 | Channel | Verified state |
 | --- | --- |
@@ -24,7 +54,7 @@ locally and updated through their owning installers. All four skill paths,
 including the Claude symlink, contain the same 88-file `1.1.0` bundle. Native
 plugin caches also contain `1.1.0`; running hosts may need a restart.
 
-## Release evidence
+### Release evidence
 
 The release code passed all ten CI jobs, including 119 regression tests,
 14 routing fixtures, the generated UI browser suite, showcase, package
@@ -40,8 +70,6 @@ or replacing the public assets.
 The npm stage ID was `1abcd981-0880-40eb-887b-ba772a1a7cb0`. The staged archive
 had SHA-1 `d790a18be20cc77c94a0123cac80cf3974f38d73`. Owner approval later completed,
 and npm published that archive as `latest` at `2026-09-05T15:04:17.407Z`.
-
-Historical records below describe earlier checkpoints, not current availability.
 
 ## Historical version 1.0.0 publication record
 
